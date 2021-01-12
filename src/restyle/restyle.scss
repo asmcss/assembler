@@ -1,0 +1,115 @@
+@import "variables";
+@import "components/button";
+@import "components/input";
+@import "components/typography";
+
+:root {
+    // Colors
+    @each $name, $value in $color-palette {
+        --#{$name}: #{$value};
+    }
+    // Typography
+    @include typography-component-setup();
+    // Defaults
+    --body-background-color: var(--gray-50);
+    --body-text-color: var(--gray-900);
+    --font-size: 16px;
+    --font-weight: normal;
+    --line-height: var(--line-height-normal);
+    --font-family: var(--sans-serif);
+    // Elevation
+    --elevation-umbra: rgba(0, 0, 0, .2);
+    --elevation-penumbra: rgba(0, 0, 0, .14);
+    --elevation-ambient: rgba(0, 0, 0, .12);
+    @for $i from 0 through 24 {
+        --elevation-#{$i}: #{setElevation($i, $elevation-umbra-map, $elevation-penumbra-map, $elevation-ambient-map)};
+    }
+
+    @include button-component-setup();
+    @include input-component-setup();
+}
+
+@import "root";
+
+@include typography-component();
+@include button-component();
+@include input-component();
+
+// Accessibility
+.sr-only, .sr-only:focus {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+}
+
+.not-sr-only, .not-sr-only:focus {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+}
+
+// Text clip
+.text-clip {
+    -webkit-background-clip: text !important;
+    -moz-background-clip: text !important;
+    background-clip: text !important;
+
+    -webkit-text-fill-color: transparent !important;
+    -moz-text-fill-color: transparent !important;
+    text-fill-color: transparent !important;
+}
+
+.grid {
+    display: grid;
+    > * {
+        // Do not let text out of column
+        word-break: break-all !important;
+        > * {
+            // Do not let javascript out of column
+            max-width: 100% !important;
+        }
+    }
+    // Sub-grid alignment
+    > .grid {
+        justify-self: normal !important;
+        align-self: normal !important;
+    }
+}
+
+.stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "stackarea";
+    width: 100%;
+    height: 100%;
+
+    > * {
+        grid-area: stackarea;
+    }
+
+    @for $i from 1 through 10 {
+        > *:nth-child(#{$i}) {
+            z-index: $i - 1 !important;
+        }
+    }
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+

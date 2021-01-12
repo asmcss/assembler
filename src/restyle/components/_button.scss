@@ -1,0 +1,84 @@
+@mixin button-component-setup() {
+    --button-padding-x: 0.75rem;
+    --button-padding-y: 0.25rem;
+    --button-min-width: 6rem;
+    --button-height: 2rem;
+    --button-font-size: var(--font-size-sm);
+    --button-styled-text-color: #000;
+    --button-styled-border-color: var(--gray-400);
+    --button-styled-disabled-color: var(--gray);
+    --button-styled-color1: var(--gray-200);
+    --button-styled-color2: var(--gray-50);
+    --button-styled-color1-hover: var(--gray-300);
+    --button-styled-color2-hover: var(--gray-50);
+    --button-focus-shadow: 0 0 0 3px var(--primary-translucid);
+}
+
+@mixin button-component() {
+    .restyle\:reset-button {
+        appearance: none;
+        display: inline-block;
+        background: transparent;
+        color: #000;
+        padding: var(--button-padding-y) var(--button-padding-x);
+        font-weight: var(--font-weight);
+        font-size: var(--button-font-size);
+        line-height: var(--line-height);
+        border-radius: var(--border-radius-sm);
+        min-width: var(--button-min-width);
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        vertical-align: middle;
+        border: 1px solid transparent;
+        user-select: none;
+        outline: none;
+        cursor: pointer;
+        height: var(--button-height);
+        transition: box-shadow .25s;
+        &:disabled {
+            opacity: 0.75;
+            cursor: default;
+        }
+    }
+
+    .restyle\:focusable-button {
+        box-shadow: var(--elevation-1);
+        &:focus, &:focus-within {
+            box-shadow: var(--elevation-1), var(--button-focus-shadow) !important;
+        }
+    }
+
+    body.restyle button:not(.restyle\:reset-button),
+    body.restyle input[type=button]:not(.restyle\:reset-button),
+    body.restyle input[type=submit]:not(.restyle\:reset-button),
+    .restyle\:button {
+        @extend .restyle\:reset-button;
+        background-image: linear-gradient(to top, var(--button-styled-color1) 0%, var(--button-styled-color2) 100%);
+        color: var(--button-styled-text-color);
+        border: 1px solid var(--button-styled-border-color);
+        box-shadow: var(--elevation-1);
+        transition: box-shadow .25s;
+        &:hover {
+            background-image: linear-gradient(to top, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
+        }
+        &:active {
+            background-image: linear-gradient(to bottom, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
+        }
+        &:focus {
+            box-shadow: var(--elevation-1), var(--button-focus-shadow);
+        }
+        &:disabled {
+            color: var(--button-styled-disabled-color);
+        }
+    }
+
+    .restyle\:button-primary {
+        --button-styled-color1: var(--primary-500) !important;
+        --button-styled-color2: var(--primary-300) !important;
+        --button-styled-text-color: #fff !important;
+        --button-styled-border-color: var(--primary-500) !important;
+        --button-styled-color1-hover: var(--primary-600) !important;
+        --button-styled-color2-hover: var(--primary-300) !important;
+    }
+}

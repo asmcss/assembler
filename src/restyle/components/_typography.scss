@@ -1,0 +1,89 @@
+@import "../variables";
+
+@mixin typography-component-setup() {
+    @each $name, $value in $font-family {
+        --#{$name}: #{implode-list($value, ', ')};
+    }
+    @each $name, $value in $font-sizes {
+        --font-size-#{$name}: #{$value};
+    }
+    @each $name, $value in $line-height-sizes {
+        --line-height-#{$name}: #{$value};
+    }
+    @each $name, $value in $letter-spacing {
+        --letter-spacing-#{$name}: #{$value};
+    }
+    @each $name, $value in $headings-font-size {
+        --#{$name}-font-size: var(--font-size-#{$value});
+    }
+    @each $name, $value in $border-radius-sizes {
+        --border-radius-#{$name}: #{$value};
+    }
+}
+
+@mixin typography-component() {
+
+    h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+        font-weight: bold;
+        font-family: inherit;
+        font-style: inherit;
+        line-height: var(--line-height);
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    @each $name, $value in $headings-font-size {
+        #{$name}, .#{$name} {
+            font-size: var(--#{$name}-font-size);
+        }
+    }
+    // Paragraph
+    p, .p {
+        font-size: var(--font-size);
+        font-weight: var(--font-weight);
+        line-height: var(--line-height);
+    }
+
+    .lead {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight);
+        line-height: var(--line-height);
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    // Quotes
+    blockquote, q {
+        color: var(--gray-700);
+        font-weight: 300;
+        font-style: italic;
+    }
+
+    //Blockquote
+    blockquote {
+        border-left-color: var(--gray);
+        border-left-style: solid;
+        border-left-width: 1rem;
+        padding: 1rem;
+        margin: 1rem 0.5rem;
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-normal);
+
+        footer {
+            text-align: right;
+            font-weight: 300;
+            font-style: normal;
+            margin-top: 0.25rem;
+            color: var(--gray-700);
+        }
+    }
+
+    // Links
+    a:link, a:visited, .link {
+        color: var(--primary);
+        text-decoration: none;
+        &:hover {
+            color: var(--primary-700);
+        }
+    }
+}
