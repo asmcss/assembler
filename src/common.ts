@@ -244,7 +244,7 @@ function handleApplyAttribute(element: HTMLElement, content: string): void {
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 
-function extract(attr: string, value: string|null = null): AttrInfo[] {
+export function extract(attr: string, value: string|null = null): AttrInfo[] {
     const m = ATTRIBUTE_REGEX.exec(attr)?.groups;
 
     if (!m || !m.property || !m.property.startsWith(PREFIX)) {
@@ -299,7 +299,7 @@ function extract(attr: string, value: string|null = null): AttrInfo[] {
     return result;
 }
 
-function getStyleEntries(content: string, resolve: boolean = true): Map<string, AttrInfo> {
+export function getStyleEntries(content: string, resolve: boolean = true): Map<string, AttrInfo> {
     const entries = new Map<string, AttrInfo>();
 
     const attrs = content.split(';');
@@ -392,8 +392,6 @@ function replaceReferences(content: string): string {
 }
 
 export function generateStyles(settings: UserSettings): void {
-    let start = new Date();
-
     if (!settings.generate) {
         return;
     }
@@ -447,7 +445,6 @@ export function generateStyles(settings: UserSettings): void {
         result.push(str);
     }
 
-    console.warn('Generated CSS in', (new Date()).getTime() - start.getTime(), 'ms');
     const style = document.createElement("style");
     style.textContent = result.join('');
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
@@ -509,8 +506,7 @@ export function getUserSettings(): UserSettings {
     };
 }
 
-function getStringItemList(value: string, unique: boolean = true): string[]
-{
+function getStringItemList(value: string, unique: boolean = true): string[] {
     const items = value
         .replace(/[,;]/g, ' ')
         .split(/\s\s*/g)
@@ -522,4 +518,17 @@ function getStringItemList(value: string, unique: boolean = true): string[]
     }
 
     return items;
+}
+
+export function getPropertyHash(property: string, media: string = 'all', state:string = 'normal'): string {
+    const name = PROPERTY_LIST.indexOf(property);
+    const m = MEDIA_LIST.indexOf(media);
+    const s = STATE_LIST.indexOf(state);
+
+    if (m < 0 || s < 0 || name < 0) {
+        return 'unknown';
+    }
+
+    const base = STATE_LIST.length;
+    return (((name * base) + m) * base + s).toString(16);
 }

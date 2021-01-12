@@ -566,7 +566,6 @@ function replaceReferences(content) {
     return content;
 }
 function generateStyles(settings) {
-    let start = new Date();
     if (!settings.generate) {
         return;
     }
@@ -611,7 +610,6 @@ function generateStyles(settings) {
         }
         result.push(str);
     }
-    console.warn('Generated CSS in', (new Date()).getTime() - start.getTime(), 'ms');
     const style = document.createElement("style");
     style.textContent = result.join('');
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
@@ -676,13 +674,21 @@ function getStringItemList(value, unique = true) {
     }
     return items;
 }
+function getPropertyHash(property, media = 'all', state = 'normal') {
+    const name = PROPERTY_LIST.indexOf(property);
+    const m = MEDIA_LIST.indexOf(media);
+    const s = STATE_LIST.indexOf(state);
+    if (m < 0 || s < 0 || name < 0) {
+        return 'unknown';
+    }
+    const base = STATE_LIST.length;
+    return (((name * base) + m) * base + s).toString(16);
+}
 
-let start = new Date();
 const settings = getUserSettings();
 generateStyles(settings);
-console.warn('Loaded styles in', (new Date()).getTime() - start.getTime(), 'ms');
 if (settings.enabled) {
     domObserver.observe(document, { childList: true, subtree: true });
 }
 
-export { observe };
+export { extract, getPropertyHash as hash, getStyleEntries as parse };

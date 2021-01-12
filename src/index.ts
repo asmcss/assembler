@@ -1,11 +1,9 @@
-import {observe, domObserver, generateStyles, getUserSettings} from "./common";
+import {domObserver, generateStyles, getUserSettings, getPropertyHash, extract, getStyleEntries} from "./common";
 
-export {observe}
+export {getPropertyHash as hash, extract, getStyleEntries as parse};
 
-let start = new Date();
 const settings = getUserSettings();
 generateStyles(settings);
-console.warn('Loaded styles in', (new Date()).getTime() - start.getTime(), 'ms');
 if (settings.enabled) {
     domObserver.observe(document, {childList: true, subtree: true});
 }
