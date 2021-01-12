@@ -268,12 +268,11 @@ const VALUE_WRAPPER = {
 const X_ATTR_NAME = '_opis';
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REF_REGEX = /&[a-zA-Z0-9_\-]+/g;
-const ATTRIBUTE_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 const ARGS_REGEX = /\${\s*(?<index>\d+)\s*(?:=(?<default>[^}]*))?}/g;
 const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
-const PREFIX = 'x-';
-const STYLE_ATTR = PREFIX + "style";
-const APPLY_ATTR = PREFIX + "apply";
+const STYLE_ATTR = "x-style";
+const APPLY_ATTR = "x-apply";
 const observedElements = new WeakMap();
 const rootElement = new class {
     constructor() {
@@ -305,18 +304,12 @@ const domObserver = new MutationObserver(function (mutations) {
 });
 const observer = new MutationObserver(function (mutations) {
     for (const mutation of mutations) {
-        if (!mutation.attributeName.includes(PREFIX)) {
+        if (mutation.attributeName !== STYLE_ATTR) {
             continue;
         }
         const target = mutation.target;
         const newValue = target.getAttribute(mutation.attributeName);
-        if (mutation.attributeName === STYLE_ATTR) {
-            handleStyleChange(target, mutation.oldValue, newValue);
-            continue;
-        }
-        for (const info of extract(mutation.attributeName, newValue)) {
-            handleAttributeChange(target, info);
-        }
+        handleStyleChange(target, mutation.oldValue, newValue);
     }
 });
 function observe(element, deep = true) {
@@ -329,7 +322,6 @@ function observe(element, deep = true) {
         return;
     }
     observedElements.set(element, null);
-    const attributes = Array.from(element.attributes);
     const apply = element.attributes.getNamedItem(APPLY_ATTR);
     const style = element.attributes.getNamedItem(STYLE_ATTR);
     if (apply) {
@@ -337,14 +329,6 @@ function observe(element, deep = true) {
     }
     if (style) {
         handleStyleChange(element, null, style.value);
-    }
-    for (const { name, value } of attributes) {
-        if (name === STYLE_ATTR || name === APPLY_ATTR) {
-            continue;
-        }
-        for (const info of extract(name, value)) {
-            handleAttributeChange(element, info);
-        }
     }
     observer.observe(element, { attributes: true, attributeOldValue: true });
 }
@@ -359,17 +343,14 @@ function handleStyleChange(element, oldContent, content) {
     const newEntries = getStyleEntries(content);
     // remove old entries
     for (const [name, attr] of styleEntries) {
-        if (element.hasAttribute(name) || newEntries.has(name)) {
+        if (newEntries.has(name)) {
             continue;
         }
         const { property, entry } = attr;
         opis_attrs.splice(opis_attrs.indexOf(entry), 1);
         element.style.removeProperty(property);
     }
-    for (const [name, attr] of newEntries) {
-        if (element.hasAttribute(name)) {
-            continue;
-        }
+    for (const attr of newEntries.values()) {
         const { property, entry, value } = attr;
         if (opis_attrs.indexOf(entry) < 0) {
             opis_attrs.push(entry);
@@ -383,45 +364,9 @@ function handleStyleRemoved(element, content) {
         ? element.getAttribute(X_ATTR_NAME).split(' ')
         : [];
     for (const attr of getStyleEntries(content).values()) {
-        if (element.hasAttribute(attr.name)) {
-            continue;
-        }
         opis_attrs.splice(opis_attrs.indexOf(attr.entry), 1);
         element.style.removeProperty(attr.property);
     }
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
-}
-function handleAttributeChange(element, attr) {
-    if (attr.value === null) {
-        return handleAttributeRemoved(element, attr);
-    }
-    const { property, entry, value } = attr;
-    let attrs;
-    if (element.hasAttribute(X_ATTR_NAME)) {
-        const list = element.getAttribute(X_ATTR_NAME).split(' ');
-        if (list.indexOf(entry) < 0) {
-            list.push(entry);
-        }
-        attrs = list.join(' ');
-    }
-    else {
-        attrs = entry;
-    }
-    element.style.setProperty(property, value);
-    element.setAttribute(X_ATTR_NAME, attrs);
-}
-function handleAttributeRemoved(element, attr) {
-    const { property, entry, name } = attr;
-    if (element.hasAttribute(STYLE_ATTR)) {
-        const styleEntries = getStyleEntries(element.getAttribute(STYLE_ATTR));
-        if (styleEntries.has(name)) {
-            element.style.setProperty(property, styleEntries.get(name).value);
-            return;
-        }
-    }
-    const opis_attrs = element.getAttribute(X_ATTR_NAME).split(' ');
-    opis_attrs.splice(opis_attrs.indexOf(entry), 1);
-    element.style.removeProperty(property);
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 function handleApplyAttribute(element, content) {
@@ -455,8 +400,8 @@ function handleApplyAttribute(element, content) {
 }
 function extract(attr, value = null) {
     var _a;
-    const m = (_a = ATTRIBUTE_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-    if (!m || !m.property || !m.property.startsWith(PREFIX)) {
+    const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+    if (!m || !m.property) {
         return [];
     }
     const media = MEDIA_LIST.indexOf(m.media || 'all');
@@ -464,7 +409,7 @@ function extract(attr, value = null) {
     if (media < 0 || state < 0) {
         return [];
     }
-    let properties = m.property.substring(PREFIX.length);
+    let properties = m.property;
     const original = properties;
     if (ALIASES.hasOwnProperty(properties)) {
         properties = ALIASES[properties];
@@ -487,7 +432,7 @@ function extract(attr, value = null) {
         }
         const hash = (((name * base) + media) * base + state).toString(16);
         result.push({
-            name: (m.media ? m.media + '|' : '') + PREFIX + property + (m.state ? '.' + m.state : ''),
+            name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
             property: '--opis-' + hash,
             entry: 'x' + hash,
             value,
@@ -504,9 +449,6 @@ function getStyleEntries(content, resolve = true) {
         }
         const p = name.split(':');
         name = p.shift().trim();
-        name = name.indexOf('|') >= 0
-            ? name.replace('|', '|' + PREFIX)
-            : PREFIX + name;
         const value = resolve ? p.join(':') : null;
         for (const info of extract(name, value)) {
             entries.set(info.name, info);
@@ -678,16 +620,6 @@ function getStringItemList(value, unique = true) {
     }
     return items;
 }
-function getPropertyHash(property, media = 'all', state = 'normal') {
-    const name = PROPERTY_LIST.indexOf(property);
-    const m = MEDIA_LIST.indexOf(media);
-    const s = STATE_LIST.indexOf(state);
-    if (m < 0 || s < 0 || name < 0) {
-        return 'unknown';
-    }
-    const base = STATE_LIST.length;
-    return (((name * base) + m) * base + s).toString(16);
-}
 
 const settings = getUserSettings();
 generateStyles(settings);
@@ -696,5 +628,4 @@ if (settings.enabled) {
 }
 
 exports.extract = extract;
-exports.hash = getPropertyHash;
 exports.parse = getStyleEntries;
