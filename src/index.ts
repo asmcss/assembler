@@ -1,6 +1,6 @@
-import {domObserver, generateStyles, getUserSettings, getPropertyHash, extract, getStyleEntries} from "./common";
+import {domObserver, generateStyles, getUserSettings, extract, getStyleEntries} from "./common";
 
-export {getPropertyHash as hash, extract, getStyleEntries as parse};
+export {extract, getStyleEntries as parse};
 
 const settings = getUserSettings();
 generateStyles(settings);

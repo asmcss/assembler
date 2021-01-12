@@ -1,6 +1,6 @@
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS, ALIASES, VALUE_WRAPPER} from "./list";
 
-type AttrInfo = {entry: string, property: string, name: string, value: string|null};
+type PropertyInfo = {entry: string, property: string, name: string, value: string|null};
 type UserSettings = {
     enabled: boolean,
     generate: boolean,
@@ -11,12 +11,11 @@ type UserSettings = {
 const X_ATTR_NAME = '_opis';
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REF_REGEX = /&[a-zA-Z0-9_\-]+/g;
-const ATTRIBUTE_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 const ARGS_REGEX = /\${\s*(?<index>\d+)\s*(?:=(?<default>[^}]*))?}/g;
 const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
-const PREFIX = 'x-';
-const STYLE_ATTR = PREFIX + "style";
-const APPLY_ATTR = PREFIX + "apply";
+const STYLE_ATTR = "x-style";
+const APPLY_ATTR = "x-apply";
 
 const observedElements = new WeakMap();
 
@@ -54,21 +53,12 @@ export const domObserver = new MutationObserver(function (mutations: MutationRec
 
 const observer = new MutationObserver(function (mutations: MutationRecord[]): void {
     for (const mutation of mutations) {
-        if (!mutation.attributeName.includes(PREFIX)) {
+        if (mutation.attributeName !== STYLE_ATTR) {
             continue;
         }
-
         const target = mutation.target as HTMLElement;
         const newValue = target.getAttribute(mutation.attributeName);
-
-        if (mutation.attributeName === STYLE_ATTR) {
-            handleStyleChange(target, mutation.oldValue, newValue);
-            continue;
-        }
-
-        for (const info of extract(mutation.attributeName, newValue)) {
-            handleAttributeChange(target, info);
-        }
+        handleStyleChange(target, mutation.oldValue, newValue);
     }
 });
 
@@ -82,9 +72,9 @@ export function observe(element: HTMLElement, deep: boolean = true): void {
     if (observedElements.has(element)) {
         return;
     }
+
     observedElements.set(element, null);
 
-    const attributes = Array.from(element.attributes) as Attr[];
     const apply = element.attributes.getNamedItem(APPLY_ATTR);
     const style = element.attributes.getNamedItem(STYLE_ATTR);
 
@@ -94,15 +84,6 @@ export function observe(element: HTMLElement, deep: boolean = true): void {
 
     if (style) {
         handleStyleChange(element, null, style.value);
-    }
-
-    for (const {name, value} of attributes) {
-        if (name === STYLE_ATTR || name === APPLY_ATTR) {
-            continue;
-        }
-        for (const info of extract(name, value)) {
-            handleAttributeChange(element, info);
-        }
     }
 
     observer.observe(element, {attributes: true, attributeOldValue: true});
@@ -118,12 +99,12 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
         ? element.getAttribute(X_ATTR_NAME).split(' ')
         : [];
 
-    const styleEntries = oldContent === null ? new Map<string, AttrInfo>() : getStyleEntries(oldContent);
+    const styleEntries = oldContent === null ? new Map<string, PropertyInfo>() : getStyleEntries(oldContent);
     const newEntries = getStyleEntries(content);
 
     // remove old entries
     for (const [name, attr] of styleEntries) {
-        if (element.hasAttribute(name) || newEntries.has(name)) {
+        if (newEntries.has(name)) {
             continue;
         }
         const {property, entry} = attr;
@@ -131,10 +112,7 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
         element.style.removeProperty(property);
     }
 
-    for (const [name, attr] of newEntries) {
-        if (element.hasAttribute(name)) {
-            continue;
-        }
+    for (const attr of newEntries.values()) {
         const {property, entry, value} = attr;
 
         if (opis_attrs.indexOf(entry) < 0) {
@@ -154,56 +132,10 @@ function handleStyleRemoved(element: HTMLElement, content: string): void {
         : [];
 
     for (const attr of getStyleEntries(content).values()) {
-        if (element.hasAttribute(attr.name)) {
-            continue;
-        }
-
         opis_attrs.splice(opis_attrs.indexOf(attr.entry), 1);
         element.style.removeProperty(attr.property);
     }
 
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
-}
-
-function handleAttributeChange(element: HTMLElement, attr: AttrInfo): void {
-
-    if (attr.value === null) {
-        return handleAttributeRemoved(element, attr);
-    }
-
-    const {property, entry, value} = attr;
-
-    let attrs: string;
-
-    if (element.hasAttribute(X_ATTR_NAME)) {
-        const list = element.getAttribute(X_ATTR_NAME).split(' ');
-        if (list.indexOf(entry) < 0) {
-            list.push(entry);
-        }
-        attrs = list.join(' ');
-    } else {
-        attrs = entry;
-    }
-
-    element.style.setProperty(property, value);
-    element.setAttribute(X_ATTR_NAME, attrs);
-}
-
-function handleAttributeRemoved(element: HTMLElement, attr: AttrInfo): void {
-    const {property, entry, name} = attr;
-
-    if (element.hasAttribute(STYLE_ATTR)) {
-        const styleEntries = getStyleEntries(element.getAttribute(STYLE_ATTR));
-        if (styleEntries.has(name)) {
-            element.style.setProperty(property, styleEntries.get(name).value);
-            return;
-        }
-    }
-
-    const opis_attrs = element.getAttribute(X_ATTR_NAME).split(' ');
-    opis_attrs.splice(opis_attrs.indexOf(entry), 1);
-
-    element.style.removeProperty(property);
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 
@@ -244,10 +176,10 @@ function handleApplyAttribute(element: HTMLElement, content: string): void {
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 
-export function extract(attr: string, value: string|null = null): AttrInfo[] {
-    const m = ATTRIBUTE_REGEX.exec(attr)?.groups;
+export function extract(attr: string, value: string|null = null): PropertyInfo[] {
+    const m = PROPERTY_REGEX.exec(attr)?.groups;
 
-    if (!m || !m.property || !m.property.startsWith(PREFIX)) {
+    if (!m || !m.property) {
         return [];
     }
 
@@ -258,7 +190,7 @@ export function extract(attr: string, value: string|null = null): AttrInfo[] {
         return [];
     }
 
-    let properties: string|string[] = m.property.substring(PREFIX.length);
+    let properties: string|string[] = m.property;
     const original = properties;
 
     if (ALIASES.hasOwnProperty(properties)) {
@@ -289,7 +221,7 @@ export function extract(attr: string, value: string|null = null): AttrInfo[] {
         const hash = (((name * base) + media) * base + state).toString(16);
 
         result.push({
-            name: (m.media ? m.media + '|' : '') + PREFIX + property + (m.state ? '.' + m.state : ''),
+            name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
             property: '--opis-' + hash,
             entry: 'x' + hash,
             value,
@@ -299,8 +231,8 @@ export function extract(attr: string, value: string|null = null): AttrInfo[] {
     return result;
 }
 
-export function getStyleEntries(content: string, resolve: boolean = true): Map<string, AttrInfo> {
-    const entries = new Map<string, AttrInfo>();
+export function getStyleEntries(content: string, resolve: boolean = true): Map<string, PropertyInfo> {
+    const entries = new Map<string, PropertyInfo>();
 
     const attrs = content.split(';');
 
@@ -312,10 +244,6 @@ export function getStyleEntries(content: string, resolve: boolean = true): Map<s
         const p = name.split(':');
 
         name = p.shift().trim();
-
-        name = name.indexOf('|') >= 0
-            ? name.replace('|', '|' + PREFIX)
-            : PREFIX + name;
 
         const value = resolve ? p.join(':') : null;
 
@@ -518,17 +446,4 @@ function getStringItemList(value: string, unique: boolean = true): string[] {
     }
 
     return items;
-}
-
-export function getPropertyHash(property: string, media: string = 'all', state:string = 'normal'): string {
-    const name = PROPERTY_LIST.indexOf(property);
-    const m = MEDIA_LIST.indexOf(media);
-    const s = STATE_LIST.indexOf(state);
-
-    if (m < 0 || s < 0 || name < 0) {
-        return 'unknown';
-    }
-
-    const base = STATE_LIST.length;
-    return (((name * base) + m) * base + s).toString(16);
 }
