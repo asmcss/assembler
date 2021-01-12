@@ -1,4 +1,4 @@
-import {ATTRIBUTE_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS, ALIASES, VALUE_WRAPPER} from "./list";
+import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS, ALIASES, VALUE_WRAPPER} from "./list";
 
 type AttrInfo = {entry: string, property: string, name: string, value: string|null};
 type UserSettings = {
@@ -280,7 +280,7 @@ function extract(attr: string, value: string|null = null): AttrInfo[] {
     const base = STATE_LIST.length;
 
     for (const property of properties) {
-        const name = ATTRIBUTE_LIST.indexOf(property);
+        const name = PROPERTY_LIST.indexOf(property);
 
         if (name < 0) {
             continue;
@@ -421,8 +421,8 @@ export function generateStyles(settings: UserSettings): void {
             }
         }
 
-        for (let name_index = 0, l = ATTRIBUTE_LIST.length; name_index < l; name_index++) {
-            const name = ATTRIBUTE_LIST[name_index];
+        for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
+            const name = PROPERTY_LIST[name_index];
             for (const state of states) {
                 const state_index = STATE_LIST.indexOf(state);
                 if (state_index < 0) {

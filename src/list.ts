@@ -1,4 +1,4 @@
-export const ATTRIBUTE_LIST = [
+export const PROPERTY_LIST = [
     "align-content",
     "align-items",
     "align-self",

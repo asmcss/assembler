@@ -1,4 +1,4 @@
-const ATTRIBUTE_LIST = [
+const PROPERTY_LIST = [
     "align-content",
     "align-items",
     "align-self",
@@ -477,7 +477,7 @@ function extract(attr, value = null) {
     const result = [];
     const base = STATE_LIST.length;
     for (const property of properties) {
-        const name = ATTRIBUTE_LIST.indexOf(property);
+        const name = PROPERTY_LIST.indexOf(property);
         if (name < 0) {
             continue;
         }
@@ -589,8 +589,8 @@ function generateStyles(settings) {
                 str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
             }
         }
-        for (let name_index = 0, l = ATTRIBUTE_LIST.length; name_index < l; name_index++) {
-            const name = ATTRIBUTE_LIST[name_index];
+        for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
+            const name = PROPERTY_LIST[name_index];
             for (const state of states) {
                 const state_index = STATE_LIST.indexOf(state);
                 if (state_index < 0) {
