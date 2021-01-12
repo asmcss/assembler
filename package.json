@@ -26,7 +26,6 @@
     "typescript": "^4.1.3",
     "uglifycss": "^0.0.29"
   },
-  "types": "types/index.d.ts",
   "files": [
     "dist"
   ]
