@@ -1,0 +1,25 @@
+{
+  "name": "@opis/assembler",
+  "version": "1.0.0",
+  "main": "dist/assembler.cjs.js",
+  "module": "dist/assembler.es.js",
+  "browser": "dist/assembler.js",
+  "dependencies": {},
+  "scripts": {
+    "build": "yarn compile && yarn types",
+    "types": "rm -rf ./types && tsc",
+    "compile": "rollup -c --environment BUILD:production"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^8.1.0",
+    "rollup": "^2.36.1",
+    "rollup-plugin-import-resolver": "^1.0.5",
+    "rollup-plugin-terser": "^7.0.2",
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.3"
+  },
+  "types": "types/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

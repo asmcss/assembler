@@ -1,0 +1,18 @@
+{
+  "lib": ["es2017", "dom"],
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "target": "ES2017",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./types",
+    "sourceMap": false,
+    "rootDir": "src"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src/**.ts"
+  ]
+}
