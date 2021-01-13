@@ -7,7 +7,7 @@
   "dependencies": {},
   "scripts": {
     "build": "yarn compile && yarn scss && yarn postcss && yarn uglify",
-    "compile": "rollup -c --environment BUILD:production",
+    "compile": "rollup -c --environment BUILD:production && tsc",
     "scss": "node-sass -o ./dist/ ./src/restyle/restyle.scss --output-style expanded",
     "postcss": "postcss -r ./dist/restyle.css --no-map",
     "uglify": "uglifycss ./dist/restyle.css --output ./dist/restyle.min.css",
@@ -28,6 +28,7 @@
     "typescript": "^4.1.3",
     "uglifycss": "^0.0.29"
   },
+  "types": "types/index.d.ts",
   "files": [
     "dist"
   ],
