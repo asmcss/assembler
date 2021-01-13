@@ -298,6 +298,7 @@
      * limitations under the License.
      */
     const X_ATTR_NAME = '_opis';
+    const HASH_VAR_PREFIX = '--opis-';
     const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
     const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
     const STYLE_ATTR = "x-style";
@@ -347,10 +348,9 @@
         // remove old entries
         if (oldContent !== null) {
             for (const { name, property } of getStyleProperties(oldContent)) {
-                if (newEntries.has(name)) {
-                    continue;
+                if (!newEntries.has(name)) {
+                    element.style.removeProperty(property);
                 }
-                element.style.removeProperty(property);
             }
         }
         const opis_attrs = [];
@@ -401,7 +401,7 @@
             const hash = (((name * base) + media) * base + state).toString(16);
             result.push({
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                property: '--opis-' + hash,
+                property: HASH_VAR_PREFIX + hash,
                 entry: 'x' + hash,
                 value,
             });
@@ -474,10 +474,10 @@
                     let variants = PROPERTY_VARIANTS[name], prefix = '';
                     if (variants) {
                         for (let i = 0, l = variants.length; i < l; i++) {
-                            prefix += `${variants[i]}:var(--opis-${hash}) !important;`;
+                            prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
                         }
                     }
-                    str += `[_opis~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(--opis-${hash}) !important}`;
+                    str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
                 }
             }
             if (media_index !== 0) {
@@ -525,7 +525,7 @@
                 const hash = (((name * base) + media) * base + state).toString(16);
                 yield {
                     name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: '--opis-' + hash,
+                    property: HASH_VAR_PREFIX + hash,
                 };
             }
         }
