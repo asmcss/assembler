@@ -17,6 +17,7 @@ export declare const ALIASES: {
     "bg-position": string;
     "bg-repeat": string;
     "bg-size": string;
+    "break-normal": string[];
     radius: string;
     "radius-top": string[];
     "radius-bottom": string[];
@@ -77,6 +78,7 @@ export declare const ALIASES: {
 };
 export declare const STATE_LIST: string[];
 export declare const MEDIA_LIST: string[];
+export declare const DEFAULT_VALUES: {};
 export declare const VALUE_WRAPPER: {
     gradient: (value: any) => string;
     "radial-gradient": (value: any) => string;

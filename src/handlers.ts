@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ALIASES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST, VALUE_WRAPPER} from "./list";
+import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST, VALUE_WRAPPER} from "./list";
 
 type PropertyInfo = {entry: string, property: string, name: string, value: string|null};
 
@@ -85,12 +85,13 @@ export function extract(attr: string, value: string|null = null): PropertyInfo[]
         properties = [properties];
     }
 
-    if (value !== null) {
-        if (VALUE_WRAPPER.hasOwnProperty(original)) {
-            value = VALUE_WRAPPER[original](value, original, media, state);
-        }
-        value = value.replace(VAR_REGEX, "var(--$1)");
+    if (value === null) {
+        value = DEFAULT_VALUES[original] || '';
     }
+    if (VALUE_WRAPPER.hasOwnProperty(original)) {
+        value = VALUE_WRAPPER[original](value, original, media, state);
+    }
+    value = value.replace(VAR_REGEX, "var(--$1)");
 
     const result = [];
     const base = STATE_LIST.length;
@@ -121,15 +122,15 @@ export function getStyleEntries(content: string, resolve: boolean = true): Map<s
     const attrs = content.split(';');
 
     for (let name of attrs) {
-        if (name.indexOf(':') < 0) {
-            continue;
+        let value = null;
+
+        if (name.indexOf(':') > 0) {
+            const p = name.split(':');
+            name = p.shift().trim();
+            value = resolve ? p.join(':') : null;
+        } else {
+            name = name.trim();
         }
-
-        const p = name.split(':');
-
-        name = p.shift().trim();
-
-        const value = resolve ? p.join(':') : null;
 
         for (const info of extract(name, value)) {
             entries.set(info.name, info);
@@ -145,10 +146,10 @@ export function* getStyleProperties(content: string): Iterable<{property: string
     for (let attr of content.split(';')) {
         const pos = attr.indexOf(':');
         if (pos < 0) {
-            continue;
+            attr = attr.trim();
+        } else {
+            attr = attr.substr(0, pos).trim();
         }
-
-        attr = attr.substr(0, pos).trim();
 
         const m = PROPERTY_REGEX.exec(attr)?.groups;
 

@@ -161,6 +161,7 @@ export const ALIASES = {
     "bg-position": "background-position",
     "bg-repeat": "background-repeat",
     "bg-size": "background-size",
+    "break-normal": ["overflow-wrap", "word-break"],
     "radius": "border-radius",
     "radius-top": ["border-top-left-radius", "border-top-right-radius"],
     "radius-bottom": ["border-bottom-left-radius", "border-bottom-right-radius"],
@@ -254,6 +255,8 @@ export const STATE_LIST = [
     "enabled",
 ];
 export const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
+export const DEFAULT_VALUES = {
+}
 
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;

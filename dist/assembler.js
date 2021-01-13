@@ -166,6 +166,7 @@
         "bg-position": "background-position",
         "bg-repeat": "background-repeat",
         "bg-size": "background-size",
+        "break-normal": ["overflow-wrap", "word-break"],
         "radius": "border-radius",
         "radius-top": ["border-top-left-radius", "border-top-right-radius"],
         "radius-bottom": ["border-bottom-left-radius", "border-bottom-right-radius"],
@@ -250,6 +251,7 @@
         "enabled",
     ];
     const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
+    const DEFAULT_VALUES = {};
     const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
     const grid_rowspan = v => `span ${v}`;
     const elevation = v => /^[0-9]|1[0-9]|2[0-4]$/.test(v) ? `@elevation-${v}` : v;
@@ -347,12 +349,13 @@
         if (!Array.isArray(properties)) {
             properties = [properties];
         }
-        if (value !== null) {
-            if (VALUE_WRAPPER.hasOwnProperty(original)) {
-                value = VALUE_WRAPPER[original](value, original, media, state);
-            }
-            value = value.replace(VAR_REGEX, "var(--$1)");
+        if (value === null) {
+            value = DEFAULT_VALUES[original] || '';
         }
+        if (VALUE_WRAPPER.hasOwnProperty(original)) {
+            value = VALUE_WRAPPER[original](value, original, media, state);
+        }
+        value = value.replace(VAR_REGEX, "var(--$1)");
         const result = [];
         const base = STATE_LIST.length;
         for (const property of properties) {
@@ -374,12 +377,15 @@
         const entries = new Map();
         const attrs = content.split(';');
         for (let name of attrs) {
-            if (name.indexOf(':') < 0) {
-                continue;
+            let value = null;
+            if (name.indexOf(':') > 0) {
+                const p = name.split(':');
+                name = p.shift().trim();
+                value = resolve ? p.join(':') : null;
             }
-            const p = name.split(':');
-            name = p.shift().trim();
-            const value = resolve ? p.join(':') : null;
+            else {
+                name = name.trim();
+            }
             for (const info of extract(name, value)) {
                 entries.set(info.name, info);
             }
@@ -392,9 +398,11 @@
         for (let attr of content.split(';')) {
             const pos = attr.indexOf(':');
             if (pos < 0) {
-                continue;
+                attr = attr.trim();
             }
-            attr = attr.substr(0, pos).trim();
+            else {
+                attr = attr.substr(0, pos).trim();
+            }
             const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
             if (!m || !m.property) {
                 continue;
