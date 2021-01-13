@@ -26,37 +26,11 @@ type UserSettings = {
 
 const X_ATTR_NAME = '_opis';
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
-const REF_REGEX = /&[a-zA-Z0-9_\-]+/g;
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
-const ARGS_REGEX = /\${\s*(?<index>\d+)\s*(?:=(?<default>[^}]*))?}/g;
-const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
 const STYLE_ATTR = "x-style";
-const APPLY_ATTR = "x-apply";
-const OBSERVED_ATTRS = [STYLE_ATTR, APPLY_ATTR];
 const CACHE_KEY = 'opis-assembler-cache';
 
 const observedElements = new WeakMap();
-
-const rootElement = new class {
-    private styles: CSSStyleDeclaration = null;
-
-    getComputedStyle(): CSSStyleDeclaration {
-        if (this.styles === null) {
-            this.styles = window.getComputedStyle(document.documentElement);
-        }
-        return this.styles;
-    }
-
-    getPropertyValue(property: string): string {
-        let value = this.getComputedStyle().getPropertyValue(property).trim();
-
-        if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.substring(1, value.length - 1);
-        }
-
-        return value;
-    }
-};
 
 export const domObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
     for (let i = 0, l = mutations.length; i < l; i++) {
@@ -93,18 +67,13 @@ export function observe(element: HTMLElement, deep: boolean = true): void {
 
     observedElements.set(element, null);
 
-    const apply = element.attributes.getNamedItem(APPLY_ATTR);
     const style = element.attributes.getNamedItem(STYLE_ATTR);
-
-    if (apply) {
-        handleApplyAttribute(element, apply.value);
-    }
 
     if (style) {
         handleStyleChange(element, null, style.value);
     }
 
-    observer.observe(element, {attributes: true, attributeOldValue: true, attributeFilter: OBSERVED_ATTRS});
+    observer.observe(element, {attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR]});
 }
 
 function handleStyleChange(element: HTMLElement, oldContent: string|null, content: string|null): void {
@@ -113,15 +82,16 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
         return handleStyleRemoved(element, oldContent);
     }
 
-    const styleEntries = oldContent === null ? new Map<string, PropertyInfo>() : getStyleEntries(oldContent, false);
     const newEntries = getStyleEntries(content);
 
     // remove old entries
-    for (const {name, property} of styleEntries.values()) {
-        if (newEntries.has(name)) {
-            continue;
+    if (oldContent !== null) {
+        for (const {name, property} of getStyleProperties(oldContent)) {
+            if (newEntries.has(name)) {
+                continue;
+            }
+            element.style.removeProperty(property);
         }
-        element.style.removeProperty(property);
     }
 
     const opis_attrs = [];
@@ -136,48 +106,11 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
 
 function handleStyleRemoved(element: HTMLElement, content: string): void {
 
-    for (const {property} of getStyleEntries(content, false).values()) {
+    for (const {property} of getStyleProperties(content)) {
         element.style.removeProperty(property);
     }
 
     element.removeAttribute(X_ATTR_NAME);
-}
-
-function handleApplyAttribute(element: HTMLElement, content: string): void {
-    const references = content.split(';');
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME)
-        ? element.getAttribute(X_ATTR_NAME).split(' ')
-        : [];
-
-    for (let i = 0, l = references.length; i < l; i++) {
-        const reference = references[i].trim();
-        if (reference === '') {
-            continue;
-        }
-
-        const m = APPLY_REGEX.exec(reference)?.groups;
-
-        if (!m || !m.name) {
-            continue;
-        }
-
-        let value = rootElement.getPropertyValue('--' + m.name);
-        if (m.args) {
-            value = replaceArgs(value, extractArgs(replaceReferences(m.args)));
-        }
-
-        for (const attr of getStyleEntries(value).values()) {
-            const {property, entry, value} = attr;
-
-            if (opis_attrs.indexOf(entry) < 0) {
-                opis_attrs.push(entry);
-            }
-
-            element.style.setProperty(property, value);
-        }
-    }
-
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 
 export function extract(attr: string, value: string|null = null): PropertyInfo[] {
@@ -209,7 +142,7 @@ export function extract(attr: string, value: string|null = null): PropertyInfo[]
         if (VALUE_WRAPPER.hasOwnProperty(original)) {
             value = VALUE_WRAPPER[original](value, original, media, state);
         }
-        value = replaceReferences(value).replace(VAR_REGEX, "var(--$1)");
+        value = value.replace(VAR_REGEX, "var(--$1)");
     }
 
     const result = [];
@@ -257,70 +190,6 @@ export function getStyleEntries(content: string, resolve: boolean = true): Map<s
     }
 
     return entries;
-}
-
-function extractArgs(value: string): string[] {
-    const args = [];
-    const len = value.length;
-    let dataState = true, start_index = 0, open = 0;
-
-    for (let i = 0; i < len; i++) {
-        const c = value[i];
-        if (dataState) {
-            if (c === ',') {
-                args.push(value.substring(start_index, i).trim());
-                start_index = i + 1;
-            } else if (c === '(') {
-                open = 1;
-                dataState = false;
-            }
-        } else {
-            if (c === '(') {
-                open++;
-            } else if (c === ')' && --open === 0){
-                dataState = true
-            }
-        }
-    }
-
-    if (start_index < len) {
-        args.push(value.substring(start_index, len).trim());
-    }
-
-    return args;
-}
-
-function replaceArgs(content: string, args: string[]): string {
-    const length = args.length;
-
-    if (length === 0) {
-        return content.replace(ARGS_REGEX, () => '');
-    }
-
-    return content.replace(ARGS_REGEX, (_: string, ...m: any[]): string => {
-        const index = parseInt(m[0]);
-        const fallback = m[1] || '';
-
-        if (index < 0 || index >= length || args[index] === '') {
-            return fallback;
-        }
-
-        return args[index];
-    })
-}
-
-function replaceReferences(content: string): string {
-    let m;
-
-    while (null !== (m = REF_REGEX.exec(content))) {
-        const variable = m[0];
-        const start = content.substring(0, m.index);
-        const end = content.substring(m.index + variable.length);
-        const value = rootElement.getPropertyValue(variable.replace('&', '--'));
-        content = start + value + end;
-    }
-
-    return content;
 }
 
 export function generateStyles(settings: UserSettings): string {
@@ -406,6 +275,58 @@ export function generateStyles(settings: UserSettings): string {
     }
 
     return content;
+}
+
+export function* getStyleProperties(content: string): Iterable<{property: string, name: string}> {
+    const base = STATE_LIST.length;
+
+    for (let attr of content.split(';')) {
+        const pos = attr.indexOf(':');
+        if (pos < 0) {
+            continue;
+        }
+
+        attr = attr.substr(0, pos).trim();
+
+        const m = PROPERTY_REGEX.exec(attr)?.groups;
+
+        if (!m || !m.property) {
+            continue;
+        }
+
+        const media = MEDIA_LIST.indexOf(m.media || 'all');
+        const state = STATE_LIST.indexOf(m.state || 'normal');
+
+        if (media < 0 || state < 0) {
+            continue;
+        }
+
+        let properties: string|string[] = m.property;
+
+        if (ALIASES.hasOwnProperty(properties)) {
+            properties = ALIASES[properties];
+        }
+
+        if (!Array.isArray(properties)) {
+            properties = [properties];
+        }
+
+        for (const property of properties) {
+            const name = PROPERTY_LIST.indexOf(property);
+
+            if (name < 0) {
+                continue;
+            }
+
+            const hash = (((name * base) + media) * base + state).toString(16);
+
+
+            yield {
+                name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                property: '--opis-' + hash,
+            };
+        }
+    }
 }
 
 export function getUserSettings(): UserSettings {
