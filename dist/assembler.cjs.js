@@ -653,15 +653,15 @@ function style(...styles) {
     let str = '';
     for (const item of styles) {
         if (typeof item === 'string') {
-            str += item.trim() + ';';
+            str += item.trim() + '; ';
         }
         else if (Array.isArray(item)) {
-            str += style(...item) + ';';
+            str += style(...item) + '; ';
         }
         else {
             for (const key in item) {
                 if (item.hasOwnProperty(key)) {
-                    str += key + ': ' + item[key] + ';';
+                    str += key + ':' + item[key] + '; ';
                 }
             }
         }
