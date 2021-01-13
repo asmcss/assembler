@@ -18,6 +18,28 @@ import {domObserver, generateStyles, getUserSettings, extract, getStyleEntries} 
 
 export {extract, getStyleEntries as parse};
 
+type StyleType = string|{[key: string]: string};
+
+export function style(...styles: (StyleType|StyleType[])[]): string {
+    let str = '';
+
+    for (const item of styles) {
+        if (typeof item === 'string') {
+            str += item.trim() + ';';
+        } else if (Array.isArray(item)) {
+            str += style(...item) + ';';
+        } else {
+            for (const key in item) {
+                if (item.hasOwnProperty(key)) {
+                    str += key + ': ' + item[key] + ';'
+                }
+            }
+        }
+    }
+
+    return str;
+}
+
 const settings = getUserSettings();
 
 if (settings.enabled) {

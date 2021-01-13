@@ -606,6 +606,25 @@ function getStringItemList(value, unique = true) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+function style(...styles) {
+    let str = '';
+    for (const item of styles) {
+        if (typeof item === 'string') {
+            str += item.trim() + ';';
+        }
+        else if (Array.isArray(item)) {
+            str += style(...item) + ';';
+        }
+        else {
+            for (const key in item) {
+                if (item.hasOwnProperty(key)) {
+                    str += key + ': ' + item[key] + ';';
+                }
+            }
+        }
+    }
+    return str;
+}
 const settings = getUserSettings();
 if (settings.enabled) {
     const style = document.createElement("style");
@@ -616,3 +635,4 @@ if (settings.enabled) {
 
 exports.extract = extract;
 exports.parse = getStyleEntries;
+exports.style = style;
