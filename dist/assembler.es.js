@@ -269,6 +269,7 @@ const ARGS_REGEX = /\${\s*(?<index>\d+)\s*(?:=(?<default>[^}]*))?}/g;
 const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
 const STYLE_ATTR = "x-style";
 const APPLY_ATTR = "x-apply";
+const OBSERVED_ATTRS = [STYLE_ATTR, APPLY_ATTR];
 const observedElements = new WeakMap();
 const rootElement = new class {
     constructor() {
@@ -326,7 +327,7 @@ function observe(element, deep = true) {
     if (style) {
         handleStyleChange(element, null, style.value);
     }
-    observer.observe(element, { attributes: true, attributeOldValue: true });
+    observer.observe(element, { attributes: true, attributeOldValue: true, attributeFilter: OBSERVED_ATTRS });
 }
 function handleStyleChange(element, oldContent, content) {
     if (content === null) {
