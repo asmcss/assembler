@@ -1,3 +1,2 @@
 dist/* linguist-generated
 src/restyle/*.scss linguist-detectable=false
-src/restyle/restyle.scss linguist-detectable
