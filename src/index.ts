@@ -23,23 +23,23 @@ export {extract, parse};
 type StyleType = string|{[key: string]: string};
 
 export function style(...styles: (StyleType|StyleType[])[]): string {
-    let str = '';
+    let str = [];
 
     for (const item of styles) {
         if (typeof item === 'string') {
-            str += item.trim() + '; ';
+            str.push(item.trim());
         } else if (Array.isArray(item)) {
-            str += style(...item) + '; ';
+            str.push(style(...item));
         } else {
             for (const key in item) {
                 if (item.hasOwnProperty(key)) {
-                    str += key + ':' + item[key] + '; '
+                    str.push(key + ':' + item[key]);
                 }
             }
         }
     }
 
-    return str;
+    return str.join('; ');
 }
 
 export function init(options?: {[key: string]: string}): boolean {
