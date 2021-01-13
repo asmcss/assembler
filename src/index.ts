@@ -3,7 +3,10 @@ import {domObserver, generateStyles, getUserSettings, extract, getStyleEntries} 
 export {extract, getStyleEntries as parse};
 
 const settings = getUserSettings();
-generateStyles(settings);
+
 if (settings.enabled) {
+    const style = document.createElement("style");
+    style.textContent = generateStyles(settings);
+    document.currentScript.parentElement.insertBefore(style, document.currentScript);
     domObserver.observe(document, {childList: true, subtree: true});
 }

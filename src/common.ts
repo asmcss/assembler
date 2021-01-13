@@ -3,7 +3,7 @@ import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS, ALIASES, VALUE
 type PropertyInfo = {entry: string, property: string, name: string, value: string|null};
 type UserSettings = {
     enabled: boolean,
-    generate: boolean,
+    cache: string|null,
     breakpoints: {mode: string, settings: object, enabled: string[]},
     states: {enabled: string[]}
 };
@@ -17,6 +17,7 @@ const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
 const STYLE_ATTR = "x-style";
 const APPLY_ATTR = "x-apply";
 const OBSERVED_ATTRS = [STYLE_ATTR, APPLY_ATTR];
+const CACHE_KEY = 'opis-assembler-cache';
 
 const observedElements = new WeakMap();
 
@@ -80,7 +81,7 @@ export function observe(element: HTMLElement, deep: boolean = true): void {
     const style = element.attributes.getNamedItem(STYLE_ATTR);
 
     if (apply) {
-        handleApplyAttribute(element, apply.value)
+        handleApplyAttribute(element, apply.value);
     }
 
     if (style) {
@@ -320,9 +321,30 @@ function replaceReferences(content: string): string {
     return content;
 }
 
-export function generateStyles(settings: UserSettings): void {
-    if (!settings.generate) {
-        return;
+export function generateStyles(settings: UserSettings): string {
+    let content: string|null = null;
+
+
+    if (settings.cache) {
+        content = localStorage.getItem(CACHE_KEY + ':' + settings.cache);
+
+        if (content !== null) {
+            return content;
+        }
+
+        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+        }
+
+        localStorage.setItem(CACHE_KEY, settings.cache);
+    } else {
+        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+            localStorage.removeItem(CACHE_KEY);
+        }
     }
 
     const base = STATE_LIST.length, result = [];
@@ -374,18 +396,24 @@ export function generateStyles(settings: UserSettings): void {
         result.push(str);
     }
 
-    const style = document.createElement("style");
-    style.textContent = result.join('');
-    document.currentScript.parentElement.insertBefore(style, document.currentScript);
+    content = result.join('');
+
+    if (settings.cache) {
+        localStorage.setItem('opis-assembler-cache', settings.cache);
+        localStorage.setItem('opis-assembler-cache:' + settings.cache, content);
+    }
+
+    return content;
 }
 
 export function getUserSettings(): UserSettings {
     const dataset = document.currentScript.dataset;
 
-    const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
+    //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
+    const cache = dataset.cache === undefined ? null : dataset.cache;
 
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
@@ -421,9 +449,11 @@ export function getUserSettings(): UserSettings {
     const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024");
     const xl = dataset.breakpointXl || "1280px";
 
+
     return  {
         enabled,
-        generate,
+        //generate,
+        cache,
         breakpoints: {
             mode,
             settings: {xs, sm, md, lg, xl},

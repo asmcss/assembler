@@ -270,6 +270,7 @@ const APPLY_REGEX = /^(?<name>[a-z][a-z0-9_\-]*)(?:\s*\((?<args>.*)?\))?$/i;
 const STYLE_ATTR = "x-style";
 const APPLY_ATTR = "x-apply";
 const OBSERVED_ATTRS = [STYLE_ATTR, APPLY_ATTR];
+const CACHE_KEY = 'opis-assembler-cache';
 const observedElements = new WeakMap();
 const rootElement = new class {
     constructor() {
@@ -509,8 +510,24 @@ function replaceReferences(content) {
     return content;
 }
 function generateStyles(settings) {
-    if (!settings.generate) {
-        return;
+    let content = null;
+    if (settings.cache) {
+        content = localStorage.getItem(CACHE_KEY + ':' + settings.cache);
+        if (content !== null) {
+            return content;
+        }
+        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+        }
+        localStorage.setItem(CACHE_KEY, settings.cache);
+    }
+    else {
+        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+            localStorage.removeItem(CACHE_KEY);
+        }
     }
     const base = STATE_LIST.length, result = [];
     const breakpoints = settings.breakpoints.enabled;
@@ -553,16 +570,20 @@ function generateStyles(settings) {
         }
         result.push(str);
     }
-    const style = document.createElement("style");
-    style.textContent = result.join('');
-    document.currentScript.parentElement.insertBefore(style, document.currentScript);
+    content = result.join('');
+    if (settings.cache) {
+        localStorage.setItem('opis-assembler-cache', settings.cache);
+        localStorage.setItem('opis-assembler-cache:' + settings.cache, content);
+    }
+    return content;
 }
 function getUserSettings() {
     const dataset = document.currentScript.dataset;
-    const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
+    //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
+    const cache = dataset.cache === undefined ? null : dataset.cache;
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
     if (isDesktopFirst) {
@@ -595,7 +616,8 @@ function getUserSettings() {
     const xl = dataset.breakpointXl || "1280px";
     return {
         enabled,
-        generate,
+        //generate,
+        cache,
         breakpoints: {
             mode,
             settings: { xs, sm, md, lg, xl },
@@ -619,8 +641,10 @@ function getStringItemList(value, unique = true) {
 }
 
 const settings = getUserSettings();
-generateStyles(settings);
 if (settings.enabled) {
+    const style = document.createElement("style");
+    style.textContent = generateStyles(settings);
+    document.currentScript.parentElement.insertBefore(style, document.currentScript);
     domObserver.observe(document, { childList: true, subtree: true });
 }
 
