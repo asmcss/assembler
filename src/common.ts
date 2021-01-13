@@ -113,30 +113,21 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
         return handleStyleRemoved(element, oldContent);
     }
 
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME)
-        ? element.getAttribute(X_ATTR_NAME).split(' ')
-        : [];
-
-    const styleEntries = oldContent === null ? new Map<string, PropertyInfo>() : getStyleEntries(oldContent);
+    const styleEntries = oldContent === null ? new Map<string, PropertyInfo>() : getStyleEntries(oldContent, false);
     const newEntries = getStyleEntries(content);
 
     // remove old entries
-    for (const [name, attr] of styleEntries) {
+    for (const {name, property} of styleEntries.values()) {
         if (newEntries.has(name)) {
             continue;
         }
-        const {property, entry} = attr;
-        opis_attrs.splice(opis_attrs.indexOf(entry), 1);
         element.style.removeProperty(property);
     }
 
-    for (const attr of newEntries.values()) {
-        const {property, entry, value} = attr;
+    const opis_attrs = [];
 
-        if (opis_attrs.indexOf(entry) < 0) {
-            opis_attrs.push(entry);
-        }
-
+    for (const {property, entry, value} of newEntries.values()) {
+        opis_attrs.push(entry);
         element.style.setProperty(property, value);
     }
 
@@ -145,16 +136,11 @@ function handleStyleChange(element: HTMLElement, oldContent: string|null, conten
 
 function handleStyleRemoved(element: HTMLElement, content: string): void {
 
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME)
-        ? element.getAttribute(X_ATTR_NAME).split(' ')
-        : [];
-
-    for (const attr of getStyleEntries(content).values()) {
-        opis_attrs.splice(opis_attrs.indexOf(attr.entry), 1);
-        element.style.removeProperty(attr.property);
+    for (const {property} of getStyleEntries(content, false).values()) {
+        element.style.removeProperty(property);
     }
 
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
+    element.removeAttribute(X_ATTR_NAME);
 }
 
 function handleApplyAttribute(element: HTMLElement, content: string): void {

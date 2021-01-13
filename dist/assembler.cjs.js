@@ -368,38 +368,27 @@ function handleStyleChange(element, oldContent, content) {
     if (content === null) {
         return handleStyleRemoved(element, oldContent);
     }
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME)
-        ? element.getAttribute(X_ATTR_NAME).split(' ')
-        : [];
-    const styleEntries = oldContent === null ? new Map() : getStyleEntries(oldContent);
+    const styleEntries = oldContent === null ? new Map() : getStyleEntries(oldContent, false);
     const newEntries = getStyleEntries(content);
     // remove old entries
-    for (const [name, attr] of styleEntries) {
+    for (const { name, property } of styleEntries.values()) {
         if (newEntries.has(name)) {
             continue;
         }
-        const { property, entry } = attr;
-        opis_attrs.splice(opis_attrs.indexOf(entry), 1);
         element.style.removeProperty(property);
     }
-    for (const attr of newEntries.values()) {
-        const { property, entry, value } = attr;
-        if (opis_attrs.indexOf(entry) < 0) {
-            opis_attrs.push(entry);
-        }
+    const opis_attrs = [];
+    for (const { property, entry, value } of newEntries.values()) {
+        opis_attrs.push(entry);
         element.style.setProperty(property, value);
     }
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
 }
 function handleStyleRemoved(element, content) {
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME)
-        ? element.getAttribute(X_ATTR_NAME).split(' ')
-        : [];
-    for (const attr of getStyleEntries(content).values()) {
-        opis_attrs.splice(opis_attrs.indexOf(attr.entry), 1);
-        element.style.removeProperty(attr.property);
+    for (const { property } of getStyleEntries(content, false).values()) {
+        element.style.removeProperty(property);
     }
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
+    element.removeAttribute(X_ATTR_NAME);
 }
 function handleApplyAttribute(element, content) {
     var _a;
