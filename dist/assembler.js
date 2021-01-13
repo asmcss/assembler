@@ -302,44 +302,6 @@
     const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
     const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
     const STYLE_ATTR = "x-style";
-    const CACHE_KEY = 'opis-assembler-cache';
-    const observedElements = new WeakMap();
-    const domObserver = new MutationObserver(function (mutations) {
-        for (let i = 0, l = mutations.length; i < l; i++) {
-            const nodes = mutations[i].addedNodes;
-            for (let i = 0; i < nodes.length; i++) {
-                if (nodes[i] instanceof HTMLElement) {
-                    observe(nodes[i]);
-                }
-            }
-        }
-    });
-    const observer = new MutationObserver(function (mutations) {
-        for (const mutation of mutations) {
-            if (mutation.attributeName !== STYLE_ATTR) {
-                continue;
-            }
-            const target = mutation.target;
-            const newValue = target.getAttribute(mutation.attributeName);
-            handleStyleChange(target, mutation.oldValue, newValue);
-        }
-    });
-    function observe(element, deep = true) {
-        if (deep) {
-            for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
-                observe(child, true);
-            }
-        }
-        if (observedElements.has(element)) {
-            return;
-        }
-        observedElements.set(element, null);
-        const style = element.attributes.getNamedItem(STYLE_ATTR);
-        if (style) {
-            handleStyleChange(element, null, style.value);
-        }
-        observer.observe(element, { attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR] });
-    }
     function handleStyleChange(element, oldContent, content) {
         if (content === null) {
             return handleStyleRemoved(element, oldContent);
@@ -424,6 +386,61 @@
         }
         return entries;
     }
+    function* getStyleProperties(content) {
+        var _a;
+        const base = STATE_LIST.length;
+        for (let attr of content.split(';')) {
+            const pos = attr.indexOf(':');
+            if (pos < 0) {
+                continue;
+            }
+            attr = attr.substr(0, pos).trim();
+            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+            if (!m || !m.property) {
+                continue;
+            }
+            const media = MEDIA_LIST.indexOf(m.media || 'all');
+            const state = STATE_LIST.indexOf(m.state || 'normal');
+            if (media < 0 || state < 0) {
+                continue;
+            }
+            let properties = m.property;
+            if (ALIASES.hasOwnProperty(properties)) {
+                properties = ALIASES[properties];
+            }
+            if (!Array.isArray(properties)) {
+                properties = [properties];
+            }
+            for (const property of properties) {
+                const name = PROPERTY_LIST.indexOf(property);
+                if (name < 0) {
+                    continue;
+                }
+                const hash = (((name * base) + media) * base + state).toString(16);
+                yield {
+                    name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                    property: HASH_VAR_PREFIX + hash,
+                };
+            }
+        }
+    }
+
+    /*
+     * Copyright 2021 Zindex Software
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *    http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const CACHE_KEY = 'opis-assembler-cache';
     function generateStyles(settings) {
         let content = null;
         if (settings.cache) {
@@ -487,48 +504,10 @@
         }
         content = result.join('');
         if (settings.cache) {
-            localStorage.setItem('opis-assembler-cache', settings.cache);
-            localStorage.setItem('opis-assembler-cache:' + settings.cache, content);
+            localStorage.setItem(CACHE_KEY, settings.cache);
+            localStorage.setItem(CACHE_KEY + ':' + settings.cache, content);
         }
         return content;
-    }
-    function* getStyleProperties(content) {
-        var _a;
-        const base = STATE_LIST.length;
-        for (let attr of content.split(';')) {
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                continue;
-            }
-            attr = attr.substr(0, pos).trim();
-            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-            if (!m || !m.property) {
-                continue;
-            }
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-            if (media < 0 || state < 0) {
-                continue;
-            }
-            let properties = m.property;
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-            }
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-                if (name < 0) {
-                    continue;
-                }
-                const hash = (((name * base) + media) * base + state).toString(16);
-                yield {
-                    name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                };
-            }
-        }
     }
     function getUserSettings(dataset) {
         //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
@@ -607,6 +586,71 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    let _documentObserver = null;
+    let _elementObserver = null;
+    const observedElements = new WeakMap();
+    function observeDocument(document, options) {
+        if (_documentObserver === null) {
+            _documentObserver = new MutationObserver(function (mutations) {
+                for (let i = 0, l = mutations.length; i < l; i++) {
+                    const nodes = mutations[i].addedNodes;
+                    for (let i = 0; i < nodes.length; i++) {
+                        if (nodes[i] instanceof HTMLElement) {
+                            observe(nodes[i]);
+                        }
+                    }
+                }
+            });
+        }
+        _documentObserver.observe(document, options);
+    }
+    function observeElement(element, options) {
+        if (_elementObserver === null) {
+            _elementObserver = new MutationObserver(function (mutations) {
+                for (const mutation of mutations) {
+                    if (mutation.attributeName !== STYLE_ATTR) {
+                        continue;
+                    }
+                    const target = mutation.target;
+                    const newValue = target.getAttribute(mutation.attributeName);
+                    handleStyleChange(target, mutation.oldValue, newValue);
+                }
+            });
+        }
+        _elementObserver.observe(element, options);
+    }
+    function observe(element, deep = true) {
+        if (deep) {
+            for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
+                observe(child, true);
+            }
+        }
+        if (observedElements.has(element)) {
+            return;
+        }
+        observedElements.set(element, null);
+        const style = element.attributes.getNamedItem(STYLE_ATTR);
+        if (style) {
+            handleStyleChange(element, null, style.value);
+        }
+        observeElement(element, { attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR] });
+    }
+
+    /*
+     * Copyright 2021 Zindex Software
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *    http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     function style(...styles) {
         let str = '';
         for (const item of styles) {
@@ -634,7 +678,7 @@
         const style = document.createElement("style");
         style.textContent = generateStyles(settings);
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
-        domObserver.observe(document, { childList: true, subtree: true });
+        observeDocument(document, { childList: true, subtree: true });
         return true;
     }
     if (typeof window !== 'undefined') {

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import {domObserver, generateStyles, getUserSettings, extract, getStyleEntries} from "./common";
+import {generateStyles, getUserSettings} from "./common";
+import {observeDocument} from "./observers";
+import {extract, getStyleEntries as parse} from "./handlers";
 
-export {extract, getStyleEntries as parse};
+export {extract, parse};
 
 type StyleType = string|{[key: string]: string};
 
@@ -50,8 +52,7 @@ export function init(options?: {[key: string]: string}): boolean {
     const style = document.createElement("style");
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
-    domObserver.observe(document, {childList: true, subtree: true});
-
+    observeDocument(document, {childList: true, subtree: true});
     return true;
 }
 

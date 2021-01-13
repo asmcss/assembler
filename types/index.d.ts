@@ -1,5 +1,5 @@
-import { extract, getStyleEntries } from "./common";
-export { extract, getStyleEntries as parse };
+import { extract, getStyleEntries as parse } from "./handlers";
+export { extract, parse };
 declare type StyleType = string | {
     [key: string]: string;
 };
