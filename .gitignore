@@ -1,5 +1,6 @@
 .idea
 *.html
+!__tests__/*.html
 
 # Logs
 logs
