@@ -329,9 +329,7 @@ export function* getStyleProperties(content: string): Iterable<{property: string
     }
 }
 
-export function getUserSettings(): UserSettings {
-    const dataset = document.currentScript.dataset;
-
+export function getUserSettings(dataset: {[key: string]: string}): UserSettings {
     //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const mode = dataset.mode || 'desktop-first';

@@ -40,11 +40,22 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
     return str;
 }
 
-const settings = getUserSettings();
+export function init(options?: {[key: string]: string}): boolean {
+    const settings = getUserSettings(options || document.currentScript.dataset);
 
-if (settings.enabled) {
+    if (!settings.enabled) {
+        return false;
+    }
+
     const style = document.createElement("style");
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
     domObserver.observe(document, {childList: true, subtree: true});
+
+    return true;
 }
+
+if (typeof window !== 'undefined') {
+    init();
+}
+

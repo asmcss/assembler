@@ -530,8 +530,7 @@
             }
         }
     }
-    function getUserSettings() {
-        const dataset = document.currentScript.dataset;
+    function getUserSettings(dataset) {
         //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
         const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
         const mode = dataset.mode || 'desktop-first';
@@ -627,15 +626,23 @@
         }
         return str;
     }
-    const settings = getUserSettings();
-    if (settings.enabled) {
+    function init(options) {
+        const settings = getUserSettings(options || document.currentScript.dataset);
+        if (!settings.enabled) {
+            return false;
+        }
         const style = document.createElement("style");
         style.textContent = generateStyles(settings);
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
         domObserver.observe(document, { childList: true, subtree: true });
+        return true;
+    }
+    if (typeof window !== 'undefined') {
+        init();
     }
 
     exports.extract = extract;
+    exports.init = init;
     exports.parse = getStyleEntries;
     exports.style = style;
 

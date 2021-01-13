@@ -25,5 +25,7 @@ export declare function getStyleProperties(content: string): Iterable<{
     property: string;
     name: string;
 }>;
-export declare function getUserSettings(): UserSettings;
+export declare function getUserSettings(dataset: {
+    [key: string]: string;
+}): UserSettings;
 export {};
