@@ -155,6 +155,32 @@
         "column-gap": ["-moz-column-gap"],
         "user-select": ["-webkit-user-select", "-moz-user-select"],
     };
+    const STATE_LIST = [
+        "normal",
+        "link",
+        "visited",
+        "empty",
+        "placeholder-shown",
+        "default",
+        "checked",
+        "indeterminate",
+        "valid",
+        "invalid",
+        "required",
+        "optional",
+        "out-of-range",
+        "in-range",
+        "hover",
+        "focus",
+        "focus-within",
+        "focus-visible",
+        "active",
+        "read-only",
+        "read-write",
+        "disabled",
+        "enabled",
+    ];
+    const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
     const ALIASES = {
         "backdrop": "backdrop-filter",
         "bg": "background",
@@ -166,7 +192,6 @@
         "bg-position": "background-position",
         "bg-repeat": "background-repeat",
         "bg-size": "background-size",
-        "break-normal": ["overflow-wrap", "word-break"],
         "radius": "border-radius",
         "radius-top": ["border-top-left-radius", "border-top-right-radius"],
         "radius-bottom": ["border-bottom-left-radius", "border-bottom-right-radius"],
@@ -223,35 +248,21 @@
         "ws": "whitespace",
         "ring": "box-shadow",
         "leading": "line-height",
-        "tracking": "letter-spacing"
+        "tracking": "letter-spacing",
+        "break": v => {
+            if (v === "normal")
+                return ["overflow-wrap", "word-break"];
+            if (v === "words")
+                return ["overflow-wrap"];
+            if (v === "all")
+                return ["word-break"];
+            return [];
+        },
+        "truncate": ["overflow", "text-overflow", "white-space"]
     };
-    const STATE_LIST = [
-        "normal",
-        "link",
-        "visited",
-        "empty",
-        "placeholder-shown",
-        "default",
-        "checked",
-        "indeterminate",
-        "valid",
-        "invalid",
-        "required",
-        "optional",
-        "out-of-range",
-        "in-range",
-        "hover",
-        "focus",
-        "focus-within",
-        "focus-visible",
-        "active",
-        "read-only",
-        "read-write",
-        "disabled",
-        "enabled",
-    ];
-    const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
-    const DEFAULT_VALUES = {};
+    const DEFAULT_VALUES = {
+        "truncate": ["hidden", "ellipsis", "nowrap"]
+    };
     const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
     const grid_rowspan = v => `span ${v}`;
     const elevation = v => /^[0-9]|1[0-9]|2[0-4]$/.test(v) ? `@elevation-${v}` : v;
@@ -260,6 +271,13 @@
     const lineHeight = v => /^(none|tight|snug|normal|relaxed|loose)$/.test(v) ? "@line-height-" + v : v;
     const letterSpacing = v => /^(tighter|tight|normal|wide|wider|widest)$/.test(v) ? "@letter-spacing-" + v : v;
     const radius = v => /^(xs|sm|md|lg|xl)$/.test(v) ? "@border-radius-" + v : v;
+    const breakCallback = v => {
+        if (v === "normal")
+            return ["normal", "normal"];
+        if (v === "words")
+            return "break-word";
+        return "break-all";
+    };
     const VALUE_WRAPPER = {
         "gradient": (value) => `linear-gradient(${value})`,
         "radial-gradient": (value) => `radial-gradient(${value})`,
@@ -282,6 +300,7 @@
         "radius-bl": radius,
         "radius-tr": radius,
         "radius-br": radius,
+        "break": breakCallback,
     };
 
     /*
@@ -345,6 +364,9 @@
         const original = properties;
         if (ALIASES.hasOwnProperty(properties)) {
             properties = ALIASES[properties];
+            if (typeof properties === 'function') {
+                properties = properties(value);
+            }
         }
         if (!Array.isArray(properties)) {
             properties = [properties];
@@ -355,10 +377,17 @@
         if (VALUE_WRAPPER.hasOwnProperty(original)) {
             value = VALUE_WRAPPER[original](value, original, media, state);
         }
-        value = value.replace(VAR_REGEX, "var(--$1)");
+        if (!Array.isArray(value)) {
+            value = [value.replace(VAR_REGEX, "var(--$1)")];
+        }
+        else {
+            value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
+        }
         const result = [];
         const base = STATE_LIST.length;
+        let index = -1;
         for (const property of properties) {
+            index++;
             const name = PROPERTY_LIST.indexOf(property);
             if (name < 0) {
                 continue;
@@ -368,7 +397,7 @@
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
                 entry: 'x' + hash,
-                value,
+                value: value[index],
             });
         }
         return result;
@@ -396,12 +425,15 @@
         var _a;
         const base = STATE_LIST.length;
         for (let attr of content.split(';')) {
+            let value = null;
             const pos = attr.indexOf(':');
             if (pos < 0) {
                 attr = attr.trim();
             }
             else {
-                attr = attr.substr(0, pos).trim();
+                const p = attr.split(':');
+                attr = p.shift().trim();
+                value = p.join(':');
             }
             const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
             if (!m || !m.property) {
@@ -415,6 +447,9 @@
             let properties = m.property;
             if (ALIASES.hasOwnProperty(properties)) {
                 properties = ALIASES[properties];
+                if (typeof properties === 'function') {
+                    properties = properties(value);
+                }
             }
             if (!Array.isArray(properties)) {
                 properties = [properties];

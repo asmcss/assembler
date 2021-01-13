@@ -6,6 +6,8 @@ export declare const PROPERTY_VARIANTS: {
     "column-gap": string[];
     "user-select": string[];
 };
+export declare const STATE_LIST: string[];
+export declare const MEDIA_LIST: string[];
 export declare const ALIASES: {
     backdrop: string;
     bg: string;
@@ -17,7 +19,6 @@ export declare const ALIASES: {
     "bg-position": string;
     "bg-repeat": string;
     "bg-size": string;
-    "break-normal": string[];
     radius: string;
     "radius-top": string[];
     "radius-bottom": string[];
@@ -75,10 +76,12 @@ export declare const ALIASES: {
     ring: string;
     leading: string;
     tracking: string;
+    break: (v: any) => string[];
+    truncate: string[];
 };
-export declare const STATE_LIST: string[];
-export declare const MEDIA_LIST: string[];
-export declare const DEFAULT_VALUES: {};
+export declare const DEFAULT_VALUES: {
+    truncate: string[];
+};
 export declare const VALUE_WRAPPER: {
     gradient: (value: any) => string;
     "radial-gradient": (value: any) => string;
@@ -101,4 +104,5 @@ export declare const VALUE_WRAPPER: {
     "radius-bl": (v: any) => any;
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
+    break: (v: any) => string[] | "break-word" | "break-all";
 };

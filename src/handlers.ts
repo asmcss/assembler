@@ -60,7 +60,7 @@ export function handleStyleRemoved(element: HTMLElement, content: string): void 
     element.removeAttribute(X_ATTR_NAME);
 }
 
-export function extract(attr: string, value: string|null = null): PropertyInfo[] {
+export function extract(attr: string, value: string|string[]|null = null): PropertyInfo[] {
     const m = PROPERTY_REGEX.exec(attr)?.groups;
 
     if (!m || !m.property) {
@@ -79,6 +79,9 @@ export function extract(attr: string, value: string|null = null): PropertyInfo[]
 
     if (ALIASES.hasOwnProperty(properties)) {
         properties = ALIASES[properties];
+        if (typeof properties === 'function') {
+            properties = (properties as (a: string|null) => string[])(value as string|null);
+        }
     }
 
     if (!Array.isArray(properties)) {
@@ -91,12 +94,18 @@ export function extract(attr: string, value: string|null = null): PropertyInfo[]
     if (VALUE_WRAPPER.hasOwnProperty(original)) {
         value = VALUE_WRAPPER[original](value, original, media, state);
     }
-    value = value.replace(VAR_REGEX, "var(--$1)");
+    if (!Array.isArray(value)) {
+        value = [value.replace(VAR_REGEX, "var(--$1)")];
+    } else {
+        value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
+    }
 
     const result = [];
     const base = STATE_LIST.length;
 
+    let index = -1;
     for (const property of properties) {
+        index++;
         const name = PROPERTY_LIST.indexOf(property);
 
         if (name < 0) {
@@ -109,7 +118,7 @@ export function extract(attr: string, value: string|null = null): PropertyInfo[]
             name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
             property: HASH_VAR_PREFIX + hash,
             entry: 'x' + hash,
-            value,
+            value: value[index],
         });
     }
 
@@ -144,11 +153,14 @@ export function* getStyleProperties(content: string): Iterable<{property: string
     const base = STATE_LIST.length;
 
     for (let attr of content.split(';')) {
+        let value = null;
         const pos = attr.indexOf(':');
         if (pos < 0) {
             attr = attr.trim();
         } else {
-            attr = attr.substr(0, pos).trim();
+            const p = attr.split(':');
+            attr = p.shift().trim();
+            value = p.join(':');
         }
 
         const m = PROPERTY_REGEX.exec(attr)?.groups;
@@ -168,6 +180,9 @@ export function* getStyleProperties(content: string): Iterable<{property: string
 
         if (ALIASES.hasOwnProperty(properties)) {
             properties = ALIASES[properties];
+            if (typeof properties === 'function') {
+                properties = (properties as (a: string|null) => string[])(value as string|null);
+            }
         }
 
         if (!Array.isArray(properties)) {

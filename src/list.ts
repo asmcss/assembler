@@ -150,6 +150,41 @@ export const PROPERTY_VARIANTS = {
     "column-gap": ["-moz-column-gap"],
     "user-select": ["-webkit-user-select", "-moz-user-select"],
 };
+export const STATE_LIST = [
+    "normal",
+
+    "link",
+    "visited",
+
+    "empty",
+    "placeholder-shown",
+
+    "default",
+    "checked",
+    "indeterminate",
+
+    "valid",
+    "invalid",
+
+    "required",
+    "optional",
+
+    "out-of-range",
+    "in-range",
+
+    "hover",
+    "focus",
+    "focus-within",
+    "focus-visible",
+    "active",
+
+    "read-only",
+    "read-write",
+
+    "disabled",
+    "enabled",
+];
+export const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
 export const ALIASES = {
     "backdrop": "backdrop-filter",
     "bg": "background",
@@ -161,7 +196,6 @@ export const ALIASES = {
     "bg-position": "background-position",
     "bg-repeat": "background-repeat",
     "bg-size": "background-size",
-    "break-normal": ["overflow-wrap", "word-break"],
     "radius": "border-radius",
     "radius-top": ["border-top-left-radius", "border-top-right-radius"],
     "radius-bottom": ["border-bottom-left-radius", "border-bottom-right-radius"],
@@ -218,44 +252,17 @@ export const ALIASES = {
     "ws": "whitespace",
     "ring": "box-shadow",
     "leading": "line-height",
-    "tracking": "letter-spacing"
+    "tracking": "letter-spacing",
+    "break": v => {
+        if (v === "normal") return ["overflow-wrap", "word-break"];
+        if (v === "words") return ["overflow-wrap"];
+        if (v === "all") return ["word-break"];
+        return [];
+    },
+    "truncate": ["overflow", "text-overflow", "white-space"]
 };
-export const STATE_LIST = [
-    "normal",
-
-    "link",
-    "visited",
-
-    "empty",
-    "placeholder-shown",
-
-    "default",
-    "checked",
-    "indeterminate",
-
-    "valid",
-    "invalid",
-
-    "required",
-    "optional",
-
-    "out-of-range",
-    "in-range",
-
-    "hover",
-    "focus",
-    "focus-within",
-    "focus-visible",
-    "active",
-
-    "read-only",
-    "read-write",
-
-    "disabled",
-    "enabled",
-];
-export const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
 export const DEFAULT_VALUES = {
+    "truncate": ["hidden", "ellipsis", "nowrap"]
 }
 
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
@@ -266,6 +273,11 @@ const fontSize = v => /^(xs|sm|base|lg|([2-6])?xl)$/.test(v) ? "@font-size-" + v
 const lineHeight = v => /^(none|tight|snug|normal|relaxed|loose)$/.test(v) ? "@line-height-" + v : v;
 const letterSpacing = v => /^(tighter|tight|normal|wide|wider|widest)$/.test(v) ? "@letter-spacing-" + v : v;
 const radius = v => /^(xs|sm|md|lg|xl)$/.test(v) ? "@border-radius-" + v : v;
+const breakCallback = v => {
+    if (v === "normal") return ["normal", "normal"];
+    if (v === "words") return "break-word";
+    return "break-all";
+};
 
 export const VALUE_WRAPPER = {
     "gradient": (value) => `linear-gradient(${value})`,
@@ -289,4 +301,5 @@ export const VALUE_WRAPPER = {
     "radius-bl": radius,
     "radius-tr": radius,
     "radius-br": radius,
+    "break": breakCallback,
 };

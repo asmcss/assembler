@@ -11,7 +11,7 @@ export declare const PROPERTY_REGEX: RegExp;
 export declare const STYLE_ATTR = "x-style";
 export declare function handleStyleChange(element: HTMLElement, oldContent: string | null, content: string | null): void;
 export declare function handleStyleRemoved(element: HTMLElement, content: string): void;
-export declare function extract(attr: string, value?: string | null): PropertyInfo[];
+export declare function extract(attr: string, value?: string | string[] | null): PropertyInfo[];
 export declare function getStyleEntries(content: string, resolve?: boolean): Map<string, PropertyInfo>;
 export declare function getStyleProperties(content: string): Iterable<{
     property: string;
