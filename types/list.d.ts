@@ -2,9 +2,11 @@ export declare const PROPERTY_LIST: string[];
 export declare const PROPERTY_VARIANTS: {
     animation: string[];
     appearance: string[];
+    "background-clip": string[];
     "backdrop-filter": string[];
     "column-gap": string[];
     "user-select": string[];
+    "text-fill-color": string[];
 };
 export declare const STATE_LIST: string[];
 export declare const MEDIA_LIST: string[];
@@ -78,9 +80,11 @@ export declare const ALIASES: {
     tracking: string;
     break: (v: any) => string[];
     truncate: string[];
+    "text-clip": string[];
 };
 export declare const DEFAULT_VALUES: {
     truncate: string[];
+    "text-clip": string[];
 };
 export declare const VALUE_WRAPPER: {
     gradient: (value: any) => string;

@@ -149,9 +149,11 @@ const PROPERTY_LIST = [
 const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
     "appearance": ["-webkit-appearance", "-moz-appearance"],
+    "background-clip": ["-webkit-background-clip", "-moz-background-clip"],
     "backdrop-filter": ["-webkit-backdrop-filter"],
     "column-gap": ["-moz-column-gap"],
     "user-select": ["-webkit-user-select", "-moz-user-select"],
+    "text-fill-color": ["-webkit-text-fill-color", "-moz-text-fill-color"]
 };
 const STATE_LIST = [
     "normal",
@@ -256,10 +258,12 @@ const ALIASES = {
             return ["word-break"];
         return [];
     },
-    "truncate": ["overflow", "text-overflow", "white-space"]
+    "truncate": ["overflow", "text-overflow", "white-space"],
+    "text-clip": ["background-clip", "text-fill-color"],
 };
 const DEFAULT_VALUES = {
-    "truncate": ["hidden", "ellipsis", "nowrap"]
+    "truncate": ["hidden", "ellipsis", "nowrap"],
+    "text-clip": ["text", "transparent"]
 };
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;
