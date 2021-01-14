@@ -913,6 +913,11 @@ const rootElement = new class {
         return this.styles;
     }
     getPropertyValue(property) {
+        const mixins = window['OPIS_ASSEMBLER_MIXINS'] || {};
+        if (mixins.hasOwnProperty(property)) {
+            return mixins[property];
+        }
+        property = '--' + property;
         let value = this.getComputedStyle().getPropertyValue(property).trim();
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1).trim();
@@ -922,7 +927,7 @@ const rootElement = new class {
 };
 function implicitMixin(...names) {
     return names
-        .map(name => rootElement.getPropertyValue('--' + name))
+        .map(name => rootElement.getPropertyValue(name))
         .filter(v => v !== '')
         .join(';');
 }
