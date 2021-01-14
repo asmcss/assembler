@@ -64,7 +64,7 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
 
 function extractMixins(value: string): Map<string, Mixin> {
     const mixins = new Map<string, Mixin>();
-    const values = value.split(';').map(v => v.trim());
+    const values = value.split(';').map(v => v.trim()).filter(v => v !== '');
 
     for (let i = 0, l = values.length; i < l; i++) {
         const mixin = values[i];
@@ -95,13 +95,16 @@ const rootElement = new class {
         let value = this.getComputedStyle().getPropertyValue(property).trim();
 
         if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.substring(1, value.length - 1);
+            value = value.substring(1, value.length - 1).trim();
         }
 
         return value;
     }
 };
 
-export function implicitMixin(name: string): string {
-    return rootElement.getPropertyValue('--' + name);
+export function implicitMixin(...names: string[]): string {
+    return names
+        .map(name => rootElement.getPropertyValue('--' + name))
+        .filter(v => v !== '')
+        .join(';');
 }

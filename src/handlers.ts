@@ -134,7 +134,7 @@ export function extract(attr: string, value: string|string[]|null = null): Prope
 export function getStyleEntries(content: string, resolve: boolean = true): Map<string, PropertyInfo> {
     const entries = new Map<string, PropertyInfo>();
 
-    const attrs = content.split(';');
+    const attrs = content.split(';').map(v => v.trim()).filter(v => v !== '');
 
     for (let name of attrs) {
         let value = null;

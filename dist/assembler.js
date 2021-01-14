@@ -441,7 +441,7 @@
     }
     function getStyleEntries(content, resolve = true) {
         const entries = new Map();
-        const attrs = content.split(';');
+        const attrs = content.split(';').map(v => v.trim()).filter(v => v !== '');
         for (let name of attrs) {
             let value = null;
             if (name.indexOf(':') > 0) {
@@ -870,7 +870,7 @@
     }
     function extractMixins(value) {
         const mixins = new Map();
-        const values = value.split(';').map(v => v.trim());
+        const values = value.split(';').map(v => v.trim()).filter(v => v !== '');
         for (let i = 0, l = values.length; i < l; i++) {
             const mixin = values[i];
             if (mixin.indexOf(':') < 0) {
@@ -898,13 +898,16 @@
         getPropertyValue(property) {
             let value = this.getComputedStyle().getPropertyValue(property).trim();
             if (value.startsWith('"') && value.endsWith('"')) {
-                value = value.substring(1, value.length - 1);
+                value = value.substring(1, value.length - 1).trim();
             }
             return value;
         }
     };
-    function implicitMixin(name) {
-        return rootElement.getPropertyValue('--' + name);
+    function implicitMixin(...names) {
+        return names
+            .map(name => rootElement.getPropertyValue('--' + name))
+            .filter(v => v !== '')
+            .join(';');
     }
 
     /*
