@@ -69,16 +69,6 @@
     @return #fff;
 }
 
-@function setElevation($i, $elevation-umbra-map, $elevation-penumbra-map, $elevation-ambient-map) {
-    $umbra: map-get($elevation-umbra-map, $i);
-    $penumbra: map-get($elevation-penumbra-map, $i);
-    $ambient: map-get($elevation-ambient-map, $i);
-    $result: #{$umbra} var(--elevation-umbra),
-    #{$penumbra} var(--elevation-penumbra),
-    #{$ambient} var(--elevation-ambient);
-    @return $result;
-}
-
 @function implode-list($list, $separator: '') {
     $len: length($list);
 

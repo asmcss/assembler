@@ -65,6 +65,7 @@ const PROPERTY_LIST = [
     "font-size",
     "font-style",
     "font-weight",
+    "font-variant-numeric",
     "gap",
     "grid",
     "grid-area",
@@ -144,7 +145,18 @@ const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
-    "z-index"
+    "z-index",
+    "-opis-grid",
+    "-opis-space-x",
+    "-opis-space-y",
+    "-opis-space-top",
+    "-opis-space-bottom",
+    "-opis-space-left",
+    "-opis-space-right",
+    "-opis-background-clip-text",
+    "-opis-sr-only",
+    "-opis-not-sr-only",
+    "-opis-stack",
 ];
 const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -259,11 +271,24 @@ const ALIASES = {
         return [];
     },
     "truncate": ["overflow", "text-overflow", "white-space"],
-    "text-clip": ["background-clip", "text-fill-color"],
+    "text-clip": ["-opis-background-clip-text", "text-fill-color"],
+    "grid": "-opis-grid",
+    "space-x": "-opis-space-left",
+    "space-y": "-opis-space-top",
+    "space-x-rev": "-opis-space-right",
+    "space-y-rev": "-opis-space-bottom",
+    "space-x-alt": "-opis-space-y",
+    "space-y-alt": "-opis-space-y",
+    "sr-only": v => {
+        if (v === "false")
+            return "-opis-not-sr-only";
+        return "-opis-sr-only";
+    },
+    "stack": "-opis-stack"
 };
 const DEFAULT_VALUES = {
     "truncate": ["hidden", "ellipsis", "nowrap"],
-    "text-clip": ["text", "transparent"]
+    "text-clip": ["text", "transparent"],
 };
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;
@@ -303,6 +328,7 @@ const VALUE_WRAPPER = {
     "radius-tr": radius,
     "radius-br": radius,
     "break": breakCallback,
+    "grid": v => "grid",
 };
 
 /*
@@ -485,7 +511,165 @@ function* getStyleProperties(content) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const ELEVATION_UMBRA = [
+    "0px 0px 0px 0px", "0px 2px 1px -1px", "0px 3px 1px -2px", "0px 3px 3px -2px", "0px 2px 4px -1px",
+    "0px 3px 5px -1px", "0px 3px 5px -1px", "0px 4px 5px -2px", "0px 5px 5px -3px", "0px 5px 6px -3px",
+    "0px 6px 6px -3px", "0px 6px 7px -4px", "0px 7px 8px -4px", "0px 7px 8px -4px", "0px 7px 9px -4px",
+    "0px 8px 9px -5px", "0px 8px 10px -5px", "0px 8px 11px -5px", "0px 9px 11px -5px", "0px 9px 12px -6px",
+    "0px 10px 13px -6px", "0px 10px 13px -6px", "0px 10px 14px -6px", "0px 11px 14px -7px", "0px 11px 15px -7px"
+];
+const ELEVATION_PENUMBRA = [
+    "0px 0px 0px 0px", "0px 1px 1px 0px", "0px 2px 2px 0px", "0px 3px 4px 0px", "0px 4px 5px 0px", "0px 5px 8px 0px",
+    "0px 6px 10px 0px", "0px 7px 10px 1px", "0px 8px 10px 1px", "0px 9px 12px 1px", "0px 10px 14px 1px",
+    "0px 11px 15px 1px", "0px 12px 17px 2px", "0px 13px 19px 2px", "0px 14px 21px 2px", "0px 15px 22px 2px",
+    "0px 16px 24px 2px", "0px 17px 26px 2px", "0px 18px 28px 2px", "0px 19px 29px 2px", "0px 20px 31px 3px",
+    "0px 21px 33px 3px", "0px 22px 35px 3px", "0px 23px 36px 3px", "0px 24px 38px 3px"
+];
+const ELEVATION_AMBIENT = [
+    "0px 0px 0px 0px", "0px 1px 3px 0px", "0px 1px 5px 0px", "0px 1px 8px 0px", "0px 1px 10px 0px", "0px 1px 14px 0px",
+    "0px 1px 18px 0px", "0px 2px 16px 1px", "0px 3px 14px 2px", "0px 3px 16px 2px", "0px 4px 18px 3px",
+    "0px 4px 20px 3px", "0px 5px 22px 4px", "0px 5px 24px 4px", "0px 5px 26px 4px", "0px 6px 28px 5px",
+    "0px 6px 30px 5px", "0px 6px 32px 5px", "0px 7px 34px 6px", "0px 7px 36px 6px", "0px 8px 38px 7px",
+    "0px 8px 40px 7px", "0px 8px 42px 7px", "0px 9px 44px 8px", "0px 9px 46px 8px"
+];
+const BORDER_RADIUS = {
+    none: "0",
+    xs: "0.125rem",
+    sm: "0.25rem",
+    md: "0.5rem",
+    lg: "0.75rem",
+    xl: "1rem",
+};
+const LETTER_SPACING = {
+    tighter: "-0.05rem",
+    tight: "-0.025rem",
+    normal: "0",
+    wide: "0.025rem",
+    wider: "0.05rem",
+    widest: "0.1rem"
+};
+const LINE_HEIGHT = {
+    none: "1",
+    tight: "1.25",
+    snug: "1.375",
+    normal: "1.5",
+    relaxed: "1.625",
+    loose: "2"
+};
+const FONT_SIZES = {
+    xs: "0.75rem",
+    sm: "0.875rem",
+    base: "1rem",
+    lg: "1.125rem",
+    xl: "1.25rem",
+    "2xl": "1.5rem",
+    "3xl": "1.875rem",
+    "4xl": "2.25rem",
+    "5xl": "3rem",
+    "6xl": "4rem",
+};
+const FONT_FAMILIES = {
+    "sans-serif": "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
+    serif: "Georgia, Cambria, Times New Roman, Times, serif",
+    monospace: "Lucida Console, Monaco, monospace"
+};
+
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 const CACHE_KEY = 'opis-assembler-cache';
+const CSS_GENERATORS = {
+    "-opis-grid": (hash, state) => {
+        if (state !== '')
+            return '';
+        return `[${X_ATTR_NAME}~=x${hash}]{display:var(${HASH_VAR_PREFIX + hash}) !important}
+        [${X_ATTR_NAME}~=x${hash}] > * {word-break: break-all !important}
+        [${X_ATTR_NAME}~=x${hash}] > * > * {max-width: 100% !important}
+        [${X_ATTR_NAME}~=x${hash}] > [${X_ATTR_NAME}~=x${hash}]{justify-self: normal !important;align-self: normal !important}
+        `;
+    },
+    "-opis-space-x": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-y": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-left": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-right": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-top": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-bottom": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-background-clip-text": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
+    "-opis-sr-only": (hash, state) => {
+        if (state !== '')
+            return '';
+        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border-width: 0 !important;
+        }`;
+    },
+    "-opis-not-sr-only": (hash, state) => {
+        if (state !== '')
+            return '';
+        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            clip: auto !important;
+            white-space: normal !important;
+        }`;
+    },
+    "-opis-stack": (hash, state) => {
+        if (state !== '')
+            return '';
+        const z = [];
+        for (let i = 1; i <= 10; i++) {
+            z.push(`[${X_ATTR_NAME}~=x${hash}] > *:nth-child(${i}){z-index: ${i} !important}`);
+        }
+        return `[${X_ATTR_NAME}~=x${hash}]{display:grid;grid-template-columns:minmax(0,1fr);
+        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
+        [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
+    }
+};
+function generateRootVariables() {
+    let vars = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
+    for (let i = 0; i < 25; i++) {
+        vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
+        vars += `--border-radius-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LETTER_SPACING)) {
+        vars += `--letter-spacing-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
+        vars += `--line-height-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
+        vars += `--${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_SIZES)) {
+        vars += `--font-size-${key}:${value};`;
+    }
+    return ':root{' + vars + '}';
+}
 function generateStyles(settings) {
     let content = null;
     if (settings.cache) {
@@ -511,6 +695,7 @@ function generateStyles(settings) {
     const media_settings = settings.breakpoints.settings;
     const desktop = settings.breakpoints.mode === "desktop-first";
     const states = settings.states.enabled;
+    result.push(generateRootVariables());
     for (const bp of breakpoints) {
         const media_index = MEDIA_LIST.indexOf(bp);
         if (media_index < 0) {
@@ -539,7 +724,12 @@ function generateStyles(settings) {
                         prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
                     }
                 }
-                str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                if (name.startsWith('-opis-')) {
+                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
+                }
+                else {
+                    str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                }
             }
         }
         if (media_index !== 0) {
@@ -721,8 +911,13 @@ function init(options) {
         return false;
     }
     const style = document.createElement("style");
+    const s = Date.now();
     style.textContent = generateStyles(settings);
+    const i = Date.now();
+    console.log(i - s);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
+    console.log(Date.now() - i);
+    console.log(Date.now() - s);
     observeDocument(document, { childList: true, subtree: true });
     return true;
 }

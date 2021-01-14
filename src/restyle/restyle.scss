@@ -15,9 +15,6 @@
  */
 
 @import "variables";
-@import "components/button";
-@import "components/input";
-@import "components/typography";
 
 :root {
     // Colors
@@ -25,7 +22,54 @@
         --#{$name}: #{$value};
     }
     // Typography
-    @include typography-component-setup();
+    @each $name, $value in $font-family {
+        --#{$name}: #{implode-list($value, ', ')};
+    }
+    @each $name, $value in $font-sizes {
+        --font-size-#{$name}: #{$value};
+    }
+    @each $name, $value in $line-height-sizes {
+        --line-height-#{$name}: #{$value};
+    }
+    @each $name, $value in $letter-spacing {
+        --letter-spacing-#{$name}: #{$value};
+    }
+    @each $name, $value in $headings-font-size {
+        --#{$name}-font-size: var(--font-size-#{$value});
+    }
+    @each $name, $value in $border-radius-sizes {
+        --border-radius-#{$name}: #{$value};
+    }
+    // Buttons
+    --button-padding-x: 0.75rem;
+    --button-padding-y: 0.25rem;
+    --button-min-width: 6rem;
+    --button-height: 2rem;
+    --button-font-size: var(--font-size-sm);
+    --button-styled-text-color: #000;
+    --button-styled-border-color: var(--gray-400);
+    --button-styled-disabled-color: var(--gray);
+    --button-styled-color1: var(--gray-200);
+    --button-styled-color2: var(--gray-50);
+    --button-styled-color1-hover: var(--gray-300);
+    --button-styled-color2-hover: var(--gray-50);
+    --button-focus-shadow: 0 0 0 3px var(--primary-translucid);
+    // Input
+    --input-focus-shadow: var(--button-focus-shadow);
+    --input-checkbox-background: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='%23fff' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L7 8.586 5.707 7.293z'/%3E%3C/svg%3E");
+    --input-radio-background: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='%23fff' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='3'/%3E%3C/svg%3E");
+    --input-primary-color: var(--primary);
+    --input-disabled-color: var(--gray);
+    --input-background-color: var(--white);
+    --input-text-color: var(--black);
+    --input-font-size: var(--button-font-size);
+    --input-padding-x: 1rem;
+    --input-padding-y: 0.5rem;
+    --input-min-width: 0.5rem;
+    --input-height: 2.5rem;
+    --slider-height: 1rem;
+    --slider-track-height: 0.5rem;
+    --select-option-padding: 0.5rem 1rem;
     // Defaults
     --body-background-color: var(--gray-50);
     --body-text-color: var(--gray-900);
@@ -33,99 +77,12 @@
     --font-weight: normal;
     --line-height: var(--line-height-normal);
     --font-family: var(--sans-serif);
-    // Elevation
-    --elevation-umbra: rgba(0, 0, 0, .2);
-    --elevation-penumbra: rgba(0, 0, 0, .14);
-    --elevation-ambient: rgba(0, 0, 0, .12);
-    @for $i from 0 through 24 {
-        --elevation-#{$i}: #{setElevation($i, $elevation-umbra-map, $elevation-penumbra-map, $elevation-ambient-map)};
-    }
-
-    @include button-component-setup();
-    @include input-component-setup();
 }
 
 @import "root";
 
-@include typography-component();
-@include button-component();
-@include input-component();
-
-// Accessibility
-.sr-only, .sr-only:focus {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border-width: 0 !important;
-}
-
-.not-sr-only, .not-sr-only:focus {
-    position: static !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-    clip: auto !important;
-    white-space: normal !important;
-}
-
-// Text clip
-.text-clip {
-    -webkit-background-clip: text !important;
-    -moz-background-clip: text !important;
-    background-clip: text !important;
-
-    -webkit-text-fill-color: transparent !important;
-    -moz-text-fill-color: transparent !important;
-    text-fill-color: transparent !important;
-}
-
-.grid {
-    display: grid;
-    > * {
-        // Do not let text out of column
-        word-break: break-all !important;
-        > * {
-            // Do not let javascript out of column
-            max-width: 100% !important;
-        }
-    }
-    // Sub-grid alignment
-    > .grid {
-        justify-self: normal !important;
-        align-self: normal !important;
-    }
-}
-
-.stack {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-areas: "stackarea";
-    width: 100%;
-    height: 100%;
-
-    > * {
-        grid-area: stackarea;
-    }
-
-    @for $i from 1 through 10 {
-        > *:nth-child(#{$i}) {
-            z-index: $i - 1 !important;
-        }
-    }
-}
-
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+@import "components/typography";
+@import "components/button";
+@import "components/input";
 
 

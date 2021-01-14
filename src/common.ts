@@ -16,6 +16,13 @@
 
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {X_ATTR_NAME, HASH_VAR_PREFIX} from "./handlers";
+import {
+    BORDER_RADIUS,
+    ELEVATION_AMBIENT as AMBIENT,
+    ELEVATION_PENUMBRA as PENUMBRA,
+    ELEVATION_UMBRA as UMBRA,
+    FONT_FAMILIES, FONT_SIZES, LETTER_SPACING, LINE_HEIGHT
+} from "./variables";
 
 type UserSettings = {
     enabled: boolean,
@@ -25,6 +32,84 @@ type UserSettings = {
 };
 
 const CACHE_KEY = 'opis-assembler-cache';
+const CSS_GENERATORS = {
+    "-opis-grid": (hash: string, state: string): string => {
+        if (state !== '') return '';
+        return `[${X_ATTR_NAME}~=x${hash}]{display:var(${HASH_VAR_PREFIX + hash}) !important}
+        [${X_ATTR_NAME}~=x${hash}] > * {word-break: break-all !important}
+        [${X_ATTR_NAME}~=x${hash}] > * > * {max-width: 100% !important}
+        [${X_ATTR_NAME}~=x${hash}] > [${X_ATTR_NAME}~=x${hash}]{justify-self: normal !important;align-self: normal !important}
+        `;
+    },
+    "-opis-space-x": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-y": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-left": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-right": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-top": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-bottom": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-background-clip-text": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
+    "-opis-sr-only": (hash: string, state: string): string => {
+        if (state !== '') return '';
+        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border-width: 0 !important;
+        }`;
+    },
+    "-opis-not-sr-only": (hash: string, state: string): string => {
+        if (state !== '') return '';
+        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            clip: auto !important;
+            white-space: normal !important;
+        }`;
+    },
+    "-opis-stack": (hash: string, state: string): string => {
+        if (state !== '') return '';
+        const z = [];
+        for (let i = 1; i <= 10; i++) {
+            z.push(`[${X_ATTR_NAME}~=x${hash}] > *:nth-child(${i}){z-index: ${i} !important}`);
+        }
+        return `[${X_ATTR_NAME}~=x${hash}]{display:grid;grid-template-columns:minmax(0,1fr);
+        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
+        [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
+    }
+}
+
+function generateRootVariables() {
+    let vars: string = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
+    for (let i = 0; i < 25; i++) {
+        vars += `--elevation-${i}:${UMBRA[i]} var(--elevation-umbra), ${PENUMBRA[i]} var(--elevation-penumbra), ${AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
+        vars += `--border-radius-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LETTER_SPACING)) {
+        vars += `--letter-spacing-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
+        vars += `--line-height-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
+        vars += `--${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_SIZES)) {
+        vars += `--font-size-${key}:${value};`;
+    }
+
+    return ':root{' + vars + '}';
+}
 
 export function generateStyles(settings: UserSettings): string {
     let content: string|null = null;
@@ -58,6 +143,8 @@ export function generateStyles(settings: UserSettings): string {
     const desktop = settings.breakpoints.mode === "desktop-first";
     const states = settings.states.enabled;
 
+    result.push(generateRootVariables());
+
     for (const bp of breakpoints) {
         const media_index = MEDIA_LIST.indexOf(bp);
 
@@ -90,8 +177,11 @@ export function generateStyles(settings: UserSettings): string {
                         prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
                     }
                 }
-
-                str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                if (name.startsWith('-opis-')) {
+                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
+                } else {
+                    str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                }
             }
         }
 

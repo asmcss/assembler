@@ -43,81 +43,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 :root {
   --black: #000;
   --white: #fff;
@@ -175,45 +100,12 @@
   --h4-font-size: var(--font-size-lg);
   --h5-font-size: var(--font-size-base);
   --h6-font-size: var(--font-size-sm);
+  --border-radius-none: 0;
   --border-radius-xs: 0.125rem;
   --border-radius-sm: 0.25rem;
   --border-radius-md: 0.5rem;
   --border-radius-lg: 0.75rem;
   --border-radius-xl: 1rem;
-  --body-background-color: var(--gray-50);
-  --body-text-color: var(--gray-900);
-  --font-size: 16px;
-  --font-weight: normal;
-  --line-height: var(--line-height-normal);
-  --font-family: var(--sans-serif);
-  --elevation-umbra: rgba(0, 0, 0, .2);
-  --elevation-penumbra: rgba(0, 0, 0, .14);
-  --elevation-ambient: rgba(0, 0, 0, .12);
-  --elevation-0: 0px 0px 0px 0px var(--elevation-umbra), 0px 0px 0px 0px var(--elevation-penumbra), 0px 0px 0px 0px var(--elevation-ambient);
-  --elevation-1: 0px 2px 1px -1px var(--elevation-umbra), 0px 1px 1px 0px var(--elevation-penumbra), 0px 1px 3px 0px var(--elevation-ambient);
-  --elevation-2: 0px 3px 1px -2px var(--elevation-umbra), 0px 2px 2px 0px var(--elevation-penumbra), 0px 1px 5px 0px var(--elevation-ambient);
-  --elevation-3: 0px 3px 3px -2px var(--elevation-umbra), 0px 3px 4px 0px var(--elevation-penumbra), 0px 1px 8px 0px var(--elevation-ambient);
-  --elevation-4: 0px 2px 4px -1px var(--elevation-umbra), 0px 4px 5px 0px var(--elevation-penumbra), 0px 1px 10px 0px var(--elevation-ambient);
-  --elevation-5: 0px 3px 5px -1px var(--elevation-umbra), 0px 5px 8px 0px var(--elevation-penumbra), 0px 1px 14px 0px var(--elevation-ambient);
-  --elevation-6: 0px 3px 5px -1px var(--elevation-umbra), 0px 6px 10px 0px var(--elevation-penumbra), 0px 1px 18px 0px var(--elevation-ambient);
-  --elevation-7: 0px 4px 5px -2px var(--elevation-umbra), 0px 7px 10px 1px var(--elevation-penumbra), 0px 2px 16px 1px var(--elevation-ambient);
-  --elevation-8: 0px 5px 5px -3px var(--elevation-umbra), 0px 8px 10px 1px var(--elevation-penumbra), 0px 3px 14px 2px var(--elevation-ambient);
-  --elevation-9: 0px 5px 6px -3px var(--elevation-umbra), 0px 9px 12px 1px var(--elevation-penumbra), 0px 3px 16px 2px var(--elevation-ambient);
-  --elevation-10: 0px 6px 6px -3px var(--elevation-umbra), 0px 10px 14px 1px var(--elevation-penumbra), 0px 4px 18px 3px var(--elevation-ambient);
-  --elevation-11: 0px 6px 7px -4px var(--elevation-umbra), 0px 11px 15px 1px var(--elevation-penumbra), 0px 4px 20px 3px var(--elevation-ambient);
-  --elevation-12: 0px 7px 8px -4px var(--elevation-umbra), 0px 12px 17px 2px var(--elevation-penumbra), 0px 5px 22px 4px var(--elevation-ambient);
-  --elevation-13: 0px 7px 8px -4px var(--elevation-umbra), 0px 13px 19px 2px var(--elevation-penumbra), 0px 5px 24px 4px var(--elevation-ambient);
-  --elevation-14: 0px 7px 9px -4px var(--elevation-umbra), 0px 14px 21px 2px var(--elevation-penumbra), 0px 5px 26px 4px var(--elevation-ambient);
-  --elevation-15: 0px 8px 9px -5px var(--elevation-umbra), 0px 15px 22px 2px var(--elevation-penumbra), 0px 6px 28px 5px var(--elevation-ambient);
-  --elevation-16: 0px 8px 10px -5px var(--elevation-umbra), 0px 16px 24px 2px var(--elevation-penumbra), 0px 6px 30px 5px var(--elevation-ambient);
-  --elevation-17: 0px 8px 11px -5px var(--elevation-umbra), 0px 17px 26px 2px var(--elevation-penumbra), 0px 6px 32px 5px var(--elevation-ambient);
-  --elevation-18: 0px 9px 11px -5px var(--elevation-umbra), 0px 18px 28px 2px var(--elevation-penumbra), 0px 7px 34px 6px var(--elevation-ambient);
-  --elevation-19: 0px 9px 12px -6px var(--elevation-umbra), 0px 19px 29px 2px var(--elevation-penumbra), 0px 7px 36px 6px var(--elevation-ambient);
-  --elevation-20: 0px 10px 13px -6px var(--elevation-umbra), 0px 20px 31px 3px var(--elevation-penumbra), 0px 8px 38px 7px var(--elevation-ambient);
-  --elevation-21: 0px 10px 13px -6px var(--elevation-umbra), 0px 21px 33px 3px var(--elevation-penumbra), 0px 8px 40px 7px var(--elevation-ambient);
-  --elevation-22: 0px 10px 14px -6px var(--elevation-umbra), 0px 22px 35px 3px var(--elevation-penumbra), 0px 8px 42px 7px var(--elevation-ambient);
-  --elevation-23: 0px 11px 14px -7px var(--elevation-umbra), 0px 23px 36px 3px var(--elevation-penumbra), 0px 9px 44px 8px var(--elevation-ambient);
-  --elevation-24: 0px 11px 15px -7px var(--elevation-umbra), 0px 24px 38px 3px var(--elevation-penumbra), 0px 9px 46px 8px var(--elevation-ambient);
   --button-padding-x: 0.75rem;
   --button-padding-y: 0.25rem;
   --button-min-width: 6rem;
@@ -242,6 +134,12 @@
   --slider-height: 1rem;
   --slider-track-height: 0.5rem;
   --select-option-padding: 0.5rem 1rem;
+  --body-background-color: var(--gray-50);
+  --body-text-color: var(--gray-900);
+  --font-size: 16px;
+  --font-weight: normal;
+  --line-height: var(--line-height-normal);
+  --font-family: var(--sans-serif);
 }
 
 /*
@@ -620,6 +518,51 @@ body {
   color: var(--body-text-color);
 }
 
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   font-weight: bold;
   font-family: inherit;
@@ -700,6 +643,21 @@ a:link:hover, a:visited:hover, .link:hover {
   color: var(--primary-700);
 }
 
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 .restyle\:reset-button, body.restyle button:not(.restyle\:reset-button):not(.restyle\:button),
 body.restyle input[type=button]:not(.restyle\:reset-button):not(.restyle\:button),
 body.restyle input[type=submit]:not(.restyle\:reset-button):not(.restyle\:button),
@@ -795,6 +753,21 @@ body.restyle input[type=submit]:not(.restyle\:reset-button):not(.restyle\:button
   --button-styled-color2-hover: var(--primary-300) !important;
 }
 
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 body.restyle input:not(.restyle\:input):not(.restyle\:reset-input),
 body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
 .restyle\:input {
@@ -1337,112 +1310,4 @@ body.restyle input[type=radio]:not(.restyle\:input):not(.restyle\:reset-input):c
 
 .restyle\:focusable-input:focus, .restyle\:focusable-input:focus-within {
   box-shadow: var(--elevation-1), var(--input-focus-shadow) !important;
-}
-
-.sr-only, .sr-only:focus {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border-width: 0 !important;
-}
-
-.not-sr-only, .not-sr-only:focus {
-  position: static !important;
-  width: auto !important;
-  height: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: visible !important;
-  clip: auto !important;
-  white-space: normal !important;
-}
-
-.text-clip {
-  -webkit-background-clip: text !important;
-  -moz-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  -moz-text-fill-color: transparent !important;
-  text-fill-color: transparent !important;
-}
-
-.grid {
-  display: grid;
-}
-
-.grid > * {
-  word-break: break-all !important;
-}
-
-.grid > * > * {
-  max-width: 100% !important;
-}
-
-.grid > .grid {
-  justify-self: normal !important;
-  align-self: normal !important;
-}
-
-.stack {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  grid-template-areas: "stackarea";
-  width: 100%;
-  height: 100%;
-}
-
-.stack > * {
-  grid-area: stackarea;
-}
-
-.stack > *:nth-child(1) {
-  z-index: 0 !important;
-}
-
-.stack > *:nth-child(2) {
-  z-index: 1 !important;
-}
-
-.stack > *:nth-child(3) {
-  z-index: 2 !important;
-}
-
-.stack > *:nth-child(4) {
-  z-index: 3 !important;
-}
-
-.stack > *:nth-child(5) {
-  z-index: 4 !important;
-}
-
-.stack > *:nth-child(6) {
-  z-index: 5 !important;
-}
-
-.stack > *:nth-child(7) {
-  z-index: 6 !important;
-}
-
-.stack > *:nth-child(8) {
-  z-index: 7 !important;
-}
-
-.stack > *:nth-child(9) {
-  z-index: 8 !important;
-}
-
-.stack > *:nth-child(10) {
-  z-index: 9 !important;
-}
-
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

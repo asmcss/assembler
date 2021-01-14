@@ -81,6 +81,15 @@ export declare const ALIASES: {
     break: (v: any) => string[];
     truncate: string[];
     "text-clip": string[];
+    grid: string;
+    "space-x": string;
+    "space-y": string;
+    "space-x-rev": string;
+    "space-y-rev": string;
+    "space-x-alt": string;
+    "space-y-alt": string;
+    "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
+    stack: string;
 };
 export declare const DEFAULT_VALUES: {
     truncate: string[];
@@ -109,4 +118,5 @@ export declare const VALUE_WRAPPER: {
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
     break: (v: any) => string[] | "break-word" | "break-all";
+    grid: (v: any) => string;
 };

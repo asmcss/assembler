@@ -62,6 +62,7 @@ export const PROPERTY_LIST = [
     "font-size",
     "font-style",
     "font-weight",
+    "font-variant-numeric",
     "gap",
     "grid",
     "grid-area",
@@ -141,7 +142,18 @@ export const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
-    "z-index"
+    "z-index",
+    "-opis-grid",
+    "-opis-space-x",
+    "-opis-space-y",
+    "-opis-space-top",
+    "-opis-space-bottom",
+    "-opis-space-left",
+    "-opis-space-right",
+    "-opis-background-clip-text",
+    "-opis-sr-only",
+    "-opis-not-sr-only",
+    "-opis-stack",
 ];
 export const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -262,11 +274,23 @@ export const ALIASES = {
         return [];
     },
     "truncate": ["overflow", "text-overflow", "white-space"],
-    "text-clip": ["background-clip", "text-fill-color"],
+    "text-clip": ["-opis-background-clip-text", "text-fill-color"],
+    "grid": "-opis-grid",
+    "space-x": "-opis-space-left",
+    "space-y": "-opis-space-top",
+    "space-x-rev": "-opis-space-right",
+    "space-y-rev": "-opis-space-bottom",
+    "space-x-alt": "-opis-space-y",
+    "space-y-alt": "-opis-space-y",
+    "sr-only": v => {
+        if (v === "false") return "-opis-not-sr-only";
+        return "-opis-sr-only";
+    },
+    "stack": "-opis-stack"
 };
 export const DEFAULT_VALUES = {
     "truncate": ["hidden", "ellipsis", "nowrap"],
-    "text-clip": ["text", "transparent"]
+    "text-clip": ["text", "transparent"],
 }
 
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
@@ -306,4 +330,5 @@ export const VALUE_WRAPPER = {
     "radius-tr": radius,
     "radius-br": radius,
     "break": breakCallback,
+    "grid": v => "grid",
 };
