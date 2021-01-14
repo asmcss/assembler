@@ -50,13 +50,8 @@ export function init(options?: {[key: string]: string}): boolean {
     }
 
     const style = document.createElement("style");
-    const s = Date.now();
     style.textContent = generateStyles(settings);
-    const i = Date.now();
-    console.log(i - s);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
-    console.log(Date.now() - i);
-    console.log(Date.now() - s);
     observeDocument(document, {childList: true, subtree: true});
     return true;
 }
