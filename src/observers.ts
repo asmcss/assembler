@@ -15,11 +15,11 @@
  */
 
 import {STYLE_ATTR, handleStyleChange} from "./handlers";
-import {APPLY_ATTR, handleApplyAttribute} from "./mixin";
+import {APPLY_ATTR, parseApplyAttribute} from "./mixin";
 
 let _documentObserver:MutationObserver = null;
 let _elementObserver:MutationObserver = null;
-const observedElements = new WeakMap();
+const observedElements = new WeakMap<HTMLElement, string|null>();
 
 export function observeDocument(document: Document, options?: MutationObserverInit) {
     if (_documentObserver === null) {
@@ -41,12 +41,16 @@ function observeElement(element: Element, options?: MutationObserverInit) {
     if (_elementObserver === null) {
         _elementObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
             for (const mutation of mutations) {
-                if (mutation.attributeName !== STYLE_ATTR) {
-                    continue;
-                }
                 const target = mutation.target as HTMLElement;
                 const newValue = target.getAttribute(mutation.attributeName);
-                handleStyleChange(target, mutation.oldValue, newValue);
+                switch (mutation.attributeName) {
+                    case STYLE_ATTR:
+                        whenStyleChanged(target, mutation.oldValue, newValue);
+                        break;
+                    case APPLY_ATTR:
+                        whenApplyChanged(target, newValue);
+                        break;
+                }
             }
         });
     }
@@ -69,13 +73,67 @@ function observe(element: HTMLElement, deep: boolean = true): void {
     const style = element.attributes.getNamedItem(STYLE_ATTR);
     const apply = element.attributes.getNamedItem(APPLY_ATTR);
 
+    let content = '';
+
     if (apply) {
-        handleApplyAttribute(element, apply.value);
+        content = parseApplyAttribute(apply.value);
+        observedElements.set(element, content);
     }
 
     if (style) {
-        handleStyleChange(element, null, style.value);
+        content += ';' + style.value;
     }
 
-    observeElement(element, {attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR]});
+    if (content !== '') {
+        handleStyleChange(element, null, content);
+    }
+
+    observeElement(element, {attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR]});
+}
+
+
+function whenApplyChanged(element: HTMLElement, newApply: string | null): void {
+    let prevApply = observedElements.get(element) || null;
+
+    if (newApply != null) {
+        newApply = parseApplyAttribute(newApply);
+    }
+
+    observedElements.set(element, newApply);
+
+    if (element.hasAttribute(STYLE_ATTR)) {
+        const style = element.getAttribute(STYLE_ATTR);
+        if (prevApply == null) {
+            prevApply = style;
+        } else {
+            prevApply += ';' + style;
+        }
+        if (newApply == null) {
+            newApply = style;
+        } else {
+            newApply += ';' + style;
+        }
+    }
+
+    handleStyleChange(element, prevApply, newApply);
+}
+
+
+function whenStyleChanged(element: HTMLElement, prevValue: string|null, newValue: string | null) {
+    const apply = observedElements.get(element) || null;
+
+    if (apply != null) {
+        if (prevValue == null) {
+            prevValue = apply;
+        } else {
+            prevValue = apply + ';' + prevValue;
+        }
+        if (newValue == null) {
+            newValue = apply;
+        } else {
+            newValue = apply + ';' + newValue;
+        }
+    }
+
+    handleStyleChange(element, prevValue, newValue);
 }

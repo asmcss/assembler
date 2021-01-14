@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {handleStyleChange} from "./handlers";
-
 type Mixin = {name: string, args: string[]};
 type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
 type StyleType = string|{[key: string]: string};
@@ -24,9 +22,9 @@ const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallbac
 
 export const APPLY_ATTR = 'x-apply';
 
-export function handleApplyAttribute(element: HTMLElement, value: string|null) {
-    if (value === null) {
-        return;
+export function parseApplyAttribute(value: string|null): string|null {
+    if (value == null || value === '') {
+        return null;
     }
     const collection = [];
     for (const {name, args} of extractMixins(value).values()) {
@@ -35,7 +33,7 @@ export function handleApplyAttribute(element: HTMLElement, value: string|null) {
             collection.push(mixin(...args));
         }
     }
-    handleStyleChange(element, null, style(collection));
+    return style(collection);
 }
 
 export function registerMixin(name: string, callback: MixinCallback) {
