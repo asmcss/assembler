@@ -883,6 +883,27 @@ function extractMixins(value) {
     }
     return mixins;
 }
+const rootElement = new class {
+    constructor() {
+        this.styles = null;
+    }
+    getComputedStyle() {
+        if (this.styles === null) {
+            this.styles = window.getComputedStyle(document.documentElement);
+        }
+        return this.styles;
+    }
+    getPropertyValue(property) {
+        let value = this.getComputedStyle().getPropertyValue(property).trim();
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1);
+        }
+        return value;
+    }
+};
+function implicitMixin(name) {
+    return rootElement.getPropertyValue('--' + name);
+}
 
 /*
  * Copyright 2021 Zindex Software
@@ -973,6 +994,7 @@ function init(options) {
     if (!settings.enabled) {
         return false;
     }
+    registerMixin('mixin', implicitMixin);
     const style = document.createElement("style");
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);

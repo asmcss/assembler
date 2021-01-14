@@ -17,7 +17,7 @@
 import {handleStyleChange} from "./handlers";
 
 type Mixin = {name: string, args: string[]};
-type MixinCallback = (...args: string[]) => {[key: string]: string};
+type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
 type StyleType = string|{[key: string]: string};
 
 const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallback>();
@@ -79,4 +79,29 @@ function extractMixins(value: string): Map<string, Mixin> {
     }
 
     return mixins;
+}
+
+const rootElement = new class {
+    private styles: CSSStyleDeclaration = null;
+
+    getComputedStyle(): CSSStyleDeclaration {
+        if (this.styles === null) {
+            this.styles = window.getComputedStyle(document.documentElement);
+        }
+        return this.styles;
+    }
+
+    getPropertyValue(property: string): string {
+        let value = this.getComputedStyle().getPropertyValue(property).trim();
+
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1);
+        }
+
+        return value;
+    }
+};
+
+export function implicitMixin(name: string): string {
+    return rootElement.getPropertyValue('--' + name);
 }
