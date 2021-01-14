@@ -17,30 +17,9 @@
 import {generateStyles, getUserSettings} from "./common";
 import {observeDocument} from "./observers";
 import {extract, getStyleEntries as parse} from "./handlers";
+import {style, registerMixin} from "./mixin";
 
-export {extract, parse};
-
-type StyleType = string|{[key: string]: string};
-
-export function style(...styles: (StyleType|StyleType[])[]): string {
-    let str = [];
-
-    for (const item of styles) {
-        if (typeof item === 'string') {
-            str.push(item.trim());
-        } else if (Array.isArray(item)) {
-            str.push(style(...item));
-        } else {
-            for (const key in item) {
-                if (item.hasOwnProperty(key)) {
-                    str.push(key + ':' + item[key]);
-                }
-            }
-        }
-    }
-
-    return str.join('; ');
-}
+export {extract, parse, style, registerMixin};
 
 export function init(options?: {[key: string]: string}): boolean {
     const settings = getUserSettings(options || document.currentScript.dataset);

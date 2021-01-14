@@ -16,5 +16,6 @@ export declare function getStyleEntries(content: string, resolve?: boolean): Map
 export declare function getStyleProperties(content: string): Iterable<{
     property: string;
     name: string;
+    entry: string;
 }>;
 export {};

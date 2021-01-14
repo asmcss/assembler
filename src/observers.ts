@@ -15,6 +15,7 @@
  */
 
 import {STYLE_ATTR, handleStyleChange} from "./handlers";
+import {APPLY_ATTR, handleApplyAttribute} from "./mixin";
 
 let _documentObserver:MutationObserver = null;
 let _elementObserver:MutationObserver = null;
@@ -66,6 +67,11 @@ function observe(element: HTMLElement, deep: boolean = true): void {
     observedElements.set(element, null);
 
     const style = element.attributes.getNamedItem(STYLE_ATTR);
+    const apply = element.attributes.getNamedItem(APPLY_ATTR);
+
+    if (apply) {
+        handleApplyAttribute(element, apply.value);
+    }
 
     if (style) {
         handleStyleChange(element, null, style.value);

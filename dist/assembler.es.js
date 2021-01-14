@@ -352,17 +352,24 @@ function handleStyleChange(element, oldContent, content) {
         return handleStyleRemoved(element, oldContent);
     }
     const newEntries = getStyleEntries(content);
+    const opis_attrs = element.hasAttribute(X_ATTR_NAME) ? element.getAttribute(X_ATTR_NAME).split(' ') : [];
     // remove old entries
     if (oldContent !== null) {
-        for (const { name, property } of getStyleProperties(oldContent)) {
+        for (const { name, property, entry } of getStyleProperties(oldContent)) {
             if (!newEntries.has(name)) {
+                const index = opis_attrs.indexOf(entry);
+                if (index >= 0) {
+                    opis_attrs.splice(index, 1);
+                }
                 element.style.removeProperty(property);
             }
         }
     }
-    const opis_attrs = [];
     for (const { property, entry, value } of newEntries.values()) {
-        opis_attrs.push(entry);
+        const index = opis_attrs.indexOf(entry);
+        if (index < 0) {
+            opis_attrs.push(entry);
+        }
         element.style.setProperty(property, value);
     }
     element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
@@ -487,6 +494,7 @@ function* getStyleProperties(content) {
             yield {
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
+                entry: 'x' + hash
             };
         }
     }
@@ -817,6 +825,76 @@ function getStringItemList(value, unique = true) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const mixinRepository = new Map();
+const APPLY_ATTR = 'x-apply';
+function handleApplyAttribute(element, value) {
+    if (value === null) {
+        return;
+    }
+    const collection = [];
+    for (const { name, args } of extractMixins(value).values()) {
+        if (mixinRepository.has(name)) {
+            const mixin = mixinRepository.get(name);
+            collection.push(mixin(...args));
+        }
+    }
+    handleStyleChange(element, null, style(collection));
+}
+function registerMixin(name, callback) {
+    mixinRepository.set(name, callback);
+}
+function style(...styles) {
+    let str = [];
+    for (const item of styles) {
+        if (typeof item === 'string') {
+            str.push(item.trim());
+        }
+        else if (Array.isArray(item)) {
+            str.push(style(...item));
+        }
+        else {
+            for (const key in item) {
+                if (item.hasOwnProperty(key)) {
+                    str.push(key + ':' + item[key]);
+                }
+            }
+        }
+    }
+    return str.join('; ');
+}
+function extractMixins(value) {
+    const mixins = new Map();
+    const values = value.split(';').map(v => v.trim());
+    for (let i = 0, l = values.length; i < l; i++) {
+        const mixin = values[i];
+        if (mixin.indexOf(':') < 0) {
+            mixins.set(mixin, { name: mixin, args: [] });
+        }
+        else {
+            const p = mixin.split(':');
+            const name = p.shift();
+            const args = p.join(':').split(',').map(v => v.trim());
+            mixins.set(name, { name, args });
+        }
+    }
+    return mixins;
+}
+
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 let _documentObserver = null;
 let _elementObserver = null;
 const observedElements = new WeakMap();
@@ -861,6 +939,10 @@ function observe(element, deep = true) {
     }
     observedElements.set(element, null);
     const style = element.attributes.getNamedItem(STYLE_ATTR);
+    const apply = element.attributes.getNamedItem(APPLY_ATTR);
+    if (apply) {
+        handleApplyAttribute(element, apply.value);
+    }
     if (style) {
         handleStyleChange(element, null, style.value);
     }
@@ -882,25 +964,6 @@ function observe(element, deep = true) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function style(...styles) {
-    let str = [];
-    for (const item of styles) {
-        if (typeof item === 'string') {
-            str.push(item.trim());
-        }
-        else if (Array.isArray(item)) {
-            str.push(style(...item));
-        }
-        else {
-            for (const key in item) {
-                if (item.hasOwnProperty(key)) {
-                    str.push(key + ':' + item[key]);
-                }
-            }
-        }
-    }
-    return str.join('; ');
-}
 function init(options) {
     const settings = getUserSettings(options || document.currentScript.dataset);
     if (!settings.enabled) {
@@ -916,4 +979,4 @@ if (typeof window !== 'undefined') {
     init();
 }
 
-export { extract, init, getStyleEntries as parse, style };
+export { extract, init, getStyleEntries as parse, registerMixin, style };

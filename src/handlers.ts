@@ -31,20 +31,26 @@ export function handleStyleChange(element: HTMLElement, oldContent: string|null,
     }
 
     const newEntries = getStyleEntries(content);
+    const opis_attrs = element.hasAttribute(X_ATTR_NAME) ? element.getAttribute(X_ATTR_NAME).split(' ') : [];
 
     // remove old entries
     if (oldContent !== null) {
-        for (const {name, property} of getStyleProperties(oldContent)) {
+        for (const {name, property, entry} of getStyleProperties(oldContent)) {
             if (!newEntries.has(name)) {
+                const index = opis_attrs.indexOf(entry);
+                if (index >= 0) {
+                    opis_attrs.splice(index, 1);
+                }
                 element.style.removeProperty(property);
             }
         }
     }
 
-    const opis_attrs = [];
-
     for (const {property, entry, value} of newEntries.values()) {
-        opis_attrs.push(entry);
+        const index = opis_attrs.indexOf(entry);
+        if (index < 0) {
+            opis_attrs.push(entry);
+        }
         element.style.setProperty(property, value);
     }
 
@@ -149,7 +155,7 @@ export function getStyleEntries(content: string, resolve: boolean = true): Map<s
     return entries;
 }
 
-export function* getStyleProperties(content: string): Iterable<{property: string, name: string}> {
+export function* getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
     const base = STATE_LIST.length;
 
     for (let attr of content.split(';')) {
@@ -202,6 +208,7 @@ export function* getStyleProperties(content: string): Iterable<{property: string
             yield {
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
+                entry: 'x' + hash
             };
         }
     }
