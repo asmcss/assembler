@@ -95,7 +95,7 @@ export function extract(attr: string, value: string|string[]|null = null): Prope
         value = VALUE_WRAPPER[original](value, original, media, state);
     }
     if (!Array.isArray(value)) {
-        value = [value.replace(VAR_REGEX, "var(--$1)")];
+        value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
     } else {
         value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
     }

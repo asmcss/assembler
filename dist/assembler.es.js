@@ -372,7 +372,7 @@ function extract(attr, value = null) {
         value = VALUE_WRAPPER[original](value, original, media, state);
     }
     if (!Array.isArray(value)) {
-        value = [value.replace(VAR_REGEX, "var(--$1)")];
+        value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
     }
     else {
         value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
