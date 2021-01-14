@@ -838,7 +838,7 @@
             return null;
         }
         const collection = [];
-        for (const { name, args } of extractMixins(value).values()) {
+        for (const { name, args } of extractMixins(value)) {
             if (mixinRepository.has(name)) {
                 const mixin = mixinRepository.get(name);
                 collection.push(mixin(...args));
@@ -868,22 +868,22 @@
         }
         return str.join('; ');
     }
-    function extractMixins(value) {
-        const mixins = new Map();
-        const values = value.split(';').map(v => v.trim()).filter(v => v !== '');
-        for (let i = 0, l = values.length; i < l; i++) {
-            const mixin = values[i];
-            if (mixin.indexOf(':') < 0) {
-                mixins.set(mixin, { name: mixin, args: [] });
+    function* extractMixins(value) {
+        for (let mixin of value.split(';')) {
+            mixin = mixin.trim();
+            if (mixin === '') {
+                continue;
+            }
+            const pos = mixin.indexOf(':');
+            if (pos === -1) {
+                yield { name: mixin, args: [] };
             }
             else {
-                const p = mixin.split(':');
-                const name = p.shift();
-                const args = p.join(':').split(',').map(v => v.trim());
-                mixins.set(name, { name, args });
+                const name = mixin.substr(0, pos);
+                const args = mixin.substr(pos + 1).split(',').map(v => v.trim());
+                yield { name, args };
             }
         }
-        return mixins;
     }
     const rootElement = new class {
         constructor() {
@@ -977,10 +977,13 @@
         let content = '';
         if (apply) {
             content = parseApplyAttribute(apply.value);
-            observedElements.set(element, content);
+            if (content !== '') {
+                observedElements.set(element, content);
+                content += ';';
+            }
         }
         if (style) {
-            content += ';' + style.value;
+            content += style.value;
         }
         if (content !== '') {
             handleStyleChange(element, null, content);

@@ -77,11 +77,14 @@ function observe(element: HTMLElement, deep: boolean = true): void {
 
     if (apply) {
         content = parseApplyAttribute(apply.value);
-        observedElements.set(element, content);
+        if (content !== '') {
+            observedElements.set(element, content);
+            content += ';';
+        }
     }
 
     if (style) {
-        content += ';' + style.value;
+        content += style.value;
     }
 
     if (content !== '') {
