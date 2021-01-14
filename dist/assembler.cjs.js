@@ -284,11 +284,19 @@ const ALIASES = {
             return "-opis-not-sr-only";
         return "-opis-sr-only";
     },
-    "stack": "-opis-stack"
+    "stack": "-opis-stack",
+    "flex": "display",
+    "hidden": "display",
+    "block": "display",
+    "inline-block": "display",
 };
 const DEFAULT_VALUES = {
     "truncate": ["hidden", "ellipsis", "nowrap"],
     "text-clip": ["text", "transparent"],
+    "flex": "flex",
+    "hidden": "none",
+    "block": "block",
+    "inline-block": "inline-block"
 };
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;

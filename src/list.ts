@@ -286,11 +286,19 @@ export const ALIASES = {
         if (v === "false") return "-opis-not-sr-only";
         return "-opis-sr-only";
     },
-    "stack": "-opis-stack"
+    "stack": "-opis-stack",
+    "flex": "display",
+    "hidden": "display",
+    "block": "display",
+    "inline-block": "display",
 };
 export const DEFAULT_VALUES = {
     "truncate": ["hidden", "ellipsis", "nowrap"],
     "text-clip": ["text", "transparent"],
+    "flex": "flex",
+    "hidden": "none",
+    "block": "block",
+    "inline-block": "inline-block"
 }
 
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;

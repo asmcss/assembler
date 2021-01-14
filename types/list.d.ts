@@ -90,10 +90,18 @@ export declare const ALIASES: {
     "space-y-alt": string;
     "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
     stack: string;
+    flex: string;
+    hidden: string;
+    block: string;
+    "inline-block": string;
 };
 export declare const DEFAULT_VALUES: {
     truncate: string[];
     "text-clip": string[];
+    flex: string;
+    hidden: string;
+    block: string;
+    "inline-block": string;
 };
 export declare const VALUE_WRAPPER: {
     gradient: (value: any) => string;
