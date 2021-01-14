@@ -439,16 +439,19 @@ function extract(attr, value = null) {
 }
 function getStyleEntries(content, resolve = true) {
     const entries = new Map();
-    const attrs = content.split(';').map(v => v.trim()).filter(v => v !== '');
-    for (let name of attrs) {
+    for (let name of content.split(';')) {
+        name = name.trim();
+        if (name === '') {
+            continue;
+        }
         let value = null;
-        if (name.indexOf(':') > 0) {
-            const p = name.split(':');
-            name = p.shift().trim();
-            value = resolve ? p.join(':') : null;
+        const pos = name.indexOf(':');
+        if (pos < 0) {
+            name = name.trim();
         }
         else {
-            name = name.trim();
+            value = resolve ? name.substr(pos + 1) : null;
+            name = name.substr(0, pos).trim();
         }
         for (const info of extract(name, value)) {
             entries.set(info.name, info);
@@ -466,9 +469,8 @@ function* getStyleProperties(content) {
             attr = attr.trim();
         }
         else {
-            const p = attr.split(':');
-            attr = p.shift().trim();
-            value = p.join(':');
+            value = attr.substr(pos + 1);
+            attr = attr.substr(0, pos).trim();
         }
         const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
         if (!m || !m.property) {
@@ -858,7 +860,13 @@ function style(...styles) {
         }
         else {
             for (const key in item) {
-                if (item.hasOwnProperty(key)) {
+                if (!item.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (item[key] == null) {
+                    str.push(key);
+                }
+                else {
                     str.push(key + ':' + item[key]);
                 }
             }
@@ -866,6 +874,9 @@ function style(...styles) {
     }
     return str.join('; ');
 }
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
 function* extractMixins(value) {
     for (let mixin of value.split(';')) {
         mixin = mixin.trim();
@@ -878,7 +889,7 @@ function* extractMixins(value) {
         }
         else {
             const name = mixin.substr(0, pos);
-            const args = mixin.substr(pos + 1).split(',').map(v => v.trim());
+            const args = mixin.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
             yield { name, args };
         }
     }

@@ -50,7 +50,12 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
             str.push(style(...item));
         } else {
             for (const key in item) {
-                if (item.hasOwnProperty(key)) {
+                if (!item.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (item[key] == null) {
+                    str.push(key);
+                } else {
                     str.push(key + ':' + item[key]);
                 }
             }
@@ -60,7 +65,10 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
     return str.join('; ');
 }
 
-function* extractMixins(value: string): Iterable<{name: string, args: any[]}> {
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
+function* extractMixins(value: string): Iterable<Mixin> {
     for (let mixin of value.split(';')) {
         mixin = mixin.trim();
         if (mixin === '') {
@@ -71,7 +79,7 @@ function* extractMixins(value: string): Iterable<{name: string, args: any[]}> {
             yield {name: mixin, args: []};
         } else {
             const name = mixin.substr(0, pos);
-            const args = mixin.substr(pos + 1).split(',').map(v => v.trim());
+            const args = mixin.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
             yield {name, args};
         }
     }
