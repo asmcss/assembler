@@ -443,16 +443,19 @@ function extract(attr, value = null) {
 }
 function getStyleEntries(content, resolve = true) {
     const entries = new Map();
-    const attrs = content.split(';').map(v => v.trim()).filter(v => v !== '');
-    for (let name of attrs) {
+    for (let name of content.split(';')) {
+        name = name.trim();
+        if (name === '') {
+            continue;
+        }
         let value = null;
-        if (name.indexOf(':') > 0) {
-            const p = name.split(':');
-            name = p.shift().trim();
-            value = resolve ? p.join(':') : null;
+        const pos = name.indexOf(':');
+        if (pos < 0) {
+            name = name.trim();
         }
         else {
-            name = name.trim();
+            value = resolve ? name.substr(pos + 1) : null;
+            name = name.substr(0, pos).trim();
         }
         for (const info of extract(name, value)) {
             entries.set(info.name, info);
@@ -470,9 +473,8 @@ function* getStyleProperties(content) {
             attr = attr.trim();
         }
         else {
-            const p = attr.split(':');
-            attr = p.shift().trim();
-            value = p.join(':');
+            value = attr.substr(pos + 1);
+            attr = attr.substr(0, pos).trim();
         }
         const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
         if (!m || !m.property) {
@@ -835,18 +837,18 @@ function getStringItemList(value, unique = true) {
  */
 const mixinRepository = new Map();
 const APPLY_ATTR = 'x-apply';
-function handleApplyAttribute(element, value) {
-    if (value === null) {
-        return;
+function parseApplyAttribute(value) {
+    if (value == null || value === '') {
+        return null;
     }
     const collection = [];
-    for (const { name, args } of extractMixins(value).values()) {
+    for (const { name, args } of extractMixins(value)) {
         if (mixinRepository.has(name)) {
             const mixin = mixinRepository.get(name);
             collection.push(mixin(...args));
         }
     }
-    handleStyleChange(element, null, style(collection));
+    return style(collection);
 }
 function registerMixin(name, callback) {
     mixinRepository.set(name, callback);
@@ -862,7 +864,13 @@ function style(...styles) {
         }
         else {
             for (const key in item) {
-                if (item.hasOwnProperty(key)) {
+                if (!item.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (item[key] == null) {
+                    str.push(key);
+                }
+                else {
                     str.push(key + ':' + item[key]);
                 }
             }
@@ -870,22 +878,25 @@ function style(...styles) {
     }
     return str.join('; ');
 }
-function extractMixins(value) {
-    const mixins = new Map();
-    const values = value.split(';').map(v => v.trim()).filter(v => v !== '');
-    for (let i = 0, l = values.length; i < l; i++) {
-        const mixin = values[i];
-        if (mixin.indexOf(':') < 0) {
-            mixins.set(mixin, { name: mixin, args: [] });
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
+function* extractMixins(value) {
+    for (let mixin of value.split(';')) {
+        mixin = mixin.trim();
+        if (mixin === '') {
+            continue;
+        }
+        const pos = mixin.indexOf(':');
+        if (pos === -1) {
+            yield { name: mixin, args: [] };
         }
         else {
-            const p = mixin.split(':');
-            const name = p.shift();
-            const args = p.join(':').split(',').map(v => v.trim());
-            mixins.set(name, { name, args });
+            const name = mixin.substr(0, pos);
+            const args = mixin.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
+            yield { name, args };
         }
     }
-    return mixins;
 }
 const rootElement = new class {
     constructor() {
@@ -949,12 +960,16 @@ function observeElement(element, options) {
     if (_elementObserver === null) {
         _elementObserver = new MutationObserver(function (mutations) {
             for (const mutation of mutations) {
-                if (mutation.attributeName !== STYLE_ATTR) {
-                    continue;
-                }
                 const target = mutation.target;
                 const newValue = target.getAttribute(mutation.attributeName);
-                handleStyleChange(target, mutation.oldValue, newValue);
+                switch (mutation.attributeName) {
+                    case STYLE_ATTR:
+                        whenStyleChanged(target, mutation.oldValue, newValue);
+                        break;
+                    case APPLY_ATTR:
+                        whenApplyChanged(target, newValue);
+                        break;
+                }
             }
         });
     }
@@ -972,13 +987,62 @@ function observe(element, deep = true) {
     observedElements.set(element, null);
     const style = element.attributes.getNamedItem(STYLE_ATTR);
     const apply = element.attributes.getNamedItem(APPLY_ATTR);
+    let content = '';
     if (apply) {
-        handleApplyAttribute(element, apply.value);
+        content = parseApplyAttribute(apply.value);
+        if (content !== '') {
+            observedElements.set(element, content);
+            content += ';';
+        }
     }
     if (style) {
-        handleStyleChange(element, null, style.value);
+        content += style.value;
     }
-    observeElement(element, { attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR] });
+    if (content !== '') {
+        handleStyleChange(element, null, content);
+    }
+    observeElement(element, { attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
+}
+function whenApplyChanged(element, newApply) {
+    let prevApply = observedElements.get(element) || null;
+    if (newApply != null) {
+        newApply = parseApplyAttribute(newApply);
+    }
+    observedElements.set(element, newApply);
+    if (element.hasAttribute(STYLE_ATTR)) {
+        const style = element.getAttribute(STYLE_ATTR);
+        if (prevApply == null) {
+            prevApply = style;
+        }
+        else {
+            prevApply += ';' + style;
+        }
+        if (newApply == null) {
+            newApply = style;
+        }
+        else {
+            newApply += ';' + style;
+        }
+    }
+    handleStyleChange(element, prevApply, newApply);
+}
+function whenStyleChanged(element, prevValue, newValue) {
+    const apply = observedElements.get(element) || null;
+    if (apply != null) {
+        if (prevValue == null) {
+            prevValue = apply;
+        }
+        else {
+            prevValue = apply + ';' + prevValue;
+        }
+        if (newValue == null) {
+            newValue = apply;
+        }
+        else {
+            newValue = apply + ';' + newValue;
+        }
+    }
+    handleStyleChange(element, prevValue, newValue);
 }
 
 /*

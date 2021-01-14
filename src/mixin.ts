@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {handleStyleChange} from "./handlers";
-
 type Mixin = {name: string, args: string[]};
 type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
 type StyleType = string|{[key: string]: string};
@@ -24,18 +22,18 @@ const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallbac
 
 export const APPLY_ATTR = 'x-apply';
 
-export function handleApplyAttribute(element: HTMLElement, value: string|null) {
-    if (value === null) {
-        return;
+export function parseApplyAttribute(value: string|null): string|null {
+    if (value == null || value === '') {
+        return null;
     }
     const collection = [];
-    for (const {name, args} of extractMixins(value).values()) {
+    for (const {name, args} of extractMixins(value)) {
         if (mixinRepository.has(name)) {
             const mixin = mixinRepository.get(name);
             collection.push(mixin(...args));
         }
     }
-    handleStyleChange(element, null, style(collection));
+    return style(collection);
 }
 
 export function registerMixin(name: string, callback: MixinCallback) {
@@ -52,7 +50,12 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
             str.push(style(...item));
         } else {
             for (const key in item) {
-                if (item.hasOwnProperty(key)) {
+                if (!item.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (item[key] == null) {
+                    str.push(key);
+                } else {
                     str.push(key + ':' + item[key]);
                 }
             }
@@ -62,23 +65,24 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
     return str.join('; ');
 }
 
-function extractMixins(value: string): Map<string, Mixin> {
-    const mixins = new Map<string, Mixin>();
-    const values = value.split(';').map(v => v.trim()).filter(v => v !== '');
-
-    for (let i = 0, l = values.length; i < l; i++) {
-        const mixin = values[i];
-        if (mixin.indexOf(':') < 0) {
-            mixins.set(mixin, {name: mixin, args: []});
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
+function* extractMixins(value: string): Iterable<Mixin> {
+    for (let mixin of value.split(';')) {
+        mixin = mixin.trim();
+        if (mixin === '') {
+            continue;
+        }
+        const pos = mixin.indexOf(':');
+        if (pos === -1) {
+            yield {name: mixin, args: []};
         } else {
-            const p = mixin.split(':');
-            const name = p.shift();
-            const args = p.join(':').split(',').map(v => v.trim());
-            mixins.set(name, {name, args});
+            const name = mixin.substr(0, pos);
+            const args = mixin.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
+            yield {name, args};
         }
     }
-
-    return mixins;
 }
 
 const rootElement = new class {

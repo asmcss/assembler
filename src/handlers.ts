@@ -134,17 +134,20 @@ export function extract(attr: string, value: string|string[]|null = null): Prope
 export function getStyleEntries(content: string, resolve: boolean = true): Map<string, PropertyInfo> {
     const entries = new Map<string, PropertyInfo>();
 
-    const attrs = content.split(';').map(v => v.trim()).filter(v => v !== '');
+    for (let name of content.split(';')) {
+        name = name.trim();
+        if (name === '') {
+            continue;
+        }
 
-    for (let name of attrs) {
         let value = null;
 
-        if (name.indexOf(':') > 0) {
-            const p = name.split(':');
-            name = p.shift().trim();
-            value = resolve ? p.join(':') : null;
-        } else {
+        const pos = name.indexOf(':');
+        if (pos < 0) {
             name = name.trim();
+        } else {
+            value = resolve ? name.substr(pos + 1) : null;
+            name = name.substr(0, pos).trim();
         }
 
         for (const info of extract(name, value)) {
@@ -164,9 +167,8 @@ export function* getStyleProperties(content: string): Iterable<{property: string
         if (pos < 0) {
             attr = attr.trim();
         } else {
-            const p = attr.split(':');
-            attr = p.shift().trim();
-            value = p.join(':');
+            value = attr.substr(pos + 1);
+            attr = attr.substr(0, pos).trim();
         }
 
         const m = PROPERTY_REGEX.exec(attr)?.groups;
