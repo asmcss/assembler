@@ -19,6 +19,12 @@ type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
 type StyleType = string|{[key: string]: string};
 
 const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallback>();
+mixinRepository.set('mixin', function (...names: string[]): string {
+    return names
+        .map(name => rootElement.getPropertyValue(name))
+        .filter(v => v !== '')
+        .join(';');
+});
 
 export const APPLY_ATTR = 'x-apply';
 
@@ -110,10 +116,3 @@ const rootElement = new class {
         return value;
     }
 };
-
-export function implicitMixin(...names: string[]): string {
-    return names
-        .map(name => rootElement.getPropertyValue(name))
-        .filter(v => v !== '')
-        .join(';');
-}

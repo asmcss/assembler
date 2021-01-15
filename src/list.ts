@@ -147,6 +147,7 @@ export const PROPERTY_LIST = [
     "text-decoration-style",
     "text-fill-color",
     "text-overflow",
+    "text-shadow",
     "text-transform",
     "top",
     "transform",
@@ -160,18 +161,7 @@ export const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
-    "z-index",
-    "-opis-grid",
-    "-opis-space-x",
-    "-opis-space-y",
-    "-opis-space-top",
-    "-opis-space-bottom",
-    "-opis-space-left",
-    "-opis-space-right",
-    "-opis-background-clip-text",
-    "-opis-sr-only",
-    "-opis-not-sr-only",
-    "-opis-stack",
+    "z-index"
 ];
 export const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -361,5 +351,5 @@ export const VALUE_WRAPPER = {
     "radius-tr": radius,
     "radius-br": radius,
     "break": breakCallback,
-    "grid": v => "grid",
+    "grid": () => "grid",
 };

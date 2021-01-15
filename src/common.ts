@@ -16,13 +16,7 @@
 
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {X_ATTR_NAME, HASH_VAR_PREFIX} from "./handlers";
-import {
-    BORDER_RADIUS,
-    ELEVATION_AMBIENT as AMBIENT,
-    ELEVATION_PENUMBRA as PENUMBRA,
-    ELEVATION_UMBRA as UMBRA,
-    FONT_FAMILIES, FONT_SIZES, LETTER_SPACING, LINE_HEIGHT
-} from "./variables";
+import {generateRootVariables} from "./variables";
 
 type UserSettings = {
     enabled: boolean,
@@ -32,6 +26,7 @@ type UserSettings = {
 };
 
 const CACHE_KEY = 'opis-assembler-cache';
+
 const CSS_GENERATORS = {
     "-opis-grid": (hash: string, state: string): string => {
         if (state !== '') return '';
@@ -87,29 +82,8 @@ const CSS_GENERATORS = {
     }
 }
 
-function generateRootVariables() {
-    let vars: string = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
-    for (let i = 0; i < 25; i++) {
-        vars += `--elevation-${i}:${UMBRA[i]} var(--elevation-umbra), ${PENUMBRA[i]} var(--elevation-penumbra), ${AMBIENT[i]} var(--elevation-ambient);`;
-    }
-    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
-        vars += `--border-radius-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(LETTER_SPACING)) {
-        vars += `--letter-spacing-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
-        vars += `--line-height-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
-        vars += `--${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(FONT_SIZES)) {
-        vars += `--font-size-${key}:${value};`;
-    }
-
-    return ':root{' + vars + '}';
-}
+// Add generators to properties automatically
+PROPERTY_LIST.push(...Object.keys(CSS_GENERATORS));
 
 export function generateStyles(settings: UserSettings): string {
     let content: string|null = null;
@@ -235,6 +209,10 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const states = dataset.states === undefined
         ? ["normal", "hover", "focus", "active", "disabled"]
         : getStringItemList(dataset.states.toLowerCase());
+    if (states.indexOf("normal") === -1) {
+        // always add normal state
+        states.unshift("normal");
+    }
 
     const xs = dataset.breakpointXs || (isDesktopFirst ? "512px" : "0px");
     const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");

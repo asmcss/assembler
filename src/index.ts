@@ -16,10 +16,9 @@
 
 import {generateStyles, getUserSettings} from "./common";
 import {observeDocument} from "./observers";
-import {extract, getStyleEntries as parse} from "./handlers";
-import {style, registerMixin, implicitMixin} from "./mixin";
 
-export {extract, parse, style, registerMixin};
+export {extract, getStyleEntries as parse} from "./handlers";
+export {style, registerMixin} from "./mixin";
 
 export function init(options?: {[key: string]: string}): boolean {
     const settings = getUserSettings(options || document.currentScript.dataset);
@@ -27,8 +26,6 @@ export function init(options?: {[key: string]: string}): boolean {
     if (!settings.enabled) {
         return false;
     }
-
-    registerMixin('mixin', implicitMixin);
 
     const style = document.createElement("style");
     style.textContent = generateStyles(settings);

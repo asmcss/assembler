@@ -87,7 +87,7 @@ export declare const ALIASES: {
     "space-y-rev": string;
     "space-x-alt": string;
     "space-y-alt": string;
-    "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
+    "sr-only": (v: any) => "-opis-not-sr-only" | "-opis-sr-only";
     stack: string;
     flex: string;
     "inline-flex": string;
@@ -131,5 +131,5 @@ export declare const VALUE_WRAPPER: {
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
     break: (v: any) => string[] | "break-word" | "break-all";
-    grid: (v: any) => string;
+    grid: () => string;
 };

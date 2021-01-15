@@ -150,6 +150,7 @@ const PROPERTY_LIST = [
     "text-decoration-style",
     "text-fill-color",
     "text-overflow",
+    "text-shadow",
     "text-transform",
     "top",
     "transform",
@@ -163,18 +164,7 @@ const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
-    "z-index",
-    "-opis-grid",
-    "-opis-space-x",
-    "-opis-space-y",
-    "-opis-space-top",
-    "-opis-space-bottom",
-    "-opis-space-left",
-    "-opis-space-right",
-    "-opis-background-clip-text",
-    "-opis-sr-only",
-    "-opis-not-sr-only",
-    "-opis-stack",
+    "z-index"
 ];
 const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -359,7 +349,7 @@ const VALUE_WRAPPER = {
     "radius-tr": radius,
     "radius-br": radius,
     "break": breakCallback,
-    "grid": v => "grid",
+    "grid": () => "grid",
 };
 
 /*
@@ -614,6 +604,28 @@ const FONT_FAMILIES = {
     serif: "Georgia, Cambria, Times New Roman, Times, serif",
     monospace: "Lucida Console, Monaco, monospace"
 };
+function generateRootVariables() {
+    let vars = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
+    for (let i = 0; i < 25; i++) {
+        vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
+        vars += `--border-radius-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LETTER_SPACING)) {
+        vars += `--letter-spacing-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
+        vars += `--line-height-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
+        vars += `--${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_SIZES)) {
+        vars += `--font-size-${key}:${value};`;
+    }
+    return ':root{' + vars + '}';
+}
 
 /*
  * Copyright 2021 Zindex Software
@@ -689,28 +701,8 @@ const CSS_GENERATORS = {
         [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
     }
 };
-function generateRootVariables() {
-    let vars = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
-    for (let i = 0; i < 25; i++) {
-        vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
-    }
-    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
-        vars += `--border-radius-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(LETTER_SPACING)) {
-        vars += `--letter-spacing-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
-        vars += `--line-height-${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
-        vars += `--${key}:${value};`;
-    }
-    for (const [key, value] of Object.entries(FONT_SIZES)) {
-        vars += `--font-size-${key}:${value};`;
-    }
-    return ':root{' + vars + '}';
-}
+// Add generators to properties automatically
+PROPERTY_LIST.push(...Object.keys(CSS_GENERATORS));
 function generateStyles(settings) {
     let content = null;
     if (settings.cache) {
@@ -816,6 +808,10 @@ function getUserSettings(dataset) {
     const states = dataset.states === undefined
         ? ["normal", "hover", "focus", "active", "disabled"]
         : getStringItemList(dataset.states.toLowerCase());
+    if (states.indexOf("normal") === -1) {
+        // always add normal state
+        states.unshift("normal");
+    }
     const xs = dataset.breakpointXs || (isDesktopFirst ? "512px" : "0px");
     const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
     const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
@@ -863,6 +859,12 @@ function getStringItemList(value, unique = true) {
  * limitations under the License.
  */
 const mixinRepository = new Map();
+mixinRepository.set('mixin', function (...names) {
+    return names
+        .map(name => rootElement.getPropertyValue(name))
+        .filter(v => v !== '')
+        .join(';');
+});
 const APPLY_ATTR = 'x-apply';
 function parseApplyAttribute(value) {
     if (value == null || value === '') {
@@ -948,12 +950,6 @@ const rootElement = new class {
         return value;
     }
 };
-function implicitMixin(...names) {
-    return names
-        .map(name => rootElement.getPropertyValue(name))
-        .filter(v => v !== '')
-        .join(';');
-}
 
 /*
  * Copyright 2021 Zindex Software
@@ -1097,7 +1093,6 @@ function init(options) {
     if (!settings.enabled) {
         return false;
     }
-    registerMixin('mixin', implicitMixin);
     const style = document.createElement("style");
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);

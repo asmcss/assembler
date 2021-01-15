@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const ELEVATION_UMBRA = [
+const ELEVATION_UMBRA = [
     "0px 0px 0px 0px", "0px 2px 1px -1px", "0px 3px 1px -2px", "0px 3px 3px -2px", "0px 2px 4px -1px",
     "0px 3px 5px -1px", "0px 3px 5px -1px", "0px 4px 5px -2px", "0px 5px 5px -3px", "0px 5px 6px -3px",
     "0px 6px 6px -3px", "0px 6px 7px -4px", "0px 7px 8px -4px", "0px 7px 8px -4px", "0px 7px 9px -4px",
@@ -22,7 +22,7 @@ export const ELEVATION_UMBRA = [
     "0px 10px 13px -6px", "0px 10px 13px -6px", "0px 10px 14px -6px", "0px 11px 14px -7px", "0px 11px 15px -7px"
 ];
 
-export const ELEVATION_PENUMBRA = [
+const ELEVATION_PENUMBRA = [
     "0px 0px 0px 0px", "0px 1px 1px 0px", "0px 2px 2px 0px", "0px 3px 4px 0px", "0px 4px 5px 0px", "0px 5px 8px 0px",
     "0px 6px 10px 0px", "0px 7px 10px 1px", "0px 8px 10px 1px", "0px 9px 12px 1px", "0px 10px 14px 1px",
     "0px 11px 15px 1px", "0px 12px 17px 2px", "0px 13px 19px 2px", "0px 14px 21px 2px", "0px 15px 22px 2px",
@@ -30,7 +30,7 @@ export const ELEVATION_PENUMBRA = [
     "0px 21px 33px 3px", "0px 22px 35px 3px", "0px 23px 36px 3px", "0px 24px 38px 3px"
 ];
 
-export const ELEVATION_AMBIENT = [
+const ELEVATION_AMBIENT = [
     "0px 0px 0px 0px", "0px 1px 3px 0px", "0px 1px 5px 0px", "0px 1px 8px 0px", "0px 1px 10px 0px", "0px 1px 14px 0px",
     "0px 1px 18px 0px", "0px 2px 16px 1px", "0px 3px 14px 2px", "0px 3px 16px 2px", "0px 4px 18px 3px",
     "0px 4px 20px 3px", "0px 5px 22px 4px", "0px 5px 24px 4px", "0px 5px 26px 4px", "0px 6px 28px 5px",
@@ -38,7 +38,7 @@ export const ELEVATION_AMBIENT = [
     "0px 8px 40px 7px", "0px 8px 42px 7px", "0px 9px 44px 8px", "0px 9px 46px 8px"
 ];
 
-export const BORDER_RADIUS = {
+const BORDER_RADIUS = {
     none: "0",
     xs: "0.125rem",
     sm: "0.25rem",
@@ -47,7 +47,7 @@ export const BORDER_RADIUS = {
     xl: "1rem",
 };
 
-export const LETTER_SPACING = {
+const LETTER_SPACING = {
     tighter: "-0.05rem",
     tight: "-0.025rem",
     normal: "0",
@@ -56,7 +56,7 @@ export const LETTER_SPACING = {
     widest: "0.1rem"
 };
 
-export const LINE_HEIGHT = {
+const LINE_HEIGHT = {
     none: "1",
     tight: "1.25",
     snug: "1.375",
@@ -65,7 +65,7 @@ export const LINE_HEIGHT = {
     loose: "2"
 };
 
-export const FONT_SIZES = {
+const FONT_SIZES = {
     xs: "0.75rem",
     sm: "0.875rem",
     base: "1rem",
@@ -78,8 +78,32 @@ export const FONT_SIZES = {
     "6xl": "4rem",
 };
 
-export const FONT_FAMILIES = {
+const FONT_FAMILIES = {
     "sans-serif": "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol",
     serif: "Georgia, Cambria, Times New Roman, Times, serif",
     monospace: "Lucida Console, Monaco, monospace"
 };
+
+export function generateRootVariables() {
+    let vars: string = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
+    for (let i = 0; i < 25; i++) {
+        vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (const [key, value] of Object.entries(BORDER_RADIUS)) {
+        vars += `--border-radius-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LETTER_SPACING)) {
+        vars += `--letter-spacing-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(LINE_HEIGHT)) {
+        vars += `--line-height-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_FAMILIES)) {
+        vars += `--${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(FONT_SIZES)) {
+        vars += `--font-size-${key}:${value};`;
+    }
+
+    return ':root{' + vars + '}';
+}
