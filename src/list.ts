@@ -161,7 +161,18 @@ export const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
-    "z-index"
+    "z-index",
+    "-opis-grid",
+    "-opis-space-x",
+    "-opis-space-y",
+    "-opis-space-top",
+    "-opis-space-bottom",
+    "-opis-space-left",
+    "-opis-space-right",
+    "-opis-background-clip-text",
+    "-opis-sr-only",
+    "-opis-not-sr-only",
+    "-opis-stack",
 ];
 export const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],

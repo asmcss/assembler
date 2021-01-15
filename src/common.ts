@@ -82,9 +82,6 @@ const CSS_GENERATORS = {
     }
 }
 
-// Add generators to properties automatically
-PROPERTY_LIST.push(...Object.keys(CSS_GENERATORS));
-
 export function generateStyles(settings: UserSettings): string {
     let content: string|null = null;
 

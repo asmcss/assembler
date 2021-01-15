@@ -166,7 +166,18 @@
         "white-space",
         "width",
         "word-break",
-        "z-index"
+        "z-index",
+        "-opis-grid",
+        "-opis-space-x",
+        "-opis-space-y",
+        "-opis-space-top",
+        "-opis-space-bottom",
+        "-opis-space-left",
+        "-opis-space-right",
+        "-opis-background-clip-text",
+        "-opis-sr-only",
+        "-opis-not-sr-only",
+        "-opis-stack",
     ];
     const PROPERTY_VARIANTS = {
         "animation": ["-webkit-animation"],
@@ -703,8 +714,6 @@
         [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
         }
     };
-    // Add generators to properties automatically
-    PROPERTY_LIST.push(...Object.keys(CSS_GENERATORS));
     function generateStyles(settings) {
         let content = null;
         if (settings.cache) {
