@@ -81,7 +81,6 @@ export declare const ALIASES: {
     break: (v: any) => string[];
     truncate: string[];
     "text-clip": string[];
-    grid: string;
     "space-x": string;
     "space-y": string;
     "space-x-rev": string;
@@ -91,14 +90,20 @@ export declare const ALIASES: {
     "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
     stack: string;
     flex: string;
+    "inline-flex": string;
+    grid: string;
+    "inline-grid": string;
     hidden: string;
     block: string;
     "inline-block": string;
 };
 export declare const DEFAULT_VALUES: {
+    border: string[];
     truncate: string[];
     "text-clip": string[];
     flex: string;
+    "inline-flex": string;
+    "inline-grid": string;
     hidden: string;
     block: string;
     "inline-block": string;
