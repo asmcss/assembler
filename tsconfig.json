@@ -1,8 +1,8 @@
 {
-  "lib": ["es2017", "dom"],
+  "lib": ["es2020", "dom"],
   "compilerOptions": {
     "moduleResolution": "Node",
-    "target": "ES2017",
+    "target": "ES2020",
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "./types",

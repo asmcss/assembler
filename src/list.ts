@@ -305,7 +305,7 @@ export const ALIASES = {
         return "-opis-sr-only";
     },
     "stack": "-opis-stack",
-    "flex": "display",
+    "flex": v => v ? "flex" : "display",
     "inline-flex": "display",
     "grid": "-opis-grid",
     "inline-grid": "display",

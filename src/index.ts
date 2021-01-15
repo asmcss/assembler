@@ -17,6 +17,7 @@
 import {generateStyles, getUserSettings} from "./common";
 import {observeDocument} from "./observers";
 
+
 export {extract, getStyleEntries as parse} from "./handlers";
 export {style, registerMixin} from "./mixin";
 

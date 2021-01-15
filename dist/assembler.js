@@ -305,7 +305,7 @@
             return "-opis-sr-only";
         },
         "stack": "-opis-stack",
-        "flex": "display",
+        "flex": v => v ? "flex" : "display",
         "inline-flex": "display",
         "grid": "-opis-grid",
         "inline-grid": "display",
@@ -1014,12 +1014,7 @@
         }
         _elementObserver.observe(element, options);
     }
-    function observe(element, deep = true) {
-        if (deep) {
-            for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
-                observe(child, true);
-            }
-        }
+    function observe(element) {
         if (observedElements.has(element)) {
             return;
         }
@@ -1040,7 +1035,10 @@
         if (content !== '') {
             handleStyleChange(element, null, content);
         }
-        observeElement(element, { attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
+        observeElement(element, { attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
+        for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
+            observe(child);
+        }
     }
     function whenApplyChanged(element, newApply) {
         let prevApply = observedElements.get(element) || null;

@@ -5,12 +5,14 @@ import pkg from './package.json';
 
 const NAME = 'Opis.Assembler';
 const MAIN = 'src/index.ts';
-const GLOBALS = {};
+const GLOBALS = {
+    "vue": "Vue"
+};
 const EXTERNAL = Object.keys(GLOBALS);
 
-const resolver = importResolver(['.js', '.mjs', '.ts']);
+const resolver = importResolver(['.mjs', '.ts', '.js']);
 const typescript = ts({
-    target: "es6"
+    target: "es2015"
 });
 
 export default [

@@ -57,13 +57,7 @@ function observeElement(element: Element, options?: MutationObserverInit) {
     _elementObserver.observe(element, options);
 }
 
-function observe(element: HTMLElement, deep: boolean = true): void {
-    if (deep) {
-        for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
-            observe(child as HTMLElement, true);
-        }
-    }
-
+function observe(element: HTMLElement): void {
     if (observedElements.has(element)) {
         return;
     }
@@ -91,7 +85,11 @@ function observe(element: HTMLElement, deep: boolean = true): void {
         handleStyleChange(element, null, content);
     }
 
-    observeElement(element, {attributes: true, attributeOldValue: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR]});
+    observeElement(element, {attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR]});
+
+    for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
+        observe(child as HTMLElement);
+    }
 }
 
 

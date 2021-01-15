@@ -89,7 +89,7 @@ export declare const ALIASES: {
     "space-y-alt": string;
     "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
     stack: string;
-    flex: string;
+    flex: (v: any) => "display" | "flex";
     "inline-flex": string;
     grid: string;
     "inline-grid": string;
