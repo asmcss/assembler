@@ -5,9 +5,7 @@ import pkg from './package.json';
 
 const NAME = 'Opis.Assembler';
 const MAIN = 'src/index.ts';
-const GLOBALS = {
-    "vue": "Vue"
-};
+const GLOBALS = {};
 const EXTERNAL = Object.keys(GLOBALS);
 
 const resolver = importResolver(['.mjs', '.ts', '.js']);
