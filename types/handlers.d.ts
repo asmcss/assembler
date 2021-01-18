@@ -4,8 +4,7 @@ declare type PropertyInfo = {
     name: string;
     value: string | null;
 };
-export declare const X_ATTR_NAME = "_opis";
-export declare const HASH_VAR_PREFIX = "--opis-";
+export declare const HASH_VAR_PREFIX = "--x-";
 export declare const VAR_REGEX: RegExp;
 export declare const PROPERTY_REGEX: RegExp;
 export declare const STYLE_ATTR = "x-style";

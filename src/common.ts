@@ -15,7 +15,7 @@
  */
 
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
-import {X_ATTR_NAME, HASH_VAR_PREFIX} from "./handlers";
+import {HASH_VAR_PREFIX} from "./handlers";
 import {generateRootVariables} from "./variables";
 
 type UserSettings = {
@@ -30,22 +30,22 @@ const CACHE_KEY = 'opis-assembler-cache';
 const CSS_GENERATORS = {
     "-opis-grid": (hash: string, state: string): string => {
         if (state !== '') return '';
-        return `[${X_ATTR_NAME}~=x${hash}]{display:var(${HASH_VAR_PREFIX + hash}) !important}
-        [${X_ATTR_NAME}~=x${hash}] > * {word-break: break-all !important}
-        [${X_ATTR_NAME}~=x${hash}] > * > * {max-width: 100% !important}
-        [${X_ATTR_NAME}~=x${hash}] > [${X_ATTR_NAME}~=x${hash}]{justify-self: normal !important;align-self: normal !important}
+        return `.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}
+        .x\\#${hash} > * {word-break: break-all !important}
+        .x\\#${hash} > * > * {max-width: 100% !important}
+        .x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}
         `;
     },
-    "-opis-space-x": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-y": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-left": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-right": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-top": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-bottom": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-background-clip-text": (hash: string, state: string): string => `[${X_ATTR_NAME}~=x${hash}]${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
+    "-opis-space-x": (hash: string, state: string): string => `.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-y": (hash: string, state: string): string => `.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-left": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-right": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-top": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-bottom": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-background-clip-text": (hash: string, state: string): string => `.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
     "-opis-sr-only": (hash: string, state: string): string => {
         if (state !== '') return '';
-        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+        return `.x\\#${hash}, .x\\#${hash}:focus{
             position: absolute !important;
             width: 1px !important;
             height: 1px !important;
@@ -59,7 +59,7 @@ const CSS_GENERATORS = {
     },
     "-opis-not-sr-only": (hash: string, state: string): string => {
         if (state !== '') return '';
-        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+        return `.x\\#${hash}, .x\\#${hash}:focus{
             position: static !important;
             width: auto !important;
             height: auto !important;
@@ -74,11 +74,11 @@ const CSS_GENERATORS = {
         if (state !== '') return '';
         const z = [];
         for (let i = 1; i <= 10; i++) {
-            z.push(`[${X_ATTR_NAME}~=x${hash}] > *:nth-child(${i}){z-index: ${i} !important}`);
+            z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
         }
-        return `[${X_ATTR_NAME}~=x${hash}]{display:grid;grid-template-columns:minmax(0,1fr);
+        return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
         grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
-        [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
+        .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
     }
 }
 
@@ -151,7 +151,7 @@ export function generateStyles(settings: UserSettings): string {
                 if (name.startsWith('-opis-')) {
                     str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
                 } else {
-                    str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                    str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
                 }
             }
         }

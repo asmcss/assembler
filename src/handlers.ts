@@ -18,8 +18,7 @@ import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST, VALUE_WR
 
 type PropertyInfo = {entry: string, property: string, name: string, value: string|null};
 
-export const X_ATTR_NAME = '_opis';
-export const HASH_VAR_PREFIX = '--opis-';
+export const HASH_VAR_PREFIX = '--x-';
 export const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 export const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 export const STYLE_ATTR = "x-style";
@@ -31,39 +30,38 @@ export function handleStyleChange(element: HTMLElement, oldContent: string|null,
     }
 
     const newEntries = getStyleEntries(content);
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME) ? element.getAttribute(X_ATTR_NAME).split(' ') : [];
+    const removeList = [], addList = [], classList = element.classList;
 
     // remove old entries
     if (oldContent !== null) {
         for (const {name, property, entry} of getStyleProperties(oldContent)) {
             if (!newEntries.has(name)) {
-                const index = opis_attrs.indexOf(entry);
-                if (index >= 0) {
-                    opis_attrs.splice(index, 1);
-                }
+                removeList.push(entry);
                 element.style.removeProperty(property);
             }
         }
     }
 
+    classList.remove(...removeList);
+
     for (const {property, entry, value} of newEntries.values()) {
-        const index = opis_attrs.indexOf(entry);
-        if (index < 0) {
-            opis_attrs.push(entry);
-        }
+        addList.push(entry);
         element.style.setProperty(property, value);
     }
 
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
+    classList.add(...addList);
 }
 
 export function handleStyleRemoved(element: HTMLElement, content: string): void {
 
-    for (const {property} of getStyleProperties(content)) {
+    const removeList = [];
+
+    for (const {property, entry} of getStyleProperties(content)) {
+        removeList.push(entry);
         element.style.removeProperty(property);
     }
 
-    element.removeAttribute(X_ATTR_NAME);
+    element.classList.remove(...removeList);
 }
 
 export function extract(attr: string, value: string|string[]|null = null): PropertyInfo[] {
@@ -123,7 +121,7 @@ export function extract(attr: string, value: string|string[]|null = null): Prope
         result.push({
             name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
             property: HASH_VAR_PREFIX + hash,
-            entry: 'x' + hash,
+            entry: 'x#' + hash,
             value: value[index],
         });
     }
@@ -210,7 +208,7 @@ export function* getStyleProperties(content: string): Iterable<{property: string
             yield {
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
-                entry: 'x' + hash
+                entry: 'x#' + hash
             };
         }
     }

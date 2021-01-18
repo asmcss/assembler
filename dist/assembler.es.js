@@ -374,8 +374,7 @@ const VALUE_WRAPPER = {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const X_ATTR_NAME = '_opis';
-const HASH_VAR_PREFIX = '--opis-';
+const HASH_VAR_PREFIX = '--x-';
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 const STYLE_ATTR = "x-style";
@@ -384,33 +383,30 @@ function handleStyleChange(element, oldContent, content) {
         return handleStyleRemoved(element, oldContent);
     }
     const newEntries = getStyleEntries(content);
-    const opis_attrs = element.hasAttribute(X_ATTR_NAME) ? element.getAttribute(X_ATTR_NAME).split(' ') : [];
+    const removeList = [], addList = [], classList = element.classList;
     // remove old entries
     if (oldContent !== null) {
         for (const { name, property, entry } of getStyleProperties(oldContent)) {
             if (!newEntries.has(name)) {
-                const index = opis_attrs.indexOf(entry);
-                if (index >= 0) {
-                    opis_attrs.splice(index, 1);
-                }
+                removeList.push(entry);
                 element.style.removeProperty(property);
             }
         }
     }
+    classList.remove(...removeList);
     for (const { property, entry, value } of newEntries.values()) {
-        const index = opis_attrs.indexOf(entry);
-        if (index < 0) {
-            opis_attrs.push(entry);
-        }
+        addList.push(entry);
         element.style.setProperty(property, value);
     }
-    element.setAttribute(X_ATTR_NAME, opis_attrs.join(' '));
+    classList.add(...addList);
 }
 function handleStyleRemoved(element, content) {
-    for (const { property } of getStyleProperties(content)) {
+    const removeList = [];
+    for (const { property, entry } of getStyleProperties(content)) {
+        removeList.push(entry);
         element.style.removeProperty(property);
     }
-    element.removeAttribute(X_ATTR_NAME);
+    element.classList.remove(...removeList);
 }
 function extract(attr, value = null) {
     var _a;
@@ -459,7 +455,7 @@ function extract(attr, value = null) {
         result.push({
             name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
             property: HASH_VAR_PREFIX + hash,
-            entry: 'x' + hash,
+            entry: 'x#' + hash,
             value: value[index],
         });
     }
@@ -528,7 +524,7 @@ function* getStyleProperties(content) {
             yield {
                 name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
-                entry: 'x' + hash
+                entry: 'x#' + hash
             };
         }
     }
@@ -654,23 +650,23 @@ const CSS_GENERATORS = {
     "-opis-grid": (hash, state) => {
         if (state !== '')
             return '';
-        return `[${X_ATTR_NAME}~=x${hash}]{display:var(${HASH_VAR_PREFIX + hash}) !important}
-        [${X_ATTR_NAME}~=x${hash}] > * {word-break: break-all !important}
-        [${X_ATTR_NAME}~=x${hash}] > * > * {max-width: 100% !important}
-        [${X_ATTR_NAME}~=x${hash}] > [${X_ATTR_NAME}~=x${hash}]{justify-self: normal !important;align-self: normal !important}
+        return `.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}
+        .x\\#${hash} > * {word-break: break-all !important}
+        .x\\#${hash} > * > * {max-width: 100% !important}
+        .x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}
         `;
     },
-    "-opis-space-x": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-y": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-left": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-right": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-top": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-bottom": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-background-clip-text": (hash, state) => `[${X_ATTR_NAME}~=x${hash}]${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
+    "-opis-space-x": (hash, state) => `.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-y": (hash, state) => `.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-left": (hash, state) => `.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-right": (hash, state) => `.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-top": (hash, state) => `.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-space-bottom": (hash, state) => `.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
+    "-opis-background-clip-text": (hash, state) => `.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
     "-opis-sr-only": (hash, state) => {
         if (state !== '')
             return '';
-        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+        return `.x\\#${hash}, .x\\#${hash}:focus{
             position: absolute !important;
             width: 1px !important;
             height: 1px !important;
@@ -685,7 +681,7 @@ const CSS_GENERATORS = {
     "-opis-not-sr-only": (hash, state) => {
         if (state !== '')
             return '';
-        return `[${X_ATTR_NAME}~=x${hash}], [${X_ATTR_NAME}~=x${hash}]:focus{
+        return `.x\\#${hash}, .x\\#${hash}:focus{
             position: static !important;
             width: auto !important;
             height: auto !important;
@@ -701,11 +697,11 @@ const CSS_GENERATORS = {
             return '';
         const z = [];
         for (let i = 1; i <= 10; i++) {
-            z.push(`[${X_ATTR_NAME}~=x${hash}] > *:nth-child(${i}){z-index: ${i} !important}`);
+            z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
         }
-        return `[${X_ATTR_NAME}~=x${hash}]{display:grid;grid-template-columns:minmax(0,1fr);
+        return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
         grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
-        [${X_ATTR_NAME}~=x${hash}] > * {grid-area:stackarea}${z.join('')}`;
+        .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
     }
 };
 function generateStyles(settings) {
@@ -766,7 +762,7 @@ function generateStyles(settings) {
                     str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
                 }
                 else {
-                    str += `[${X_ATTR_NAME}~=x${hash}]${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                    str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
                 }
             }
         }
