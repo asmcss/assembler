@@ -30,38 +30,45 @@ export function handleStyleChange(element: HTMLElement, oldContent: string|null,
     }
 
     const newEntries = getStyleEntries(content);
-    const removeList = [], addList = [], classList = element.classList;
+    const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
 
     // remove old entries
     if (oldContent !== null) {
         for (const {name, property, entry} of getStyleProperties(oldContent)) {
             if (!newEntries.has(name)) {
-                removeList.push(entry);
+                const index = classList.indexOf(entry);
+                if (index >= 0) {
+                    classList.splice(index, 1);
+                }
                 element.style.removeProperty(property);
             }
         }
     }
 
-    classList.remove(...removeList);
-
     for (const {property, entry, value} of newEntries.values()) {
-        addList.push(entry);
+        const index = classList.indexOf(entry);
+        if (index < 0) {
+            classList.push(entry);
+        }
         element.style.setProperty(property, value);
     }
 
-    classList.add(...addList);
+    element.setAttribute('class', classList.join(' '));
 }
 
 export function handleStyleRemoved(element: HTMLElement, content: string): void {
 
-    const removeList = [];
+    const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
 
     for (const {property, entry} of getStyleProperties(content)) {
-        removeList.push(entry);
+        const index = classList.indexOf(entry);
+        if (index >= 0) {
+            classList.splice(index, 1);
+        }
         element.style.removeProperty(property);
     }
 
-    element.classList.remove(...removeList);
+    element.setAttribute('class', classList.join(' '));
 }
 
 export function extract(attr: string, value: string|string[]|null = null): PropertyInfo[] {
