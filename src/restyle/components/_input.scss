@@ -116,14 +116,14 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
     font-weight: var(--font-weight);
     font-size: var(--input-font-size);
     line-height: var(--line-height);
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--input-ring);
     border-radius: var(--border-radius-sm);
     min-width: var(--input-min-width);
     height: var(--input-height);
     transition: box-shadow .25s;
     &:focus {
         border-color: var(--primary-300);
-        box-shadow: var(--elevation-1), var(--input-focus-shadow);
+        box-shadow: var(--input-focus-ring);
     }
 
     &::placeholder {
@@ -217,7 +217,7 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
         height: var(--slider-track-height);
         border-radius: calc(var(--slider-height) / 2);
         background: var(--input-background-color);
-        box-shadow: var(--elevation-1) inset;
+        box-shadow: var(--input-ring) inset;
         border: 1px solid var(--gray-300);
     }
 
@@ -225,14 +225,13 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
         height: var(--slider-track-height);
         border-radius: calc(var(--slider-height) / 2);
         background: var(--input-background-color);
-        box-shadow: var(--elevation-1);
+        box-shadow: var(--input-ring);
         border: 1px solid var(--gray-300);
     }
 }
 
-.restyle\:select {
-    display: inline-grid;
-    grid-template-areas: "select";
+select:not(.native) {
+    appearance: none;
     min-width: var(--input-min-width);
     font-weight: var(--font-weight);
     font-size: var(--input-font-size);
@@ -240,57 +239,35 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
     background-color: var(--input-background-color);
     color: var(--input-text-color);
     border-radius: var(--border-radius-sm);
-    align-items: center;
-    &.multiple {
-        display: inline-block;
-        > select {
-            height: 100%;
-        }
+    display: inline-block;
+    vertical-align: middle;
+    outline: none;
+    padding: var(--input-padding-y) var(--input-padding-x);
+    border: 1px solid var(--gray-300);
+    box-shadow: var(--input-ring);
+    transition: box-shadow .25s;
+    &[multiple] {
+        padding: 0;
     }
-    > select {
-        appearance: none;
-        background-color: transparent;
-        color: inherit;
-        display: inline-block;
-        vertical-align: middle;
-        outline: none;
-        width: 100%;
-        padding: var(--input-padding-y) var(--input-padding-x);
-        border: 1px solid var(--gray-300);
-        font-weight: inherit;
-        font-size: inherit;
-        line-height: inherit;
-        border-radius: inherit;
-        box-shadow: var(--elevation-1);
-        grid-area: select;
-        transition: box-shadow .25s;
-        &:focus {
-            border-color: var(--primary-300);
-            box-shadow: var(--elevation-1), var(--input-focus-shadow);
-        }
-        > option {
-            padding: var(--select-option-padding);
-            &:checked {
-                background-color: var(--primary-200);
-                color: #000;
-            }
-            &:hover {
-                background-color: var(--primary-50);
-            }
-        }
+    &:not([multiple]) {
+        background-image: var(--select-background);
+        background-repeat: no-repeat;
+        background-position: center right;
+        background-size: var(--select-background-size);
     }
-    &:not(.multiple)::after {
-        display: block;
-        content: "";
-        width: 12px;
-        height: 8px;
-        margin-right: 12px;
-        opacity: .75;
-        background-color: currentColor;
-        pointer-events: none;
-        clip-path: polygon(100% 0%, 0 0%, 50% 100%);
-        grid-area: select;
-        justify-self: end;
+    &:focus {
+        border-color: var(--primary-300);
+        box-shadow: var(--input-focus-ring);
+    }
+    > option {
+        padding: var(--select-option-padding);
+        &:checked {
+            background-color: var(--primary-200);
+            color: #000;
+        }
+        &:hover {
+            background-color: var(--primary-50);
+        }
     }
 }
 
@@ -346,8 +323,8 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
     transition: box-shadow .25s;
 }
 .restyle\:focusable-input {
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--input-ring);
     &:focus, &:focus-within {
-        box-shadow: var(--elevation-1), var(--input-focus-shadow) !important;
+        box-shadow: var(--input-focus-ring) !important;
     }
 }

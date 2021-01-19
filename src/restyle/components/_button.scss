@@ -42,9 +42,9 @@
 }
 
 .restyle\:focusable-button {
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--button-ring);
     &:focus, &:focus-within {
-        box-shadow: var(--elevation-1), var(--button-focus-shadow) !important;
+        box-shadow: var(--button-focus-ring) !important;
     }
 }
 
@@ -56,7 +56,7 @@ body.restyle input[type=submit]:not(.restyle\:reset-button),
     background-image: linear-gradient(to top, var(--button-styled-color1) 0%, var(--button-styled-color2) 100%);
     color: var(--button-styled-text-color);
     border: 1px solid var(--button-styled-border-color);
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--button-ring);
     transition: box-shadow .25s;
     &:hover {
         background-image: linear-gradient(to top, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
@@ -65,7 +65,7 @@ body.restyle input[type=submit]:not(.restyle\:reset-button),
         background-image: linear-gradient(to bottom, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
     }
     &:focus {
-        box-shadow: var(--elevation-1), var(--button-focus-shadow);
+        box-shadow: var(--button-focus-ring);
     }
     &:disabled {
         color: var(--button-styled-disabled-color);

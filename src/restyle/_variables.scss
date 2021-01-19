@@ -43,7 +43,6 @@ $color-palette: (
         primary-900: getColor($primary-color, 900),
         gray: var(--gray-500),
         primary: var(--primary-500),
-        primary-translucid: #{$primary-color + '40'}
 ) !default;
 $font-family: (
         sans-serif: (-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol),

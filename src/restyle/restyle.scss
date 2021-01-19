@@ -40,6 +40,12 @@
     @each $name, $value in $border-radius-sizes {
         --border-radius-#{$name}: #{$value};
     }
+    // Scrollbars
+    --scrollbar-color: rgba(0, 0, 0, 0.25);
+    --scrollbar-background: transparent;
+    --scrollbar-size: 8px;
+    --scrollbar-radius: calc(var(--scrollbar-size) / 2);
+
     // Buttons
     --button-padding-x: 0.75rem;
     --button-padding-y: 0.25rem;
@@ -53,9 +59,11 @@
     --button-styled-color2: var(--gray-50);
     --button-styled-color1-hover: var(--gray-300);
     --button-styled-color2-hover: var(--gray-50);
-    --button-focus-shadow: 0 0 0 3px var(--primary-translucid);
+    --button-ring: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
+    --button-focus-ring: var(--button-ring), 0 0 0 3px var(--primary-50);
     // Input
-    --input-focus-shadow: var(--button-focus-shadow);
+    --input-ring: var(--button-ring);
+    --input-focus-ring: var(--button-focus-ring);
     --input-checkbox-background: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='%23fff' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L7 8.586 5.707 7.293z'/%3E%3C/svg%3E");
     --input-radio-background: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='%23fff' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='3'/%3E%3C/svg%3E");
     --input-primary-color: var(--primary);
@@ -63,16 +71,18 @@
     --input-background-color: var(--white);
     --input-text-color: var(--black);
     --input-font-size: var(--button-font-size);
-    --input-padding-x: 1rem;
-    --input-padding-y: 0.5rem;
-    --input-min-width: 0.5rem;
-    --input-height: 2.5rem;
+    --input-padding-x: var(--button-padding-x);
+    --input-padding-y: var(--button-padding-y);
+    --input-min-width: calc(2 * var(--button-min-width));
+    --input-height: var(--button-height);
     --slider-height: 1rem;
     --slider-track-height: 0.5rem;
     --select-option-padding: 0.5rem 1rem;
+    --select-background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    --select-background-size: 1.25rem;
     // Defaults
-    --body-background-color: var(--gray-50);
-    --body-text-color: var(--gray-900);
+    --body-background-color: white;
+    --body-text-color: black;
     --font-size: 16px;
     --font-weight: normal;
     --line-height: var(--line-height-normal);
@@ -84,5 +94,6 @@
 @import "components/typography";
 @import "components/button";
 @import "components/input";
+@import "components/scrollbar";
 
 
