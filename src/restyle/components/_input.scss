@@ -30,45 +30,19 @@
     input[type=url],
     input[type=month],
     input[type=color] {
-        &.restyle\:input {
+        &:not(.native) {
             @content;
         }
     }
-
-    body.restyle {
-        textarea,
-        input[type=text],
-        input[type=password],
-        input[type=number],
-        input[type=tel],
-        input[type=email],
-        input[type=color],
-        input[type=date],
-        input[type=datetime-local],
-        input[type=time],
-        input[type=week],
-        input[type=search],
-        input[type=url],
-        input[type=month],
-        input[type=color] {
-            &:not(.restyle\:input):not(.restyle\:reset-input) {
-                @content;
-            }
-        }
+    .input {
+        @content;
     }
 }
 
 @mixin input-type($type) {
     input[type=#{$type}] {
-        &.restyle\:input {
+        &:not(.native) {
             @content;
-        }
-    }
-    body.restyle {
-        input[type=#{$type}] {
-            &:not(.restyle\:input):not(.restyle\:reset-input) {
-                @content;
-            }
         }
     }
 }
@@ -76,58 +50,47 @@
 @mixin input-check {
     input[type=radio],
     input[type=checkbox] {
-        &.restyle\:input {
+        &:not(.native) {
             @content;
-        }
-    }
-    body.restyle {
-        input[type=radio],
-        input[type=checkbox] {
-            &:not(.restyle\:input) {
-                @content;
-            }
         }
     }
 }
 
-body.restyle input:not(.restyle\:input):not(.restyle\:reset-input),
-body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
-.restyle\:input {
+input:not(.native), textarea:not(.native), .input {
     appearance: none;
     display: inline-block;
     vertical-align: middle;
     outline: none;
     &:focus {
-        box-shadow: 0 0 0 3px var(--primary-50);
+        box-shadow: var(--control-ring-focus);
     }
     &:disabled {
         opacity: 0.75 !important;
         + label, + .label {
-            color: var(--gray);
+            color: var(--control-text-color-disabled);
         }
     }
 }
 
 @include input-type-all {
-    background-color: var(--input-background-color);
-    color: var(--input-text-color);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    border: 1px solid var(--gray-300);
-    font-weight: var(--font-weight);
-    font-size: var(--input-font-size);
-    line-height: var(--line-height);
-    box-shadow: var(--input-ring);
-    border-radius: var(--border-radius-sm);
+    background-color: var(--control-background-color);
+    color: var(--control-text-color);
+    padding: var(--control-padding-y) var(--control-padding-x);
+    border: 1px solid var(--input-border-color);
+    font-weight: var(--control-font-weight);
+    font-size: var(--control-font-size);
+    line-height: var(--control-line-height);
+    box-shadow: var(--control-ring);
+    border-radius: var(--control-border-radius);
     min-width: var(--input-min-width);
-    height: var(--input-height);
+    height: var(--control-height);
     transition: box-shadow .25s;
     &:focus {
-        border-color: var(--primary-300);
-        box-shadow: var(--input-focus-ring);
+        border-color: var(--control-main-color);
+        box-shadow: var(--control-ring-focus);
     }
-
     &::placeholder {
-        color: var(--gray);
+        color: var(--input-placeholder-color);
     }
 }
 
@@ -165,11 +128,11 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
         border-radius: 50%;
         cursor: pointer;
 
-        background: var(--input-primary-color);
-        border: 1px solid var(--input-primary-color);
+        background: var(--control-main-color);
+        border: 1px solid var(--control-main-color);
 
-        height: var(--slider-track-height);
-        width: var(--slider-track-height);
+        height: var(--input-slider-track-height);
+        width: var(--input-slider-track-height);
 
         transform-origin: center;
         transform: scale(2);
@@ -184,11 +147,11 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
         border-radius: 50%;
         cursor: pointer;
 
-        background: var(--input-primary-color);
-        border: 1px solid var(--input-primary-color);
+        background: var(--control-main-color);
+        border: 1px solid var(--control-main-color);
 
-        height: var(--slider-track-height);
-        width: var(--slider-track-height);
+        height: var(--input-slider-track-height);
+        width: var(--input-slider-track-height);
 
         transform-origin: center;
         transform: scale(2);
@@ -199,52 +162,46 @@ body.restyle textarea:not(.restyle\:input):not(.restyle\:reset-input),
 
     &:active::-moz-range-thumb,
     &:focus::-moz-range-thumb {
-        box-shadow: 0 0 1px 2px var(--primary-50), inset 0 0 0 1px var(--input-background-color);
+        box-shadow: 0 0 1px 2px var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
     }
 
     &:active::-webkit-slider-thumb,
     &:focus::-webkit-slider-thumb {
-        box-shadow: 0 0 1px 2px var(--primary-50), inset 0 0 0 1px var(--input-background-color);
+        box-shadow: 0 0 1px 2px var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
     }
 
-    //--slider-track-gradient: linear-gradient(to right, var(--slider-color-from) var(--slider-percent), var(--slider-color-from) var(--slider-percent), var(--slider-color-to) var(--slider-percent));
-    //
-    //&[data-faded] {
-    //    --slider-track-gradient: linear-gradient(to right, var(--slider-color-from) 0%, var(--slider-color-to) 100%);
-    //}
-
     &::-moz-range-track {
-        height: var(--slider-track-height);
-        border-radius: calc(var(--slider-height) / 2);
+        height: var(--input-slider-track-height);
+        border-radius: var(--input-min-width);
         background: var(--input-background-color);
-        box-shadow: var(--input-ring) inset;
-        border: 1px solid var(--gray-300);
+        box-shadow: var(--control-ring) inset;
+        border: 1px solid var(--input-border-color);
     }
 
     &::-webkit-slider-runnable-track {
-        height: var(--slider-track-height);
-        border-radius: calc(var(--slider-height) / 2);
+        height: var(--input-slider-track-height);
+        border-radius: var(--input-min-width);
         background: var(--input-background-color);
-        box-shadow: var(--input-ring);
-        border: 1px solid var(--gray-300);
+        box-shadow: var(--control-ring);
+        border: 1px solid var(--input-border-color);
     }
 }
 
 select:not(.native) {
     appearance: none;
     min-width: var(--input-min-width);
-    font-weight: var(--font-weight);
-    font-size: var(--input-font-size);
-    line-height: var(--line-height);
+    font-weight: var(--control-font-weight);
+    font-size: var(--control-font-size);
+    line-height: var(--control-line-height);
     background-color: var(--input-background-color);
-    color: var(--input-text-color);
-    border-radius: var(--border-radius-sm);
+    color: var(--control-text-color);
+    border-radius: var(--control-border-radius);
     display: inline-block;
     vertical-align: middle;
     outline: none;
-    padding: var(--input-padding-y) var(--input-padding-x);
-    border: 1px solid var(--gray-300);
-    box-shadow: var(--input-ring);
+    padding: var(--control-padding-y) var(--control-padding-x);
+    border: 1px solid var(--input-border-color);
+    box-shadow: var(--control-ring);
     transition: box-shadow .25s;
     &[multiple] {
         padding: 0;
@@ -256,17 +213,18 @@ select:not(.native) {
         background-size: var(--select-background-size);
     }
     &:focus {
-        border-color: var(--primary-300);
-        box-shadow: var(--input-focus-ring);
+        border-color: var(--control-main-color);
+        box-shadow: var(--control-ring-focus);
     }
     > option {
         padding: var(--select-option-padding);
         &:checked {
-            background-color: var(--primary-200);
-            color: #000;
+            background-color: var(--select-option-checked-bg);
+            color: var(--select-option-checked-color);
         }
         &:hover {
-            background-color: var(--primary-50);
+            background-color: var(--select-option-hover-bg);
+            color: var(--select-option-hover-color);
         }
     }
 }
@@ -277,8 +235,7 @@ select:not(.native) {
     height: 16px;
     user-select: none;
     flex-shrink: 0;
-    color: var(--input-primary-color);
-    border: 1px solid var(--gray-700);
+    border: 1px solid var(--input-checkbox-border);
     background-origin: border-box;
     background-image: none;
     background-color: var(--input-background-color);
@@ -290,7 +247,7 @@ select:not(.native) {
         color: var(--input-disabled-color);
     }
     &:checked {
-        background-color: currentColor;
+        background-color: var(--control-main-color);
         border-color: transparent;
     }
 }
@@ -307,7 +264,7 @@ select:not(.native) {
     }
 }
 
-.restyle\:reset-input {
+.reset-input {
     appearance: none;
     display: inline-block;
     vertical-align: middle;
@@ -322,9 +279,10 @@ select:not(.native) {
     line-height: inherit;
     transition: box-shadow .25s;
 }
-.restyle\:focusable-input {
-    box-shadow: var(--input-ring);
+
+.focusable-input {
+    box-shadow: var(--control-ring);
     &:focus, &:focus-within {
-        box-shadow: var(--input-focus-ring) !important;
+        box-shadow: var(--control-ring-focus) !important;
     }
 }

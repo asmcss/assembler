@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-.restyle\:reset-button {
+.reset-button {
     appearance: none;
     display: inline-block;
     background: transparent;
     color: #000;
-    padding: var(--button-padding-y) var(--button-padding-x);
+    padding: var(--control-padding-y) var(--control-padding-x);
     font-weight: var(--font-weight);
-    font-size: var(--button-font-size);
+    font-size: var(--control-font-size);
     line-height: var(--line-height);
-    border-radius: var(--border-radius-sm);
-    min-width: var(--button-min-width);
+    border-radius: var(--control-border-radius);
+    min-width: var(--control-min-width);
     text-align: center;
     text-decoration: none;
     white-space: nowrap;
@@ -33,7 +33,7 @@
     user-select: none;
     outline: none;
     cursor: pointer;
-    height: var(--button-height);
+    height: var(--control-height);
     transition: box-shadow .25s;
     &:disabled {
         opacity: 0.75;
@@ -41,42 +41,33 @@
     }
 }
 
-.restyle\:focusable-button {
-    box-shadow: var(--button-ring);
+.focusable-button {
+    box-shadow: var(--control-ring);
     &:focus, &:focus-within {
-        box-shadow: var(--button-focus-ring) !important;
+        box-shadow: var(--control-ring-focus) !important;
     }
 }
 
-body.restyle button:not(.restyle\:reset-button),
-body.restyle input[type=button]:not(.restyle\:reset-button),
-body.restyle input[type=submit]:not(.restyle\:reset-button),
-.restyle\:button {
-    @extend .restyle\:reset-button;
-    background-image: linear-gradient(to top, var(--button-styled-color1) 0%, var(--button-styled-color2) 100%);
-    color: var(--button-styled-text-color);
-    border: 1px solid var(--button-styled-border-color);
-    box-shadow: var(--button-ring);
+button:not(.native),
+input[type=button]:not(.native),
+input[type=submit]:not(.native),
+.button {
+    @extend .reset-button;
+    background-image: linear-gradient(to top, var(--button-gradient));
+    color: var(--control-text-color);
+    border: 1px solid var(--control-border-color);
+    box-shadow: var(--control-ring);
     transition: box-shadow .25s;
     &:hover {
-        background-image: linear-gradient(to top, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
+        background-image: linear-gradient(to top, var(--button-gradient-hover));
     }
     &:active {
-        background-image: linear-gradient(to bottom, var(--button-styled-color1-hover) 0%, var(--button-styled-color2-hover) 100%);
+        background-image: linear-gradient(to bottom, var(--button-gradient-hover));
     }
     &:focus {
-        box-shadow: var(--button-focus-ring);
+        box-shadow: var(--control-ring-focus);
     }
     &:disabled {
-        color: var(--button-styled-disabled-color);
+        color: var(--control-text-color-disabled);
     }
-}
-
-.restyle\:button-primary {
-    --button-styled-color1: var(--primary-500) !important;
-    --button-styled-color2: var(--primary-300) !important;
-    --button-styled-text-color: #fff !important;
-    --button-styled-border-color: var(--primary-500) !important;
-    --button-styled-color1-hover: var(--primary-600) !important;
-    --button-styled-color2-hover: var(--primary-300) !important;
 }
