@@ -21,61 +21,79 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-family: inherit;
     font-style: inherit;
     line-height: var(--line-height);
-    margin-top: 0;
+    margin-top: 1rem;
     margin-bottom: 1rem;
-}
-
-@each $name, $value in $headings-font-size {
-    #{$name}, .#{$name} {
-        font-size: var(--#{$name}-font-size);
+    + {
+        margin-top: 0;
     }
 }
-// Paragraph
-p, .p {
-    font-size: var(--font-size);
-    font-weight: var(--font-weight);
-    line-height: var(--line-height);
+
+@for $name from 1 through 6 {
+    h#{$name}, .h#{$name} {
+        font-size: var(--font-size-h#{$name});
+    }
 }
 
-.lead {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight);
-    line-height: var(--line-height);
+// Paragraph
+p, .p {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: var(--font-weight);
+    line-height: var(--line-height);
+    &.lead {
+        font-size: 1.5rem;
+    }
 }
+
 
 // Quotes
 blockquote, q {
-    color: var(--gray-700);
+    color: var(--typography-dark-gray);
     font-weight: 300;
     font-style: italic;
 }
 
 //Blockquote
 blockquote {
-    border-left-color: var(--gray);
+    border-left-color: var(--typography-gray);
     border-left-style: solid;
     border-left-width: 1rem;
     padding: 1rem;
     margin: 1rem 0.5rem;
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
 
     footer {
         text-align: right;
         font-weight: 300;
         font-style: normal;
         margin-top: 0.25rem;
-        color: var(--gray-700);
+        color: var(--typography-darkest-gray);
     }
 }
 
 // Links
-a:link, a:visited, .link {
-    color: var(--primary);
-    text-decoration: none;
-    &:hover {
-        color: var(--primary-700);
+a, .link {
+    color: var(--link-color);
+    text-decoration: var(--link-decoration);
+    &:visited {
+        color: var(--link-color);
     }
+    &:hover {
+        color: var(--link-color-hover);
+        text-decoration: var(--link-decoration-hover);
+    }
+}
+
+// Code
+code:not([class]) {
+    display: inline-block;
+    margin: 1px;
+    color: var(--typography-darkest-gray);
+    background: var(--typography-light-gray);
+    padding: 3px 6px;
+    font-size: 85%;
+    font-weight: 500;
+    border-radius: 3px;
 }

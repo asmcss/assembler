@@ -79,6 +79,23 @@
     --select-option-checked-color: #000;
     --select-option-hover-bg: #cceaf9;
     --select-option-hover-color: #000;
+
+    // Typography
+    --typography-light-gray: #f8f9fc;
+    --typography-gray: #c8c9cc;
+    --typography-dark-gray: #58595c;
+    --typography-darkest-gray: #38393c;
+    --font-size-h1: 1.875rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.25rem;
+    --font-size-h4: 1.125rem;
+    --font-size-h5: 1rem;
+    --font-size-h6: 0.875rem;
+    --link-color: #0097e2;
+    --link-color-hover: #006a9e;
+    --link-color-visited: var(--link-color);
+    --link-decoration: none;
+    --link-decoration-hover: underline;
 }
 
 @import "root";
