@@ -208,6 +208,13 @@ input[type=range]:not(.native) {
     }
 }
 
+// Firefox only
+@supports (scrollbar-width: thin) {
+    input[type=radio], input[type=checkbox], input[type=range] {
+        margin-top: 0;
+    }
+}
+
 select:not(.native) {
     appearance: none;
     min-width: var(--input-min-width);
