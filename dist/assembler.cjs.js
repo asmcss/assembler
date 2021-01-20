@@ -757,7 +757,9 @@ function generateStyles(settings) {
         }
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
             const name = PROPERTY_LIST[name_index];
-            for (const state of states) {
+            // generate all states for default media
+            const stateList = media_index === 0 ? STATE_LIST : states;
+            for (const state of stateList) {
                 const state_index = STATE_LIST.indexOf(state);
                 if (state_index < 0) {
                     continue;
@@ -818,7 +820,7 @@ function getUserSettings(dataset) {
     // Add all
     breakpoints.unshift('all');
     const states = dataset.states === undefined
-        ? ["normal", "hover", "focus", "active", "disabled"]
+        ? ["normal", "hover"]
         : getStringItemList(dataset.states.toLowerCase());
     if (states.indexOf("normal") === -1) {
         // always add normal state
