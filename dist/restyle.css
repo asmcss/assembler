@@ -663,7 +663,7 @@ ul:not(.native), ol:not(.native) {
   margin-bottom: 1.5em;
 }
 
-ul:not(.native) li, ol:not(.native) li {
+ul:not(.native) > li, ol:not(.native) > li {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   padding-left: 1.5em;
@@ -671,11 +671,11 @@ ul:not(.native) li, ol:not(.native) li {
   line-height: 1.75;
 }
 
-ul:not(.native) li :first-child, ol:not(.native) li :first-child {
+ul:not(.native) > li :first-child, ol:not(.native) > li :first-child {
   margin-top: 0;
 }
 
-ul:not(.native) li::before {
+ul:not(.native) > li::before {
   content: "";
   position: absolute;
   background-color: var(--typography-gray);
@@ -687,10 +687,10 @@ ul:not(.native) li::before {
   line-height: inherit;
 }
 
-ol:not(.native) li::before {
+ol:not(.native) > li::before {
   content: counter(list-item, var(--list-counter-style, decimal)) ".";
   position: absolute;
-  color: var(--typography-gray);
+  color: var(--typography-dark-gray);
   top: 0;
   left: 0.25em;
   line-height: inherit;
