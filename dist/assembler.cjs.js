@@ -796,7 +796,7 @@ function getUserSettings(dataset) {
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
-    const cacheKey = dataset.cache === undefined ? "opis-assembler-cache" : dataset.cacheKey;
+    const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
     if (isDesktopFirst) {
