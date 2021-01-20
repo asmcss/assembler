@@ -488,13 +488,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   font-weight: 700;
   font-family: inherit;
   font-style: normal;
-  line-height: var(--line-height);
+  line-height: inherit;
   margin-top: 1em;
   margin-bottom: 1em;
-}
-
-h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 + *, .h5 + *, .h6 + * {
-  margin-top: 0 !important;
 }
 
 h1, .h1 {
@@ -527,15 +523,19 @@ h5, .h5, h6, .h6 {
 }
 
 p, .p {
-  margin-top: 0.5em;
+  margin-top: 1em;
   margin-bottom: 1em;
-  font-size: 1rem;
-  font-weight: var(--font-weight);
-  line-height: var(--line-height);
+  font-size: 1em;
+  font-weight: normal;
+  line-height: inherit;
+}
+
+p + p, p + .p, .p + p, .p + .p {
+  margin-top: 0;
 }
 
 p.lead, .p.lead {
-  font-size: 1.5rem;
+  font-size: 1.5em;
 }
 
 blockquote, q {
@@ -550,13 +550,13 @@ blockquote {
   border-left-width: 1em;
   padding: 1em;
   margin: 1em 0.5em;
-  font-size: 1rem;
+  font-size: 1em;
   line-height: var(--line-height);
 }
 
 blockquote footer {
   text-align: right;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 300;
   font-style: normal;
   margin-top: 0.25em;
@@ -612,16 +612,16 @@ pre {
   color: var(--typography-darkest-gray);
   border: 1px solid var(--typography-gray);
   border-radius: 0.333333em;
-  font-size: 0.875rem;
+  font-size: 0.875em;
 }
 
 table:not(.native) {
   width: 100%;
   table-layout: auto;
   text-align: left;
-  margin-top: 2em;
-  margin-bottom: 2em;
-  font-size: 0.875rem;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 0.875em;
   line-height: 1.75;
 }
 
@@ -656,6 +656,48 @@ table:not(.native) th:first-child, table:not(.native) td:first-child {
 
 table:not(.native) th:last-child, table:not(.native) td:last-child {
   padding-right: 0;
+}
+
+ul:not(.native), ol:not(.native) {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+ul:not(.native) li, ol:not(.native) li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 1.5em;
+  position: relative;
+  line-height: 1.75;
+}
+
+ul:not(.native) li :first-child, ol:not(.native) li :first-child {
+  margin-top: 0;
+}
+
+ul:not(.native) li::before {
+  content: "";
+  position: absolute;
+  background-color: var(--typography-gray);
+  border-radius: 50%;
+  width: .4em;
+  height: .4em;
+  top: 0.7em;
+  left: 0.25em;
+  line-height: inherit;
+}
+
+ol:not(.native) li::before {
+  content: counter(list-item, var(--list-counter-style, decimal)) ".";
+  position: absolute;
+  color: var(--typography-gray);
+  top: 0;
+  left: 0.25em;
+  line-height: inherit;
+}
+
+h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 + *, .h5 + *, .h6 + * {
+  margin-top: 0;
 }
 
 /*
