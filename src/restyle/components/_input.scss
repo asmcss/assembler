@@ -107,8 +107,12 @@ input:not(.native), textarea:not(.native), .input {
 }
 
 @include input-type(range) {
+    --input-slider-percent: 0;
+    --slider-track-gradient: linear-gradient(to right, var(--input-slider-fill-color) var(--input-slider-percent),
+            var(--input-slider-fill-color) var(--input-slider-percent), var(--input-background-color) var(--input-slider-percent));
     background: transparent;
     min-width: var(--input-min-width);
+
     &:focus {
         box-shadow: none;
     }
@@ -181,7 +185,7 @@ input:not(.native), textarea:not(.native), .input {
     &::-webkit-slider-runnable-track {
         height: var(--input-slider-track-height);
         border-radius: var(--input-min-width);
-        background: var(--input-background-color);
+        background: var(--slider-track-gradient);
         box-shadow: var(--control-ring);
         border: 1px solid var(--input-border-color);
     }
