@@ -116,7 +116,8 @@ Use a more readable tab size (opinionated).
 */
 :root {
   -moz-tab-size: 4;
-  tab-size: 4;
+  -o-tab-size: 4;
+     tab-size: 4;
 }
 
 /**
@@ -171,7 +172,8 @@ Text-level semantics
 Add the correct text decoration in Chrome, Edge, and Safari.
 */
 abbr[title] {
-  text-decoration: underline dotted;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
 }
 
 /**
@@ -565,7 +567,8 @@ blockquote footer {
 
 a, .link {
   color: var(--link-color);
-  text-decoration: var(--link-decoration);
+  -webkit-text-decoration: var(--link-decoration);
+          text-decoration: var(--link-decoration);
 }
 
 a:visited, .link:visited {
@@ -574,7 +577,8 @@ a:visited, .link:visited {
 
 a:hover, .link:hover {
   color: var(--link-color-hover);
-  text-decoration: var(--link-decoration-hover);
+  -webkit-text-decoration: var(--link-decoration-hover);
+          text-decoration: var(--link-decoration-hover);
 }
 
 code:not([class]), kbd {
@@ -717,7 +721,9 @@ h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 +
 input[type=button]:not(.native),
 input[type=submit]:not(.native),
 .button {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   display: inline-block;
   background: transparent;
   color: #000;
@@ -732,7 +738,10 @@ input[type=submit]:not(.native),
   white-space: nowrap;
   vertical-align: middle;
   border: 1px solid transparent;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   outline: none;
   cursor: pointer;
   height: var(--control-height);
@@ -810,7 +819,9 @@ input[type=submit]:not(.native):disabled,
  * limitations under the License.
  */
 input:not(.native), textarea:not(.native) {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   display: inline-block;
   vertical-align: middle;
   outline: none;
@@ -877,6 +888,14 @@ input[type=color]:not(.native):focus {
   box-shadow: var(--control-ring-focus);
 }
 
+textarea:not(.native)::-moz-placeholder, input[type=text]:not(.native)::-moz-placeholder, input[type=password]:not(.native)::-moz-placeholder, input[type=number]:not(.native)::-moz-placeholder, input[type=tel]:not(.native)::-moz-placeholder, input[type=email]:not(.native)::-moz-placeholder, input[type=color]:not(.native)::-moz-placeholder, input[type=date]:not(.native)::-moz-placeholder, input[type=datetime-local]:not(.native)::-moz-placeholder, input[type=time]:not(.native)::-moz-placeholder, input[type=week]:not(.native)::-moz-placeholder, input[type=search]:not(.native)::-moz-placeholder, input[type=url]:not(.native)::-moz-placeholder, input[type=month]:not(.native)::-moz-placeholder, input[type=color]:not(.native)::-moz-placeholder {
+  color: var(--input-placeholder-color);
+}
+
+textarea:not(.native):-ms-input-placeholder, input[type=text]:not(.native):-ms-input-placeholder, input[type=password]:not(.native):-ms-input-placeholder, input[type=number]:not(.native):-ms-input-placeholder, input[type=tel]:not(.native):-ms-input-placeholder, input[type=email]:not(.native):-ms-input-placeholder, input[type=color]:not(.native):-ms-input-placeholder, input[type=date]:not(.native):-ms-input-placeholder, input[type=datetime-local]:not(.native):-ms-input-placeholder, input[type=time]:not(.native):-ms-input-placeholder, input[type=week]:not(.native):-ms-input-placeholder, input[type=search]:not(.native):-ms-input-placeholder, input[type=url]:not(.native):-ms-input-placeholder, input[type=month]:not(.native):-ms-input-placeholder, input[type=color]:not(.native):-ms-input-placeholder {
+  color: var(--input-placeholder-color);
+}
+
 textarea:not(.native)::placeholder,
 input[type=text]:not(.native)::placeholder,
 input[type=password]:not(.native)::placeholder,
@@ -905,7 +924,8 @@ input[type=number]:not(.native) {
 }
 
 input[type=number]:not(.native)::-webkit-outer-spin-button, input[type=number]:not(.native)::-webkit-inner-spin-button {
-  appearance: none;
+  -webkit-appearance: none;
+          appearance: none;
   margin: 0;
 }
 
@@ -914,7 +934,10 @@ input[type=checkbox]:not(.native) {
   margin-top: -4px;
   width: 16px;
   height: 16px;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   flex-shrink: 0;
   border: 1px solid var(--input-checkbox-border);
   background-origin: border-box;
@@ -959,11 +982,9 @@ input[type=radio]:not(.native):checked {
 }
 
 input[type=range]:not(.native) {
-  --input-slider-percent: 0;
-  --slider-track-gradient: linear-gradient(to right, var(--input-slider-fill-color) var(--input-slider-percent),
-            var(--input-slider-fill-color) var(--input-slider-percent), var(--input-background-color) var(--input-slider-percent));
   background: transparent;
   min-width: var(--input-min-width);
+  margin-top: -4px;
 }
 
 input[type=range]:not(.native):focus {
@@ -981,7 +1002,8 @@ input[type=range]:not(.native):disabled::-webkit-slider-thumb {
 }
 
 input[type=range]:not(.native)::-moz-range-thumb {
-  appearance: none;
+  -moz-appearance: none;
+       appearance: none;
   box-sizing: border-box;
   border-radius: 50%;
   cursor: pointer;
@@ -992,11 +1014,13 @@ input[type=range]:not(.native)::-moz-range-thumb {
   transform-origin: center;
   transform: scale(2);
   box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
+  -moz-transition: box-shadow .25s;
   transition: box-shadow .25s;
 }
 
 input[type=range]:not(.native)::-webkit-slider-thumb {
-  appearance: none;
+  -webkit-appearance: none;
+          appearance: none;
   box-sizing: border-box;
   border-radius: 50%;
   cursor: pointer;
@@ -1004,9 +1028,11 @@ input[type=range]:not(.native)::-webkit-slider-thumb {
   border: 1px solid var(--control-main-color);
   height: var(--input-slider-track-height);
   width: var(--input-slider-track-height);
+  margin-top: -2px;
   transform-origin: center;
   transform: scale(2);
   box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
+  -webkit-transition: box-shadow .25s;
   transition: box-shadow .25s;
 }
 
@@ -1019,23 +1045,21 @@ input[type=range]:not(.native):active::-webkit-slider-thumb, input[type=range]:n
 }
 
 input[type=range]:not(.native)::-moz-range-track {
-  height: var(--input-slider-track-height);
+  height: 4px;
   border-radius: var(--input-min-width);
-  background: var(--input-background-color);
-  box-shadow: var(--control-ring) inset;
-  border: 1px solid var(--input-border-color);
+  background: var(--control-main-color);
 }
 
 input[type=range]:not(.native)::-webkit-slider-runnable-track {
-  height: var(--input-slider-track-height);
+  height: 4px;
   border-radius: var(--input-min-width);
-  background: var(--slider-track-gradient);
-  box-shadow: var(--control-ring);
-  border: 1px solid var(--input-border-color);
+  background: var(--control-main-color);
 }
 
 select:not(.native) {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   min-width: var(--input-min-width);
   font-weight: var(--control-font-weight);
   font-size: var(--control-font-size);
@@ -1084,7 +1108,9 @@ select:not(.native) > option:hover {
 }
 
 .input {
-  appearance: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
   display: inline-block;
   vertical-align: middle;
   outline: none;
