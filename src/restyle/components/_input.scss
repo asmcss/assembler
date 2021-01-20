@@ -137,7 +137,7 @@ input:not(.native), textarea:not(.native), .input {
         transform-origin: center;
         transform: scale(2);
 
-        box-shadow: inset 0 0 0 1px var(--input-background-color);
+        box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
         transition: box-shadow .25s;
     }
 
@@ -156,7 +156,7 @@ input:not(.native), textarea:not(.native), .input {
         transform-origin: center;
         transform: scale(2);
 
-        box-shadow: inset 0 0 0 1px var(--input-background-color);
+        box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
         transition: box-shadow .25s;
     }
 
@@ -205,6 +205,7 @@ select:not(.native) {
     transition: box-shadow .25s;
     &[multiple] {
         padding: 0;
+        overflow: auto;
     }
     &:not([multiple]) {
         background-image: var(--select-background);

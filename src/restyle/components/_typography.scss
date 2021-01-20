@@ -23,7 +23,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     line-height: var(--line-height);
     margin-top: 1rem;
     margin-bottom: 1rem;
-    + {
+    + * {
         margin-top: 0;
     }
 }
@@ -87,13 +87,36 @@ a, .link {
 }
 
 // Code
-code:not([class]) {
+code:not([class]), kbd {
     display: inline-block;
     margin: 1px;
-    color: var(--typography-darkest-gray);
-    background: var(--typography-light-gray);
     padding: 3px 6px;
     font-size: 85%;
     font-weight: 500;
     border-radius: 3px;
+}
+code:not([class]) {
+    color: var(--typography-darkest-gray);
+    background: var(--typography-light-gray);
+}
+kbd {
+    color: var(--typography-light-gray);
+    background: var(--typography-darkest-gray);
+    font-weight: normal;
+}
+
+pre {
+    overflow: auto;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    padding: 1em;
+    margin: 1em 0.5em;
+    background-color: var(--typography-light-gray);
+    color: var(--typography-darkest-gray);
+    border: 1px solid var(--typography-gray);
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
 }

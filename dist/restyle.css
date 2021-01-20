@@ -28,21 +28,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 :root {
   --sans-serif: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
   --serif: Georgia, Cambria, Times New Roman, Times, serif;
@@ -65,8 +50,8 @@
   --control-text-color-disabled: #9e9e9e;
   --control-border-color: #bdbdbd;
   --control-border-radius: 0.25rem;
-  --control-main-color: #0097e2;
-  --control-ring-color: #0097e250;
+  --control-main-color: #0073FF;
+  --control-ring-color: #0073FF50;
   --control-ring: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
   --control-ring-focus: var(--control-ring), 0 0 0 3px var(--control-ring-color);
   --scrollbar-color: rgba(0, 0, 0, 0.25);
@@ -89,9 +74,9 @@
   --select-option-padding: 0.5rem 1rem;
   --select-background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   --select-background-size: 1.25rem;
-  --select-option-checked-bg: #66c1ee;
+  --select-option-checked-bg: #66ACFF;
   --select-option-checked-color: #000;
-  --select-option-hover-bg: #cceaf9;
+  --select-option-hover-bg: #A6CFFF;
   --select-option-hover-color: #000;
   --typography-light-gray: #f8f9fc;
   --typography-gray: #c8c9cc;
@@ -103,43 +88,40 @@
   --font-size-h4: 1.125rem;
   --font-size-h5: 1rem;
   --font-size-h6: 0.875rem;
-  --link-color: #0097e2;
-  --link-color-hover: #006a9e;
+  --link-color: #3366FF;
+  --link-color-hover: #254BBB;
   --link-color-visited: var(--link-color);
   --link-decoration: none;
   --link-decoration-hover: underline;
 }
 
+/*! modern-normalize v1.0.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
 /*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-* {
-  box-sizing: border-box;
-}
-
-*::before, *::after {
-  box-sizing: border-box;
-}
-
-/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
-/* Document
-   ========================================================================== */
+Document
+========
+*/
 /**
- * 1. Correct the line height in all browsers.
- * 2. Prevent adjustments of font size after orientation changes in iOS.
- */
+Use a better box model (opinionated).
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/**
+Use a more readable tab size (opinionated).
+*/
+:root {
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+     tab-size: 4;
+}
+
+/**
+1. Correct the line height in all browsers.
+2. Prevent adjustments of font size after orientation changes in iOS.
+*/
 html {
   line-height: 1.15;
   /* 1 */
@@ -147,112 +129,83 @@ html {
   /* 2 */
 }
 
-/* Sections
-   ========================================================================== */
+/*
+Sections
+========
+*/
 /**
- * Remove the margin in all browsers.
- */
+Remove the margin in all browsers.
+*/
 body {
   margin: 0;
 }
 
 /**
- * Render the `main` element consistently in IE.
- */
-main {
-  display: block;
+Improve consistency of default fonts in all browsers. (https://github.com/sindresorhus/modern-normalize/issues/3)
+*/
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
+/*
+Grouping content
+================
+*/
 /**
- * Correct the font size and margin on `h1` javascript within `section` and
- * `article` contexts in Chrome, Firefox, and Safari.
- */
-h1 {
-  font-size: 2em;
-  margin: 0.67em 0;
-}
-
-/* Grouping content
-   ========================================================================== */
-/**
- * 1. Add the correct box sizing in Firefox.
- * 2. Show the overflow in Edge and IE.
- */
+1. Add the correct height in Firefox.
+2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+*/
 hr {
-  box-sizing: content-box;
-  /* 1 */
   height: 0;
   /* 1 */
-  overflow: visible;
+  color: inherit;
   /* 2 */
 }
 
+/*
+Text-level semantics
+====================
+*/
 /**
- * 1. Correct the inheritance and scaling of font size in all browsers.
- * 2. Correct the odd `em` font sizing in all browsers.
- */
-pre {
-  font-family: monospace, monospace;
-  /* 1 */
-  font-size: 1em;
-  /* 2 */
-}
-
-/* Text-level semantics
-   ========================================================================== */
-/**
- * Remove the gray background on active links in IE 10.
- */
-a {
-  background-color: transparent;
-}
-
-/**
- * 1. Remove the bottom border in Chrome 57-
- * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
- */
+Add the correct text decoration in Chrome, Edge, and Safari.
+*/
 abbr[title] {
-  border-bottom: none;
-  /* 1 */
-  text-decoration: underline;
-  /* 2 */
   -webkit-text-decoration: underline dotted;
           text-decoration: underline dotted;
-  /* 2 */
 }
 
 /**
- * Add the correct font weight in Chrome, Edge, and Safari.
- */
+Add the correct font weight in Edge and Safari.
+*/
 b,
 strong {
   font-weight: bolder;
 }
 
 /**
- * 1. Correct the inheritance and scaling of font size in all browsers.
- * 2. Correct the odd `em` font sizing in all browsers.
- */
+1. Improve consistency of default fonts in all browsers. (https://github.com/sindresorhus/modern-normalize/issues/3)
+2. Correct the odd 'em' font sizing in all browsers.
+*/
 code,
 kbd,
-samp {
-  font-family: monospace, monospace;
+samp,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
   /* 1 */
   font-size: 1em;
   /* 2 */
 }
 
 /**
- * Add the correct font size in all browsers.
- */
+Add the correct font size in all browsers.
+*/
 small {
   font-size: 80%;
 }
 
 /**
- * Prevent `sub` and `sup` javascript from affecting the line height in
- * all browsers.
- */
+Prevent 'sub' and 'sup' elements from affecting the line height in all browsers.
+*/
 sub,
 sup {
   font-size: 75%;
@@ -269,21 +222,29 @@ sup {
   top: -0.5em;
 }
 
-/* Embedded content
-   ========================================================================== */
+/*
+Tabular data
+============
+*/
 /**
- * Remove the border on images inside links in IE 10.
- */
-img {
-  border-style: none;
+1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+*/
+table {
+  text-indent: 0;
+  /* 1 */
+  border-color: inherit;
+  /* 2 */
 }
 
-/* Forms
-   ========================================================================== */
+/*
+Forms
+=====
+*/
 /**
- * 1. Change the font styles in all browsers.
- * 2. Remove the margin in Firefox and Safari.
- */
+1. Change the font styles in all browsers.
+2. Remove the margin in Firefox and Safari.
+*/
 button,
 input,
 optgroup,
@@ -300,19 +261,9 @@ textarea {
 }
 
 /**
- * Show the overflow in IE.
- * 1. Show the overflow in Edge.
- */
-button,
-input {
-  /* 1 */
-  overflow: visible;
-}
-
-/**
- * Remove the inheritance of text transform in Edge, Firefox, and IE.
- * 1. Remove the inheritance of text transform in Firefox.
- */
+Remove the inheritance of text transform in Edge and Firefox.
+1. Remove the inheritance of text transform in Firefox.
+*/
 button,
 select {
   /* 1 */
@@ -320,103 +271,65 @@ select {
 }
 
 /**
- * Correct the inability to style clickable types in iOS and Safari.
- */
+Correct the inability to style clickable types in iOS and Safari.
+*/
 button,
-[type="button"],
-[type="reset"],
-[type="submit"] {
+[type='button'],
+[type='reset'],
+[type='submit'] {
   -webkit-appearance: button;
 }
 
 /**
- * Remove the inner border and padding in Firefox.
- */
-button::-moz-focus-inner,
-[type="button"]::-moz-focus-inner,
-[type="reset"]::-moz-focus-inner,
-[type="submit"]::-moz-focus-inner {
+Remove the inner border and padding in Firefox.
+*/
+::-moz-focus-inner {
   border-style: none;
   padding: 0;
 }
 
 /**
- * Restore the focus styles unset by the previous rule.
- */
-button:-moz-focusring,
-[type="button"]:-moz-focusring,
-[type="reset"]:-moz-focusring,
-[type="submit"]:-moz-focusring {
+Restore the focus styles unset by the previous rule.
+*/
+:-moz-focusring {
   outline: 1px dotted ButtonText;
 }
 
 /**
- * Correct the padding in Firefox.
- */
-fieldset {
-  padding: 0.35em 0.75em 0.625em;
+Remove the additional ':invalid' styles in Firefox.
+See: https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737
+*/
+:-moz-ui-invalid {
+  box-shadow: none;
 }
 
 /**
- * 1. Correct the text wrapping in Edge and IE.
- * 2. Correct the color inheritance from `fieldset` javascript in IE.
- * 3. Remove the padding so developers are not caught out when they zero out
- *    `fieldset` javascript in all browsers.
- */
+Remove the padding so developers are not caught out when they zero out 'fieldset' elements in all browsers.
+*/
 legend {
-  box-sizing: border-box;
-  /* 1 */
-  color: inherit;
-  /* 2 */
-  display: table;
-  /* 1 */
-  max-width: 100%;
-  /* 1 */
   padding: 0;
-  /* 3 */
-  white-space: normal;
-  /* 1 */
 }
 
 /**
- * Add the correct vertical alignment in Chrome, Firefox, and Opera.
- */
+Add the correct vertical alignment in Chrome and Firefox.
+*/
 progress {
   vertical-align: baseline;
 }
 
 /**
- * Remove the default vertical scrollbar in IE 10+.
- */
-textarea {
-  overflow: auto;
-}
-
-/**
- * 1. Add the correct box sizing in IE 10.
- * 2. Remove the padding in IE 10.
- */
-[type="checkbox"],
-[type="radio"] {
-  box-sizing: border-box;
-  /* 1 */
-  padding: 0;
-  /* 2 */
-}
-
-/**
- * Correct the cursor style of increment and decrement buttons in Chrome.
- */
-[type="number"]::-webkit-inner-spin-button,
-[type="number"]::-webkit-outer-spin-button {
+Correct the cursor style of increment and decrement buttons in Safari.
+*/
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
   height: auto;
 }
 
 /**
- * 1. Correct the odd appearance in Chrome and Safari.
- * 2. Correct the outline style in Safari.
- */
-[type="search"] {
+1. Correct the odd appearance in Chrome and Safari.
+2. Correct the outline style in Safari.
+*/
+[type='search'] {
   -webkit-appearance: textfield;
   /* 1 */
   outline-offset: -2px;
@@ -424,16 +337,16 @@ textarea {
 }
 
 /**
- * Remove the inner padding in Chrome and Safari on macOS.
- */
-[type="search"]::-webkit-search-decoration {
+Remove the inner padding in Chrome and Safari on macOS.
+*/
+::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
 /**
- * 1. Correct the inability to style clickable types in iOS and Safari.
- * 2. Change font properties to `inherit` in Safari.
- */
+1. Correct the inability to style clickable types in iOS and Safari.
+2. Change font properties to 'inherit' in Safari.
+*/
 ::-webkit-file-upload-button {
   -webkit-appearance: button;
   /* 1 */
@@ -441,49 +354,114 @@ textarea {
   /* 2 */
 }
 
-/* Interactive
-   ========================================================================== */
 /*
- * Add the correct display in Edge, IE 10+, and Firefox.
- */
-details {
-  display: block;
-}
-
+Interactive
+===========
+*/
 /*
- * Add the correct display in all browsers.
- */
+Add the correct display in Chrome and Safari.
+*/
 summary {
   display: list-item;
 }
 
-/* Misc
-   ========================================================================== */
 /**
- * Add the correct display in IE 10+.
+ * Forked from https://github.com/suitcss/base
+ * Copyright (c) Nicolas Gallagher (MIT License)
+ * A thin layer on top of normalize.css that provides a starting point more
+ * suitable for web applications.
  */
-template {
-  display: none;
+/**
+ * Removes the default spacing and border for appropriate elements.
+ */
+blockquote,
+dl,
+dd,
+figure,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+pre {
+  margin: 0;
+}
+
+button {
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 
 /**
- * Add the correct display in IE 10.
+ * Work around a Firefox/IE bug where the transparent `button` background
+ * results in a loss of the default `button` focus styles.
  */
-[hidden] {
-  display: none;
+button:focus {
+  outline: 1px dotted;
+  outline: 5px auto -webkit-focus-ring-color;
 }
 
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+iframe {
+  border: 0;
+}
+
+ol,
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * ReStyle
+ */
 html {
-  font-size: var(--font-size);
+  font-family: var(--sans-serif);
+  line-height: var(--line-height);
 }
 
 body {
-  font-family: var(--font-family);
-  font-weight: var(--font-weight);
-  font-size: var(--font-size);
-  line-height: var(--line-height);
+  font-family: inherit;
+  line-height: inherit;
   background-color: var(--body-background-color);
   color: var(--body-text-color);
+}
+
+hr {
+  border-top: 1px solid var(--typography-gray);
+}
+
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--monospace);
+}
+
+img,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  vertical-align: middle;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 /*
@@ -540,7 +518,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   margin-bottom: 1rem;
 }
 
-h1 +, h2 +, h3 +, h4 +, h5 +, h6 +, .h1 +, .h2 +, .h3 +, .h4 +, .h5 +, .h6 + {
+h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 + *, .h5 + *, .h6 + * {
   margin-top: 0;
 }
 
@@ -620,15 +598,40 @@ a:hover, .link:hover {
           text-decoration: var(--link-decoration-hover);
 }
 
-code:not([class]) {
+code:not([class]), kbd {
   display: inline-block;
   margin: 1px;
-  color: var(--typography-darkest-gray);
-  background: var(--typography-light-gray);
   padding: 3px 6px;
   font-size: 85%;
   font-weight: 500;
   border-radius: 3px;
+}
+
+code:not([class]) {
+  color: var(--typography-darkest-gray);
+  background: var(--typography-light-gray);
+}
+
+kbd {
+  color: var(--typography-light-gray);
+  background: var(--typography-darkest-gray);
+  font-weight: normal;
+}
+
+pre {
+  overflow: auto;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  padding: 1em;
+  margin: 1em 0.5em;
+  background-color: var(--typography-light-gray);
+  color: var(--typography-darkest-gray);
+  border: 1px solid var(--typography-gray);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
 }
 
 /*
@@ -916,7 +919,7 @@ input[type=range]:not(.native)::-moz-range-thumb {
   width: var(--input-slider-track-height);
   transform-origin: center;
   transform: scale(2);
-  box-shadow: inset 0 0 0 1px var(--input-background-color);
+  box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
   -moz-transition: box-shadow .25s;
   transition: box-shadow .25s;
 }
@@ -933,7 +936,7 @@ input[type=range]:not(.native)::-webkit-slider-thumb {
   width: var(--input-slider-track-height);
   transform-origin: center;
   transform: scale(2);
-  box-shadow: inset 0 0 0 1px var(--input-background-color);
+  box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
   -webkit-transition: box-shadow .25s;
   transition: box-shadow .25s;
 }
@@ -984,6 +987,7 @@ select:not(.native) {
 
 select:not(.native)[multiple] {
   padding: 0;
+  overflow: auto;
 }
 
 select:not(.native):not([multiple]) {
