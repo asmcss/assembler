@@ -14,53 +14,12 @@
  * limitations under the License.
  */
 
-@mixin input-type-all {
-    textarea,
-    input[type=text],
-    input[type=password],
-    input[type=number],
-    input[type=tel],
-    input[type=email],
-    input[type=color],
-    input[type=date],
-    input[type=datetime-local],
-    input[type=time],
-    input[type=week],
-    input[type=search],
-    input[type=url],
-    input[type=month],
-    input[type=color] {
-        &:not(.native) {
-            @content;
-        }
-    }
-    .input {
-        @content;
-    }
-}
-
-@mixin input-type($type) {
-    input[type=#{$type}] {
-        &:not(.native) {
-            @content;
-        }
-    }
-}
-
-@mixin input-check {
-    input[type=radio],
-    input[type=checkbox] {
-        &:not(.native) {
-            @content;
-        }
-    }
-}
-
-input:not(.native), textarea:not(.native), .input {
+input:not(.native), textarea:not(.native) {
     appearance: none;
     display: inline-block;
     vertical-align: middle;
     outline: none;
+    border: 1px solid transparent;
     &:focus {
         box-shadow: var(--control-ring-focus);
     }
@@ -72,29 +31,49 @@ input:not(.native), textarea:not(.native), .input {
     }
 }
 
-@include input-type-all {
-    background-color: var(--control-background-color);
-    color: var(--control-text-color);
-    padding: var(--control-padding-y) var(--control-padding-x);
-    border: 1px solid var(--input-border-color);
-    font-weight: var(--control-font-weight);
-    font-size: var(--control-font-size);
-    line-height: var(--control-line-height);
-    box-shadow: var(--control-ring);
-    border-radius: var(--control-border-radius);
-    min-width: var(--input-min-width);
-    height: var(--control-height);
-    transition: box-shadow .25s;
-    &:focus {
-        border-color: var(--control-main-color);
-        box-shadow: var(--control-ring-focus);
-    }
-    &::placeholder {
-        color: var(--input-placeholder-color);
+textarea,
+input[type=text],
+input[type=password],
+input[type=number],
+input[type=tel],
+input[type=email],
+input[type=color],
+input[type=date],
+input[type=datetime-local],
+input[type=time],
+input[type=week],
+input[type=search],
+input[type=url],
+input[type=month],
+input[type=color] {
+    &:not(.native) {
+        background-color: var(--control-background-color);
+        color: var(--control-text-color);
+        padding: var(--control-padding-y) var(--control-padding-x);
+        border: 1px solid var(--input-border-color);
+        font-weight: var(--control-font-weight);
+        font-size: var(--control-font-size);
+        line-height: var(--control-line-height);
+        box-shadow: var(--control-ring);
+        border-radius: var(--control-border-radius);
+        min-width: var(--input-min-width);
+        height: var(--control-height);
+        transition: box-shadow .25s;
+        &:focus {
+            border-color: var(--control-main-color);
+            box-shadow: var(--control-ring-focus);
+        }
+        &::placeholder {
+            color: var(--input-placeholder-color);
+        }
     }
 }
 
-@include input-type(number) {
+textarea:not(.native) {
+    height: unset;
+}
+
+input[type=number]:not(.native) {
     position: relative;
 
     &::-webkit-outer-spin-button,
@@ -106,7 +85,50 @@ input:not(.native), textarea:not(.native), .input {
     -moz-appearance: textfield;
 }
 
-@include input-type(range) {
+input[type=radio],
+input[type=checkbox] {
+    &:not(.native) {
+        margin-top: -4px;
+        width: 16px;
+        height: 16px;
+        user-select: none;
+        flex-shrink: 0;
+        border: 1px solid var(--input-checkbox-border);
+        background-origin: border-box;
+        background-image: none;
+        background-color: var(--input-background-color);
+        background-size: 100% 100%;
+        background-position: 50%;
+        background-repeat: no-repeat;
+        transition: box-shadow .25s;
+        &:focus {
+            border-color: var(--control-main-color);
+        }
+        &:disabled {
+            color: var(--input-disabled-color);
+        }
+        &:checked {
+            background-color: var(--control-main-color);
+            border-color: transparent;
+        }
+    }
+}
+
+input[type=checkbox]:not(.native) {
+    border-radius: 2px;
+    &:checked {
+        background-image: var(--input-checkbox-background);
+    }
+}
+
+input[type=radio]:not(.native) {
+    border-radius: 100%;
+    &:checked {
+        background-image: var(--input-radio-background);
+    }
+}
+
+input[type=range]:not(.native) {
     --input-slider-percent: 0;
     --slider-track-gradient: linear-gradient(to right, var(--input-slider-fill-color) var(--input-slider-percent),
             var(--input-slider-fill-color) var(--input-slider-percent), var(--input-background-color) var(--input-slider-percent));
@@ -234,60 +256,17 @@ select:not(.native) {
     }
 }
 
-@include input-check {
-    margin-top: -4px;
-    width: 16px;
-    height: 16px;
-    user-select: none;
-    flex-shrink: 0;
-    border: 1px solid var(--input-checkbox-border);
-    background-origin: border-box;
-    background-image: none;
-    background-color: var(--input-background-color);
-    background-size: 100% 100%;
-    background-position: 50%;
-    background-repeat: no-repeat;
-    transition: box-shadow .25s;
-    &:disabled {
-        color: var(--input-disabled-color);
-    }
-    &:checked {
-        background-color: var(--control-main-color);
-        border-color: transparent;
-    }
-}
-
-@include input-type(checkbox) {
-    &:checked {
-        background-image: var(--input-checkbox-background);
-    }
-}
-@include input-type(radio) {
-    border-radius: 100%;
-    &:checked {
-        background-image: var(--input-radio-background);
-    }
-}
-
-.reset-input {
+.input {
     appearance: none;
     display: inline-block;
     vertical-align: middle;
     outline: none;
     padding: 0;
     margin: 0;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     color: inherit;
     font-weight: inherit;
     font-size: inherit;
     line-height: inherit;
-    transition: box-shadow .25s;
-}
-
-.focusable-input {
-    box-shadow: var(--control-ring);
-    &:focus, &:focus-within {
-        box-shadow: var(--control-ring-focus) !important;
-    }
 }

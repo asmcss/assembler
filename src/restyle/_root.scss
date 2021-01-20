@@ -39,7 +39,7 @@
     --control-background-color: #fff;
     --control-text-color: #000;
     --control-text-color-disabled: #9e9e9e;
-    --control-border-color: #bdbdbd;
+    --control-border-color: #9e9e9e;
     --control-border-radius: 0.25rem;
     --control-main-color: #0073FF;
     --control-ring-color: #0073FF50;
@@ -58,7 +58,7 @@
 
     // Input
     --input-min-width: calc(2 * var(--control-min-width));
-    --input-border-color: #e0e0e0;
+    --input-border-color: #9e9e9e;
     --input-placeholder-color: #9e9e9e;
     --input-disabled-color: #9e9e9e;
     --input-checkbox-background: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='%23fff' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L7 8.586 5.707 7.293z'/%3E%3C/svg%3E");
@@ -66,10 +66,10 @@
     --input-background-color: #fff;
     --input-checkbox-border: #606060;
     --input-radio-broder: #606060;
-    --input-slider-height: 1rem;
+    --input-slider-thumb-height: 1rem;
     --input-slider-fill-color: var(--control-main-color);
     --input-slider-percent: 0;
-    --input-slider-track-height: 0.5rem;
+    --input-slider-track-height: 8px;
 
     // Select
     --select-option-padding: 0.5rem 1rem;
