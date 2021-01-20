@@ -1,6 +1,7 @@
 declare type UserSettings = {
     enabled: boolean;
     cache: string | null;
+    cacheKey: string;
     breakpoints: {
         mode: string;
         settings: object;

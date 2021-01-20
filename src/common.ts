@@ -21,11 +21,10 @@ import {generateRootVariables} from "./variables";
 type UserSettings = {
     enabled: boolean,
     cache: string|null,
+    cacheKey: string,
     breakpoints: {mode: string, settings: object, enabled: string[]},
     states: {enabled: string[]}
 };
-
-const CACHE_KEY = 'opis-assembler-cache';
 
 const CSS_GENERATORS = {
     "-opis-grid": (hash: string, state: string): string => {
@@ -87,24 +86,24 @@ export function generateStyles(settings: UserSettings): string {
 
 
     if (settings.cache) {
-        content = localStorage.getItem(CACHE_KEY + ':' + settings.cache);
+        content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
 
         if (content !== null) {
             return content;
         }
 
-        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
 
         if (oldCacheKey !== null) {
-            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
         }
 
-        localStorage.setItem(CACHE_KEY, settings.cache);
+        localStorage.setItem(settings.cacheKey, settings.cache);
     } else {
-        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
         if (oldCacheKey !== null) {
-            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
-            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
+            localStorage.removeItem(settings.cacheKey);
         }
     }
 
@@ -165,19 +164,19 @@ export function generateStyles(settings: UserSettings): string {
     content = result.join('');
 
     if (settings.cache) {
-        localStorage.setItem(CACHE_KEY, settings.cache);
-        localStorage.setItem(CACHE_KEY + ':' + settings.cache, content);
+        localStorage.setItem(settings.cacheKey, settings.cache);
+        localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
     }
 
     return content;
 }
 
 export function getUserSettings(dataset: {[key: string]: string}): UserSettings {
-    //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
+    const cacheKey = dataset.cache === undefined ? "opis-assembler-cache" : dataset.cacheKey;
 
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
@@ -211,17 +210,17 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         states.unshift("normal");
     }
 
-    const xs = dataset.breakpointXs || (isDesktopFirst ? "512px" : "0px");
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024");
-    const xl = dataset.breakpointXl || "1280px";
+    const xs = dataset.breakpointXs || "32em";
+    const sm = dataset.breakpointSm || (isDesktopFirst ? "48em" : "32em");
+    const md = dataset.breakpointMd || (isDesktopFirst ? "64em" : "48em");
+    const lg = dataset.breakpointLg || (isDesktopFirst ? "80em" : "64em");
+    const xl = dataset.breakpointXl || "80em";
 
 
     return  {
         enabled,
-        //generate,
         cache,
+        cacheKey,
         breakpoints: {
             mode,
             settings: {xs, sm, md, lg, xl},

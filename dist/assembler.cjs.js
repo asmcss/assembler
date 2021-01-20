@@ -657,7 +657,6 @@ function generateRootVariables() {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const CACHE_KEY = 'opis-assembler-cache';
 const CSS_GENERATORS = {
     "-opis-grid": (hash, state) => {
         if (state !== '')
@@ -719,21 +718,21 @@ const CSS_GENERATORS = {
 function generateStyles(settings) {
     let content = null;
     if (settings.cache) {
-        content = localStorage.getItem(CACHE_KEY + ':' + settings.cache);
+        content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
         if (content !== null) {
             return content;
         }
-        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
         if (oldCacheKey !== null) {
-            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
         }
-        localStorage.setItem(CACHE_KEY, settings.cache);
+        localStorage.setItem(settings.cacheKey, settings.cache);
     }
     else {
-        const oldCacheKey = localStorage.getItem(CACHE_KEY);
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
         if (oldCacheKey !== null) {
-            localStorage.removeItem(CACHE_KEY + ':' + oldCacheKey);
-            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
+            localStorage.removeItem(settings.cacheKey);
         }
     }
     const base = STATE_LIST.length, result = [];
@@ -785,17 +784,17 @@ function generateStyles(settings) {
     }
     content = result.join('');
     if (settings.cache) {
-        localStorage.setItem(CACHE_KEY, settings.cache);
-        localStorage.setItem(CACHE_KEY + ':' + settings.cache, content);
+        localStorage.setItem(settings.cacheKey, settings.cache);
+        localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
     }
     return content;
 }
 function getUserSettings(dataset) {
-    //const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
+    const cacheKey = dataset.cache === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
     if (isDesktopFirst) {
@@ -825,15 +824,15 @@ function getUserSettings(dataset) {
         // always add normal state
         states.unshift("normal");
     }
-    const xs = dataset.breakpointXs || (isDesktopFirst ? "512px" : "0px");
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024");
-    const xl = dataset.breakpointXl || "1280px";
+    const xs = dataset.breakpointXs || "32em";
+    const sm = dataset.breakpointSm || (isDesktopFirst ? "48em" : "32em");
+    const md = dataset.breakpointMd || (isDesktopFirst ? "64em" : "48em");
+    const lg = dataset.breakpointLg || (isDesktopFirst ? "80em" : "64em");
+    const xl = dataset.breakpointXl || "80em";
     return {
         enabled,
-        //generate,
         cache,
+        cacheKey,
         breakpoints: {
             mode,
             settings: { xs, sm, md, lg, xl },
