@@ -438,6 +438,7 @@ body {
 
 hr {
   border-top: 1px solid var(--typography-gray);
+  margin: 1rem 0;
 }
 
 pre,
@@ -464,36 +465,10 @@ video {
   height: auto;
 }
 
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+table {
+  border-collapse: collapse;
+}
+
 /*
  * Copyright 2021 Zindex Software
  *
@@ -510,16 +485,16 @@ video {
  * limitations under the License.
  */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-weight: bold;
+  font-weight: 700;
   font-family: inherit;
-  font-style: inherit;
+  font-style: normal;
   line-height: var(--line-height);
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 
 h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 + *, .h5 + *, .h6 + * {
-  margin-top: 0;
+  margin-top: 0 !important;
 }
 
 h1, .h1 {
@@ -546,9 +521,14 @@ h6, .h6 {
   font-size: var(--font-size-h6);
 }
 
+h5, .h5, h6, .h6 {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
 p, .p {
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
   font-size: 1rem;
   font-weight: var(--font-weight);
   line-height: var(--line-height);
@@ -567,18 +547,19 @@ blockquote, q {
 blockquote {
   border-left-color: var(--typography-gray);
   border-left-style: solid;
-  border-left-width: 1rem;
-  padding: 1rem;
-  margin: 1rem 0.5rem;
-  font-size: var(--font-size);
+  border-left-width: 1em;
+  padding: 1em;
+  margin: 1em 0.5em;
+  font-size: 1rem;
   line-height: var(--line-height);
 }
 
 blockquote footer {
   text-align: right;
+  font-size: 1rem;
   font-weight: 300;
   font-style: normal;
-  margin-top: 0.25rem;
+  margin-top: 0.25em;
   color: var(--typography-darkest-gray);
 }
 
@@ -630,8 +611,51 @@ pre {
   background-color: var(--typography-light-gray);
   color: var(--typography-darkest-gray);
   border: 1px solid var(--typography-gray);
-  border-radius: 0.25rem;
+  border-radius: 0.333333em;
   font-size: 0.875rem;
+}
+
+table:not(.native) {
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+table:not(.native) thead {
+  background-color: var(--typography-light-gray);
+  border-bottom: 1px solid var(--typography-gray);
+}
+
+table:not(.native) thead tr {
+  border-bottom-width: 0;
+}
+
+table:not(.native) tr {
+  border-bottom: 1px solid var(--typography-gray);
+}
+
+table:not(.native) tr:last-child {
+  border-bottom-width: 0;
+}
+
+table:not(.native) th {
+  font-weight: 600;
+}
+
+table:not(.native) th, table:not(.native) td {
+  padding: 0.8em 0.6em;
+}
+
+table:not(.native) th:first-child, table:not(.native) td:first-child {
+  padding-left: 0;
+}
+
+table:not(.native) th:last-child, table:not(.native) td:last-child {
+  padding-right: 0;
 }
 
 /*
