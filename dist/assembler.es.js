@@ -306,6 +306,25 @@ const ALIASES = {
     "hidden": "display",
     "block": "display",
     "inline-block": "display",
+    "static": "position",
+    "fixed": "position",
+    "absolute": "position",
+    "relative": "position",
+    "sticky": "position",
+    "visible": "visibility",
+    "invisible": "visibility",
+    "flex-row": "flex-direction",
+    "flex-col": "flex-direction",
+    "list": v => {
+        if (v === "inside" || v === "outside") {
+            return "list-style-position";
+        }
+        return "list-style-type";
+    },
+    "uppercase": "text-transform",
+    "lowercase": "text-transform",
+    "capitalize": "text-transform",
+    "normal-case": "text-transform",
 };
 const DEFAULT_VALUES = {
     "border": ["1px solid black"],
@@ -316,7 +335,23 @@ const DEFAULT_VALUES = {
     "inline-grid": "inline-grid",
     "hidden": "none",
     "block": "block",
-    "inline-block": "inline-block"
+    "inline-block": "inline-block",
+    "static": "static",
+    "fixed": "fixed",
+    "absolute": "absolute",
+    "relative": "relative",
+    "sticky": "sticky",
+    "visible": "visible",
+    "invisible": "hidden",
+    "flex-row": "row",
+    "flex-col": "column",
+    "flex-wrap": "wrap",
+    "flex-grow": "1",
+    "flex-shrink": "1",
+    "uppercase": "uppercase",
+    "lowercase": "lowercase",
+    "capitalize": "capitalize",
+    "normal-case": "none",
 };
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;
@@ -357,6 +392,9 @@ const VALUE_WRAPPER = {
     "radius-br": radius,
     "break": breakCallback,
     "grid": () => "grid",
+    "flex-wrap": (v) => v === "reverse" ? "wrap-reverse" : v,
+    "flex-row": v => v === "reverse" ? "row-reverse" : v,
+    "flex-col": v => v === "reverse" ? "column-reverse" : v,
 };
 
 /*

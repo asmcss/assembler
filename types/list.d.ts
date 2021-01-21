@@ -96,6 +96,20 @@ export declare const ALIASES: {
     hidden: string;
     block: string;
     "inline-block": string;
+    static: string;
+    fixed: string;
+    absolute: string;
+    relative: string;
+    sticky: string;
+    visible: string;
+    invisible: string;
+    "flex-row": string;
+    "flex-col": string;
+    list: (v: any) => "list-style-position" | "list-style-type";
+    uppercase: string;
+    lowercase: string;
+    capitalize: string;
+    "normal-case": string;
 };
 export declare const DEFAULT_VALUES: {
     border: string[];
@@ -107,6 +121,22 @@ export declare const DEFAULT_VALUES: {
     hidden: string;
     block: string;
     "inline-block": string;
+    static: string;
+    fixed: string;
+    absolute: string;
+    relative: string;
+    sticky: string;
+    visible: string;
+    invisible: string;
+    "flex-row": string;
+    "flex-col": string;
+    "flex-wrap": string;
+    "flex-grow": string;
+    "flex-shrink": string;
+    uppercase: string;
+    lowercase: string;
+    capitalize: string;
+    "normal-case": string;
 };
 export declare const VALUE_WRAPPER: {
     gradient: (value: any) => string;
@@ -132,4 +162,7 @@ export declare const VALUE_WRAPPER: {
     "radius-br": (v: any) => any;
     break: (v: any) => string[] | "break-word" | "break-all";
     grid: () => string;
+    "flex-wrap": (v: any) => any;
+    "flex-row": (v: any) => any;
+    "flex-col": (v: any) => any;
 };
