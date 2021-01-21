@@ -822,11 +822,11 @@ function getUserSettings(dataset) {
         // always add normal state
         states.unshift("normal");
     }
-    const xs = dataset.breakpointXs || "32em";
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "48em" : "32em");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "64em" : "48em");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "80em" : "64em");
-    const xl = dataset.breakpointXl || "80em";
+    const xs = dataset.breakpointXs || "512px";
+    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
+    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
+    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024px");
+    const xl = dataset.breakpointXl || "1280px";
     return {
         enabled,
         cache,
