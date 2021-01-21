@@ -155,8 +155,8 @@ input[type=range]:not(.native) {
         background: var(--control-main-color);
         border: 1px solid var(--control-main-color);
 
-        height: var(--input-slider-track-height);
-        width: var(--input-slider-track-height);
+        height: 8px;
+        width: 8px;
 
         transform-origin: center;
         transform: scale(2);
@@ -174,8 +174,8 @@ input[type=range]:not(.native) {
         background: var(--control-main-color);
         border: 1px solid var(--control-main-color);
 
-        height: var(--input-slider-track-height);
-        width: var(--input-slider-track-height);
+        height: 8px;
+        width: 8px;
 
         margin-top: -2px;
         transform-origin: center;
@@ -207,7 +207,6 @@ input[type=range]:not(.native) {
         background: var(--control-main-color);
     }
 }
-
 // Firefox only
 @supports (scrollbar-width: thin) {
     input[type=radio], input[type=checkbox], input[type=range] {

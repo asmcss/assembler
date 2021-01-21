@@ -38,18 +38,18 @@
   --font-weight: normal;
   --line-height: 1.5;
   --font-family: var(--sans-serif);
-  --control-min-width: 6rem;
-  --control-padding-x: 0.75rem;
-  --control-padding-y: 0.25rem;
-  --control-height: 2rem;
-  --control-font-size: 0.875rem;
+  --control-min-width: 6em;
+  --control-padding-x: 0.75em;
+  --control-padding-y: 0.25em;
+  --control-height: 2em;
+  --control-font-size: 0.875em;
   --control-font-weight: normal;
   --control-line-height: 1.5;
   --control-background-color: #fff;
   --control-text-color: #000;
   --control-text-color-disabled: #9e9e9e;
   --control-border-color: #9e9e9e;
-  --control-border-radius: 0.25rem;
+  --control-border-radius: 0.25em;
   --control-main-color: #0073FF;
   --control-ring-color: #0073FF50;
   --control-ring: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
@@ -69,13 +69,9 @@
   --input-background-color: #fff;
   --input-checkbox-border: #606060;
   --input-radio-broder: #606060;
-  --input-slider-thumb-height: 1rem;
-  --input-slider-fill-color: var(--control-main-color);
-  --input-slider-percent: 0;
-  --input-slider-track-height: 8px;
-  --select-option-padding: 0.5rem 1rem;
+  --select-option-padding: 0.5em 1em;
   --select-background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  --select-background-size: 1.25rem;
+  --select-background-size: 1.25em;
   --select-option-checked-bg: #66ACFF;
   --select-option-checked-color: #000;
   --select-option-hover-bg: #A6CFFF;
@@ -748,6 +744,20 @@ input[type=submit]:not(.native),
   transition: box-shadow .25s;
 }
 
+.reset-button:hover, button:hover:not(.native),
+input:hover[type=button]:not(.native),
+input:hover[type=submit]:not(.native),
+.button:hover {
+  text-decoration: none;
+}
+
+.reset-button:focus, button:focus:not(.native),
+input:focus[type=button]:not(.native),
+input:focus[type=submit]:not(.native),
+.button:focus {
+  outline: none;
+}
+
 .reset-button:disabled, button:disabled:not(.native),
 input:disabled[type=button]:not(.native),
 input:disabled[type=submit]:not(.native),
@@ -801,6 +811,10 @@ input[type=button]:not(.native):disabled,
 input[type=submit]:not(.native):disabled,
 .button:disabled {
   color: var(--control-text-color-disabled);
+}
+
+.button:visited {
+  color: var(--control-text-color);
 }
 
 /*
@@ -1009,8 +1023,8 @@ input[type=range]:not(.native)::-moz-range-thumb {
   cursor: pointer;
   background: var(--control-main-color);
   border: 1px solid var(--control-main-color);
-  height: var(--input-slider-track-height);
-  width: var(--input-slider-track-height);
+  height: 8px;
+  width: 8px;
   transform-origin: center;
   transform: scale(2);
   box-shadow: 0 0 0 0 var(--control-ring-color), inset 0 0 0 1px var(--input-background-color);
@@ -1026,8 +1040,8 @@ input[type=range]:not(.native)::-webkit-slider-thumb {
   cursor: pointer;
   background: var(--control-main-color);
   border: 1px solid var(--control-main-color);
-  height: var(--input-slider-track-height);
-  width: var(--input-slider-track-height);
+  height: 8px;
+  width: 8px;
   margin-top: -2px;
   transform-origin: center;
   transform: scale(2);

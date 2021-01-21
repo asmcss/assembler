@@ -35,6 +35,12 @@
     cursor: pointer;
     height: var(--control-height);
     transition: box-shadow .25s;
+    &:hover {
+        text-decoration: none;
+    }
+    &:focus {
+        outline: none;
+    }
     &:disabled {
         opacity: 0.75;
         cursor: default;
@@ -70,4 +76,7 @@ input[type=submit]:not(.native),
     &:disabled {
         color: var(--control-text-color-disabled);
     }
+}
+.button:visited {
+    color: var(--control-text-color);
 }
