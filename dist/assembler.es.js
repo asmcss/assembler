@@ -907,6 +907,7 @@ function getStringItemList(value, unique = true) {
  * limitations under the License.
  */
 const mixinRepository = new Map();
+const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 mixinRepository.set('mixin', function (...names) {
     return names
         .map(name => rootElement.getPropertyValue(name))
@@ -944,11 +945,12 @@ function style(...styles) {
                 if (!item.hasOwnProperty(key)) {
                     continue;
                 }
+                const property = key.replace(regex, '$1-$2').toLowerCase();
                 if (item[key] == null) {
-                    str.push(key);
+                    str.push(property);
                 }
                 else {
-                    str.push(key + ':' + item[key]);
+                    str.push(property + ':' + item[key]);
                 }
             }
         }

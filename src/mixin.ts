@@ -19,6 +19,8 @@ type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
 type StyleType = string|{[key: string]: string};
 
 const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallback>();
+const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
+
 mixinRepository.set('mixin', function (...names: string[]): string {
     return names
         .map(name => rootElement.getPropertyValue(name))
@@ -49,6 +51,7 @@ export function registerMixin(name: string, callback: MixinCallback) {
 export function style(...styles: (StyleType|StyleType[])[]): string {
     let str = [];
 
+
     for (const item of styles) {
         if (typeof item === 'string') {
             str.push(item.trim());
@@ -59,10 +62,11 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
                 if (!item.hasOwnProperty(key)) {
                     continue;
                 }
+                const property = key.replace(regex, '$1-$2').toLowerCase();
                 if (item[key] == null) {
-                    str.push(key);
+                    str.push(property);
                 } else {
-                    str.push(key + ':' + item[key]);
+                    str.push(property + ':' + item[key]);
                 }
             }
         }
