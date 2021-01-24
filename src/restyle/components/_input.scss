@@ -57,7 +57,7 @@ input[type=color] {
         box-shadow: var(--control-ring);
         border-radius: var(--control-border-radius);
         min-width: var(--input-min-width);
-        height: var(--control-height);
+        min-height: var(--control-min-height);
         transition: box-shadow .25s;
         &:focus {
             border-color: var(--control-main-color);

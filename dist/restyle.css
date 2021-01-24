@@ -39,9 +39,9 @@
   --line-height: 1.5;
   --font-family: var(--sans-serif);
   --control-min-width: 6em;
+  --control-min-height: 2em;
   --control-padding-x: 0.75em;
   --control-padding-y: 0.25em;
-  --control-height: 2em;
   --control-font-size: 0.875rem;
   --control-font-weight: normal;
   --control-line-height: 1.5;
@@ -729,6 +729,7 @@ input[type=submit]:not(.native),
   line-height: var(--line-height);
   border-radius: var(--control-border-radius);
   min-width: var(--control-min-width);
+  min-height: var(--control-min-height);
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -740,7 +741,6 @@ input[type=submit]:not(.native),
           user-select: none;
   outline: none;
   cursor: pointer;
-  height: var(--control-height);
   transition: box-shadow .25s;
 }
 
@@ -879,7 +879,7 @@ input[type=color]:not(.native) {
   box-shadow: var(--control-ring);
   border-radius: var(--control-border-radius);
   min-width: var(--input-min-width);
-  height: var(--control-height);
+  min-height: var(--control-min-height);
   transition: box-shadow .25s;
 }
 

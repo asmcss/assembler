@@ -25,6 +25,7 @@
     line-height: var(--line-height);
     border-radius: var(--control-border-radius);
     min-width: var(--control-min-width);
+    min-height: var(--control-min-height);
     text-align: center;
     text-decoration: none;
     white-space: nowrap;
@@ -33,7 +34,6 @@
     user-select: none;
     outline: none;
     cursor: pointer;
-    height: var(--control-height);
     transition: box-shadow .25s;
     &:hover {
         text-decoration: none;
