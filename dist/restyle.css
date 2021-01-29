@@ -713,10 +713,10 @@ h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *, .h1 + *, .h2 + *, .h3 + *, .h4 +
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.reset-button, button:not(.native),
+.button, button:not(.native),
 input[type=button]:not(.native),
 input[type=submit]:not(.native),
-.button {
+a[role=button]:not(.native) {
   -webkit-appearance: none;
      -moz-appearance: none;
           appearance: none;
@@ -744,40 +744,32 @@ input[type=submit]:not(.native),
   transition: box-shadow .25s;
 }
 
-.reset-button:hover, button:hover:not(.native),
+.button:hover, button:hover:not(.native),
 input:hover[type=button]:not(.native),
 input:hover[type=submit]:not(.native),
-.button:hover {
+a:hover[role=button]:not(.native) {
   text-decoration: none;
 }
 
-.reset-button:focus, button:focus:not(.native),
+.button:focus, button:focus:not(.native),
 input:focus[type=button]:not(.native),
 input:focus[type=submit]:not(.native),
-.button:focus {
+a:focus[role=button]:not(.native) {
   outline: none;
 }
 
-.reset-button:disabled, button:disabled:not(.native),
+.button:disabled, button:disabled:not(.native),
 input:disabled[type=button]:not(.native),
 input:disabled[type=submit]:not(.native),
-.button:disabled {
+a:disabled[role=button]:not(.native) {
   opacity: 0.75;
   cursor: default;
-}
-
-.focusable-button {
-  box-shadow: var(--control-ring);
-}
-
-.focusable-button:focus, .focusable-button:focus-within {
-  box-shadow: var(--control-ring-focus) !important;
 }
 
 button:not(.native),
 input[type=button]:not(.native),
 input[type=submit]:not(.native),
-.button {
+a[role=button]:not(.native) {
   background-image: linear-gradient(to top, var(--button-gradient));
   color: var(--control-text-color);
   border: 1px solid var(--control-border-color);
@@ -788,32 +780,32 @@ input[type=submit]:not(.native),
 button:not(.native):hover,
 input[type=button]:not(.native):hover,
 input[type=submit]:not(.native):hover,
-.button:hover {
+a[role=button]:not(.native):hover {
   background-image: linear-gradient(to top, var(--button-gradient-hover));
 }
 
 button:not(.native):active,
 input[type=button]:not(.native):active,
 input[type=submit]:not(.native):active,
-.button:active {
+a[role=button]:not(.native):active {
   background-image: linear-gradient(to bottom, var(--button-gradient-hover));
 }
 
 button:not(.native):focus,
 input[type=button]:not(.native):focus,
 input[type=submit]:not(.native):focus,
-.button:focus {
+a[role=button]:not(.native):focus {
   box-shadow: var(--control-ring-focus);
 }
 
 button:not(.native):disabled,
 input[type=button]:not(.native):disabled,
 input[type=submit]:not(.native):disabled,
-.button:disabled {
+a[role=button]:not(.native):disabled {
   color: var(--control-text-color-disabled);
 }
 
-.button:visited {
+a[role=button]:not(.native):visited {
   color: var(--control-text-color);
 }
 

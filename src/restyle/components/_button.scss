@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-.reset-button {
+.button {
     appearance: none;
     display: inline-block;
     background: transparent;
@@ -47,18 +47,11 @@
     }
 }
 
-.focusable-button {
-    box-shadow: var(--control-ring);
-    &:focus, &:focus-within {
-        box-shadow: var(--control-ring-focus) !important;
-    }
-}
-
 button:not(.native),
 input[type=button]:not(.native),
 input[type=submit]:not(.native),
-.button {
-    @extend .reset-button;
+a[role=button]:not(.native) {
+    @extend .button;
     background-image: linear-gradient(to top, var(--button-gradient));
     color: var(--control-text-color);
     border: 1px solid var(--control-border-color);
@@ -77,6 +70,6 @@ input[type=submit]:not(.native),
         color: var(--control-text-color-disabled);
     }
 }
-.button:visited {
+a[role=button]:not(.native):visited {
     color: var(--control-text-color);
 }

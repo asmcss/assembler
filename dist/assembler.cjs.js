@@ -946,15 +946,16 @@ function style(...styles) {
         }
         else {
             for (const key in item) {
-                if (!item.hasOwnProperty(key)) {
+                const itemValue = item[key];
+                if (itemValue === undefined) {
                     continue;
                 }
                 const property = key.replace(regex, '$1-$2').toLowerCase();
-                if (item[key] == null) {
+                if (itemValue === null) {
                     str.push(property);
                 }
                 else {
-                    str.push(property + ':' + item[key]);
+                    str.push(property + ':' + itemValue);
                 }
             }
         }
@@ -1057,6 +1058,11 @@ function observeElement(element, options) {
     }
     _elementObserver.observe(element, options);
 }
+function observeShadow(shadow) {
+    for (let n = shadow.firstElementChild; n !== null; n = n.nextElementSibling) {
+        observe(n);
+    }
+}
 function observe(element) {
     if (observedElements.has(element)) {
         return;
@@ -1146,6 +1152,7 @@ function init(options) {
         return false;
     }
     const style = document.createElement("style");
+    style.id = 'opis-assembler-css';
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
     observeDocument(document, { childList: true, subtree: true });
@@ -1157,6 +1164,7 @@ if (typeof window !== 'undefined') {
 
 exports.extract = extract;
 exports.init = init;
+exports.observeShadow = observeShadow;
 exports.parse = getStyleEntries;
 exports.registerMixin = registerMixin;
 exports.style = style;

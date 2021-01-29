@@ -59,14 +59,15 @@ export function style(...styles: (StyleType|StyleType[])[]): string {
             str.push(style(...item));
         } else {
             for (const key in item) {
-                if (!item.hasOwnProperty(key)) {
+                const itemValue = item[key];
+                if (itemValue === undefined) {
                     continue;
                 }
                 const property = key.replace(regex, '$1-$2').toLowerCase();
-                if (item[key] == null) {
+                if (itemValue === null) {
                     str.push(property);
                 } else {
-                    str.push(property + ':' + item[key]);
+                    str.push(property + ':' + itemValue);
                 }
             }
         }

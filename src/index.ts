@@ -15,9 +15,9 @@
  */
 
 import {generateStyles, getUserSettings} from "./common";
-import {observeDocument} from "./observers";
+import {observeDocument, observeShadow} from "./observers";
 
-
+export {observeShadow};
 export {extract, getStyleEntries as parse} from "./handlers";
 export {style, registerMixin} from "./mixin";
 
@@ -29,6 +29,7 @@ export function init(options?: {[key: string]: string}): boolean {
     }
 
     const style = document.createElement("style");
+    style.id = 'opis-assembler-css';
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
     observeDocument(document, {childList: true, subtree: true});

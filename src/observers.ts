@@ -57,6 +57,12 @@ function observeElement(element: Element, options?: MutationObserverInit) {
     _elementObserver.observe(element, options);
 }
 
+export function observeShadow(shadow: ShadowRoot) {
+    for (let n = shadow.firstElementChild; n !== null; n = n.nextElementSibling) {
+        observe(n as HTMLElement);
+    }
+}
+
 function observe(element: HTMLElement): void {
     if (observedElements.has(element)) {
         return;
