@@ -178,6 +178,11 @@
         "-opis-sr-only",
         "-opis-not-sr-only",
         "-opis-stack",
+        "-opis-placeholder-color",
+        "-opis-placeholder-font",
+        "-opis-placeholder-size",
+        "-opis-placeholder-style",
+        "-opis-placeholder-weight",
     ];
     const PROPERTY_VARIANTS = {
         "animation": ["-webkit-animation"],
@@ -331,6 +336,11 @@
         "lowercase": "text-transform",
         "capitalize": "text-transform",
         "normal-case": "text-transform",
+        "placeholder": "-opis-placeholder-color",
+        "placeholder-font": "-opis-placeholder-font",
+        "placeholder-size": "-opis-placeholder-size",
+        "placeholder-style": "-opis-placeholder-style",
+        "placeholder-weight": "-opis-placeholder-weight",
     };
     const DEFAULT_VALUES = {
         "border": ["1px solid black"],
@@ -753,7 +763,12 @@
             return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
         grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
         .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
-        }
+        },
+        '-opis-placeholder-color': (hash, state) => `.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`,
+        '-opis-placeholder-font': (hash, state) => `.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`,
+        '-opis-placeholder-size': (hash, state) => `.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`,
+        '-opis-placeholder-style': (hash, state) => `.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`,
+        '-opis-placeholder-weight': (hash, state) => `.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`,
     };
     function generateStyles(settings) {
         let content = null;

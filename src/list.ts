@@ -173,6 +173,11 @@ export const PROPERTY_LIST = [
     "-opis-sr-only",
     "-opis-not-sr-only",
     "-opis-stack",
+    "-opis-placeholder-color",
+    "-opis-placeholder-font",
+    "-opis-placeholder-size",
+    "-opis-placeholder-style",
+    "-opis-placeholder-weight",
 ];
 export const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -331,6 +336,11 @@ export const ALIASES = {
     "lowercase": "text-transform",
     "capitalize": "text-transform",
     "normal-case": "text-transform",
+    "placeholder": "-opis-placeholder-color",
+    "placeholder-font": "-opis-placeholder-font",
+    "placeholder-size": "-opis-placeholder-size",
+    "placeholder-style": "-opis-placeholder-style",
+    "placeholder-weight": "-opis-placeholder-weight",
 };
 export const DEFAULT_VALUES = {
     "border": ["1px solid black"],

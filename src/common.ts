@@ -78,7 +78,12 @@ const CSS_GENERATORS = {
         return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
         grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
         .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
-    }
+    },
+    '-opis-placeholder-color': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`,
+    '-opis-placeholder-font': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`,
+    '-opis-placeholder-size': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`,
+    '-opis-placeholder-style': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`,
+    '-opis-placeholder-weight': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`,
 }
 
 export function generateStyles(settings: UserSettings): string {

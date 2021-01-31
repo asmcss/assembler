@@ -110,6 +110,11 @@ export declare const ALIASES: {
     lowercase: string;
     capitalize: string;
     "normal-case": string;
+    placeholder: string;
+    "placeholder-font": string;
+    "placeholder-size": string;
+    "placeholder-style": string;
+    "placeholder-weight": string;
 };
 export declare const DEFAULT_VALUES: {
     border: string[];
