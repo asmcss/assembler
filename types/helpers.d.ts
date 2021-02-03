@@ -1,5 +1,7 @@
 export declare type UserSettings = {
     enabled: boolean;
+    generate: boolean;
+    constructable: boolean;
     cache: string | null;
     cacheKey: string;
     breakpoints: {
@@ -14,6 +16,7 @@ export declare type UserSettings = {
 declare type StyleType = string | {
     [key: string]: string;
 };
+export declare const HASH_VAR_PREFIX = "--x-";
 export declare function getUserSettings(dataset: {
     [key: string]: string;
 }): UserSettings;

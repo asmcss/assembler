@@ -15,13 +15,22 @@
  */
 
 import {generateStyles} from "./generators";
-import {observeDocument, observeShadow} from "./observers";
+import {observeDocument} from "./observers";
 import {getUserSettings, style} from "./helpers";
 import StyleHandler from "./StyleHandler";
 
-export {observeShadow};
 export {registerMixin} from "./mixin";
 export {style};
+
+declare global {
+    interface Document {
+        adoptedStyleSheets: CSSStyleSheet[];
+    }
+    interface CSSStyleSheet {
+        replace(css: string);
+        replaceSync(css: string);
+    }
+}
 
 export function init(options?: {[key: string]: string}): boolean {
     const settings = getUserSettings(options || document.currentScript.dataset);
@@ -30,11 +39,24 @@ export function init(options?: {[key: string]: string}): boolean {
         return false;
     }
 
-    const style = document.createElement("style");
-    style.id = 'opis-assembler-css';
-    style.textContent = generateStyles(settings);
-    document.currentScript.parentElement.insertBefore(style, document.currentScript);
-    observeDocument(document, new StyleHandler());
+    const tracker = new Map<string, boolean>();
+    let stylesheet: CSSStyleSheet;
+
+    if (settings.constructable && document.adoptedStyleSheets) {
+        stylesheet = new CSSStyleSheet();
+        if (settings.generate) {
+            stylesheet.replaceSync(generateStyles(settings, tracker));
+        }
+        document.adoptedStyleSheets = [stylesheet];
+    } else {
+        const style = document.createElement("style");
+        style.id = 'opis-assembler-css';
+        style.textContent = generateStyles(settings, tracker);
+        document.currentScript.parentElement.insertBefore(style, document.currentScript);
+        stylesheet = style.sheet;
+    }
+
+    observeDocument(document, new StyleHandler(settings, stylesheet, tracker));
 
     return true;
 }

@@ -426,186 +426,6 @@ const VALUE_WRAPPER = {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const HASH_VAR_PREFIX = '--x-';
-const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
-class StyleHandler {
-    handleStyleChange(element, oldContent, content) {
-        if (content === null) {
-            return this.handleStyleRemoved(element, oldContent);
-        }
-        const newEntries = this.getStyleEntries(content);
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        // remove old entries
-        if (oldContent !== null) {
-            for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
-                if (!newEntries.has(name)) {
-                    const index = classList.indexOf(entry);
-                    if (index >= 0) {
-                        classList.splice(index, 1);
-                    }
-                    element.style.removeProperty(property);
-                }
-            }
-        }
-        for (const { property, entry, value } of newEntries.values()) {
-            const index = classList.indexOf(entry);
-            if (index < 0) {
-                classList.push(entry);
-            }
-            element.style.setProperty(property, value);
-        }
-        element.setAttribute('class', classList.join(' '));
-    }
-    handleStyleRemoved(element, content) {
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        for (const { property, entry } of this.getStyleProperties(content)) {
-            const index = classList.indexOf(entry);
-            if (index >= 0) {
-                classList.splice(index, 1);
-            }
-            element.style.removeProperty(property);
-        }
-        element.setAttribute('class', classList.join(' '));
-    }
-    extract(attr, value = null) {
-        var _a;
-        const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-        if (!m || !m.property) {
-            return [];
-        }
-        const media = MEDIA_LIST.indexOf(m.media || 'all');
-        const state = STATE_LIST.indexOf(m.state || 'normal');
-        if (media < 0 || state < 0) {
-            return [];
-        }
-        let properties = m.property;
-        const original = properties;
-        if (ALIASES.hasOwnProperty(properties)) {
-            properties = ALIASES[properties];
-            if (typeof properties === 'function') {
-                properties = properties(value);
-            }
-        }
-        if (!Array.isArray(properties)) {
-            properties = [properties];
-        }
-        if (value === null) {
-            value = DEFAULT_VALUES[original] || '';
-        }
-        if (VALUE_WRAPPER.hasOwnProperty(original)) {
-            value = VALUE_WRAPPER[original](value, original, media, state);
-        }
-        if (!Array.isArray(value)) {
-            value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
-        }
-        else {
-            value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
-        }
-        const result = [];
-        const base = STATE_LIST.length;
-        let index = -1;
-        for (const property of properties) {
-            index++;
-            const name = PROPERTY_LIST.indexOf(property);
-            if (name < 0) {
-                continue;
-            }
-            const hash = (((name * base) + media) * base + state).toString(16);
-            result.push({
-                name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
-                value: value[index],
-            });
-        }
-        return result;
-    }
-    getStyleEntries(content, resolve = true) {
-        const entries = new Map();
-        for (let name of content.split(';')) {
-            name = name.trim();
-            if (name === '') {
-                continue;
-            }
-            let value = null;
-            const pos = name.indexOf(':');
-            if (pos < 0) {
-                name = name.trim();
-            }
-            else {
-                value = resolve ? name.substr(pos + 1) : null;
-                name = name.substr(0, pos).trim();
-            }
-            for (const info of this.extract(name, value)) {
-                entries.set(info.name, info);
-            }
-        }
-        return entries;
-    }
-    *getStyleProperties(content) {
-        var _a;
-        const base = STATE_LIST.length;
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            }
-            else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
-            }
-            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-            if (!m || !m.property) {
-                continue;
-            }
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-            if (media < 0 || state < 0) {
-                continue;
-            }
-            let properties = m.property;
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-                if (typeof properties === 'function') {
-                    properties = properties(value);
-                }
-            }
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-                if (name < 0) {
-                    continue;
-                }
-                const hash = (((name * base) + media) * base + state).toString(16);
-                yield {
-                    name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash
-                };
-            }
-        }
-    }
-}
-
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 const ELEVATION_UMBRA = [
     "0px 0px 0px 0px", "0px 2px 1px -1px", "0px 3px 1px -2px", "0px 3px 3px -2px", "0px 2px 4px -1px",
     "0px 3px 5px -1px", "0px 3px 5px -1px", "0px 4px 5px -2px", "0px 5px 5px -3px", "0px 5px 6px -3px",
@@ -706,164 +526,12 @@ function generateRootVariables() {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const CSS_GENERATORS = {
-    "-opis-grid": (hash, state) => {
-        if (state !== '')
-            return '';
-        return `.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}
-        .x\\#${hash} > * {word-break: break-all !important}
-        .x\\#${hash} > * > * {max-width: 100% !important}
-        .x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}
-        `;
-    },
-    "-opis-space-x": (hash, state) => `.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-y": (hash, state) => `.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-left": (hash, state) => `.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-right": (hash, state) => `.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-top": (hash, state) => `.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-bottom": (hash, state) => `.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-background-clip-text": (hash, state) => `.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
-    "-opis-sr-only": (hash, state) => {
-        if (state !== '')
-            return '';
-        return `.x\\#${hash}, .x\\#${hash}:focus{
-            position: absolute !important;
-            width: 1px !important;
-            height: 1px !important;
-            padding: 0 !important;
-            margin: -1px !important;
-            overflow: hidden !important;
-            clip: rect(0, 0, 0, 0) !important;
-            white-space: nowrap !important;
-            border-width: 0 !important;
-        }`;
-    },
-    "-opis-not-sr-only": (hash, state) => {
-        if (state !== '')
-            return '';
-        return `.x\\#${hash}, .x\\#${hash}:focus{
-            position: static !important;
-            width: auto !important;
-            height: auto !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            overflow: visible !important;
-            clip: auto !important;
-            white-space: normal !important;
-        }`;
-    },
-    "-opis-stack": (hash, state) => {
-        if (state !== '')
-            return '';
-        const z = [];
-        for (let i = 1; i <= 10; i++) {
-            z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
-        }
-        return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
-        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
-        .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
-    },
-    '-opis-placeholder-color': (hash, state) => `.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-font': (hash, state) => `.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-size': (hash, state) => `.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-style': (hash, state) => `.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-weight': (hash, state) => `.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`,
-};
-function generateStyles(settings) {
-    let content = null;
-    if (settings.cache) {
-        content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
-        if (content !== null) {
-            return content;
-        }
-        const oldCacheKey = localStorage.getItem(settings.cacheKey);
-        if (oldCacheKey !== null) {
-            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
-        }
-        localStorage.setItem(settings.cacheKey, settings.cache);
-    }
-    else {
-        const oldCacheKey = localStorage.getItem(settings.cacheKey);
-        if (oldCacheKey !== null) {
-            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
-            localStorage.removeItem(settings.cacheKey);
-        }
-    }
-    const base = STATE_LIST.length, result = [];
-    const breakpoints = settings.breakpoints.enabled;
-    const media_settings = settings.breakpoints.settings;
-    const desktop = settings.breakpoints.mode === "desktop-first";
-    const states = settings.states.enabled;
-    result.push(generateRootVariables());
-    for (const bp of breakpoints) {
-        const media_index = MEDIA_LIST.indexOf(bp);
-        if (media_index < 0) {
-            continue;
-        }
-        let str = '';
-        if (media_index !== 0) {
-            if (desktop) {
-                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
-            }
-            else {
-                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
-            }
-        }
-        for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
-            const name = PROPERTY_LIST[name_index];
-            // generate all states for default media
-            const stateList = media_index === 0 ? STATE_LIST : states;
-            for (const state of stateList) {
-                const state_index = STATE_LIST.indexOf(state);
-                if (state_index < 0) {
-                    continue;
-                }
-                const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
-                let variants = PROPERTY_VARIANTS[name], prefix = '';
-                if (variants) {
-                    for (let i = 0, l = variants.length; i < l; i++) {
-                        prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
-                    }
-                }
-                if (name.startsWith('-opis-')) {
-                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
-                }
-                else {
-                    str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
-                }
-            }
-        }
-        if (media_index !== 0) {
-            str += '}';
-        }
-        result.push(str);
-    }
-    content = result.join('');
-    if (settings.cache) {
-        localStorage.setItem(settings.cacheKey, settings.cache);
-        localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
-    }
-    return content;
-}
-
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
+const HASH_VAR_PREFIX = '--x-';
 function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
+    const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
+    const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
@@ -904,6 +572,8 @@ function getUserSettings(dataset) {
     const xl = dataset.breakpointXl || "1280px";
     return {
         enabled,
+        generate,
+        constructable,
         cache,
         cacheKey,
         breakpoints: {
@@ -953,6 +623,159 @@ function getStringItemList(value, unique = true) {
         return items.filter((value, index, self) => self.indexOf(value) === index);
     }
     return items;
+}
+
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+const CSS_GENERATORS = {
+    "-opis-grid": (hash, state) => {
+        if (state !== '')
+            return [];
+        return [`.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}`,
+            `.x\\#${hash} > * {word-break: break-all !important}`,
+            `.x\\#${hash} > * > * {max-width: 100% !important}`,
+            `.x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}`];
+    },
+    "-opis-space-x": (hash, state) => [`.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-y": (hash, state) => [`.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-left": (hash, state) => [`.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-right": (hash, state) => [`.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-top": (hash, state) => [`.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-bottom": (hash, state) => [`.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-background-clip-text": (hash, state) => [`.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`],
+    "-opis-sr-only": (hash, state) => {
+        if (state !== '')
+            return [];
+        const props = `position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border-width: 0 !important;`;
+        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
+    },
+    "-opis-not-sr-only": (hash, state) => {
+        if (state !== '')
+            return [];
+        const props = `position: static !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            clip: auto !important;
+            white-space: normal !important;`;
+        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
+    },
+    "-opis-stack": (hash, state) => {
+        if (state !== '')
+            return [];
+        const z = [];
+        for (let i = 1; i <= 10; i++) {
+            z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
+        }
+        return [`.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
+        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}`,
+            `.x\\#${hash} > * {grid-area:stackarea}`, ...z];
+    },
+    '-opis-placeholder-color': (hash, state) => [`.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-font': (hash, state) => [`.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-size': (hash, state) => [`.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-style': (hash, state) => [`.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-weight': (hash, state) => [`.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`],
+};
+function generateStyles(settings, tracker) {
+    let content = null;
+    if (settings.cache) {
+        content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
+        if (content !== null) {
+            return content;
+        }
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
+        }
+        localStorage.setItem(settings.cacheKey, settings.cache);
+    }
+    else {
+        const oldCacheKey = localStorage.getItem(settings.cacheKey);
+        if (oldCacheKey !== null) {
+            localStorage.removeItem(settings.cacheKey + ':' + oldCacheKey);
+            localStorage.removeItem(settings.cacheKey);
+        }
+    }
+    const base = STATE_LIST.length, result = [];
+    const breakpoints = settings.breakpoints.enabled;
+    const media_settings = settings.breakpoints.settings;
+    const desktop = settings.breakpoints.mode === "desktop-first";
+    const states = settings.states.enabled;
+    result.push(generateRootVariables());
+    for (const bp of breakpoints) {
+        const media_index = MEDIA_LIST.indexOf(bp);
+        if (media_index < 0) {
+            continue;
+        }
+        let str = '';
+        if (media_index !== 0) {
+            if (desktop) {
+                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
+            }
+            else {
+                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
+            }
+        }
+        for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
+            const name = PROPERTY_LIST[name_index];
+            // generate all states for default media
+            const stateList = media_index === 0 ? STATE_LIST : states;
+            for (const state of stateList) {
+                const state_index = STATE_LIST.indexOf(state);
+                if (state_index < 0) {
+                    continue;
+                }
+                const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
+                tracker.set(hash, true);
+                let variants = PROPERTY_VARIANTS[name], prefix = '';
+                if (variants) {
+                    for (let i = 0, l = variants.length; i < l; i++) {
+                        prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
+                    }
+                }
+                if (name.startsWith('-opis-')) {
+                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '').join('');
+                }
+                else {
+                    str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                }
+            }
+        }
+        if (media_index !== 0) {
+            str += '}';
+        }
+        result.push(str);
+    }
+    content = result.join('');
+    if (settings.cache) {
+        localStorage.setItem(settings.cacheKey, settings.cache);
+        localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
+    }
+    return content;
 }
 
 /*
@@ -1091,11 +914,6 @@ function observeElement(element, handler) {
     }
     _elementObserver.observe(element, { attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
 }
-function observeShadow(shadow, handler) {
-    for (let n = shadow.firstElementChild; n !== null; n = n.nextElementSibling) {
-        observe(n, handler);
-    }
-}
 function observe(element, handler) {
     if (observedElements.has(element)) {
         return;
@@ -1179,16 +997,259 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+class StyleHandler {
+    constructor(settings, style, tracker) {
+        this.style = style;
+        this.settings = settings;
+        this.tracker = tracker;
+        this.mediaSettings = settings.breakpoints.settings;
+        this.desktopMode = settings.breakpoints.mode === "desktop-first";
+    }
+    handleStyleChange(element, oldContent, content) {
+        if (content === null) {
+            return this.handleStyleRemoved(element, oldContent);
+        }
+        const newEntries = this.getStyleEntries(content);
+        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        // remove old entries
+        if (oldContent !== null) {
+            for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
+                if (!newEntries.has(name)) {
+                    const index = classList.indexOf(entry);
+                    if (index >= 0) {
+                        classList.splice(index, 1);
+                    }
+                    element.style.removeProperty(property);
+                }
+            }
+        }
+        for (const info of newEntries.values()) {
+            const { entry, property, hash, value } = info;
+            const index = classList.indexOf(entry);
+            if (index < 0) {
+                classList.push(entry);
+            }
+            if (!this.tracker.has(hash)) {
+                this.generateCSS(info);
+            }
+            element.style.setProperty(property, value);
+        }
+        element.setAttribute('class', classList.join(' '));
+    }
+    handleStyleRemoved(element, content) {
+        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        for (const { property, entry } of this.getStyleProperties(content)) {
+            const index = classList.indexOf(entry);
+            if (index >= 0) {
+                classList.splice(index, 1);
+            }
+            element.style.removeProperty(property);
+        }
+        element.setAttribute('class', classList.join(' '));
+    }
+    extract(attr, value = null) {
+        var _a;
+        const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+        if (!m || !m.property) {
+            return [];
+        }
+        const media = MEDIA_LIST.indexOf(m.media || 'all');
+        const state = STATE_LIST.indexOf(m.state || 'normal');
+        if (media < 0 || state < 0) {
+            return [];
+        }
+        let properties = m.property;
+        const original = properties;
+        if (ALIASES.hasOwnProperty(properties)) {
+            properties = ALIASES[properties];
+            if (typeof properties === 'function') {
+                properties = properties(value);
+            }
+        }
+        if (!Array.isArray(properties)) {
+            properties = [properties];
+        }
+        if (value === null) {
+            value = DEFAULT_VALUES[original] || '';
+        }
+        if (VALUE_WRAPPER.hasOwnProperty(original)) {
+            value = VALUE_WRAPPER[original](value, original, media, state);
+        }
+        if (!Array.isArray(value)) {
+            value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
+        }
+        else {
+            value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
+        }
+        const result = [];
+        const base = STATE_LIST.length;
+        let index = -1;
+        for (const property of properties) {
+            index++;
+            const name = PROPERTY_LIST.indexOf(property);
+            if (name < 0) {
+                continue;
+            }
+            const hash = (((name * base) + media) * base + state).toString(16);
+            result.push({
+                name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                property: HASH_VAR_PREFIX + hash,
+                entry: 'x#' + hash,
+                value: value[index],
+                media: m.media || '',
+                state: m.state || '',
+                cssProperty: property,
+                hash
+            });
+        }
+        return result;
+    }
+    getStyleEntries(content, resolve = true) {
+        const entries = new Map();
+        for (let name of content.split(';')) {
+            name = name.trim();
+            if (name === '') {
+                continue;
+            }
+            let value = null;
+            const pos = name.indexOf(':');
+            if (pos < 0) {
+                name = name.trim();
+            }
+            else {
+                value = resolve ? name.substr(pos + 1) : null;
+                name = name.substr(0, pos).trim();
+            }
+            for (const info of this.extract(name, value)) {
+                entries.set(info.name, info);
+            }
+        }
+        return entries;
+    }
+    *getStyleProperties(content) {
+        var _a;
+        const base = STATE_LIST.length;
+        for (let attr of content.split(';')) {
+            let value = null;
+            const pos = attr.indexOf(':');
+            if (pos < 0) {
+                attr = attr.trim();
+            }
+            else {
+                value = attr.substr(pos + 1);
+                attr = attr.substr(0, pos).trim();
+            }
+            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+            if (!m || !m.property) {
+                continue;
+            }
+            const media = MEDIA_LIST.indexOf(m.media || 'all');
+            const state = STATE_LIST.indexOf(m.state || 'normal');
+            if (media < 0 || state < 0) {
+                continue;
+            }
+            let properties = m.property;
+            if (ALIASES.hasOwnProperty(properties)) {
+                properties = ALIASES[properties];
+                if (typeof properties === 'function') {
+                    properties = properties(value);
+                }
+            }
+            if (!Array.isArray(properties)) {
+                properties = [properties];
+            }
+            for (const property of properties) {
+                const name = PROPERTY_LIST.indexOf(property);
+                if (name < 0) {
+                    continue;
+                }
+                const hash = (((name * base) + media) * base + state).toString(16);
+                yield {
+                    name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                    property: HASH_VAR_PREFIX + hash,
+                    entry: 'x#' + hash,
+                };
+            }
+        }
+    }
+    generateCSS(info) {
+        const { tracker, mediaSettings, desktopMode, style } = this;
+        const { hash, media, state, cssProperty, property } = info;
+        const hasMedia = media !== '';
+        tracker.set(hash, true);
+        let rule = '';
+        if (hasMedia) {
+            if (desktopMode) {
+                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
+            }
+            else {
+                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
+            }
+        }
+        let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
+        if (variants) {
+            for (let i = 0, l = variants.length; i < l; i++) {
+                prefix += `${variants[i]}:var(${property}) !important;`;
+            }
+        }
+        if (cssProperty.startsWith('-opis-')) {
+            const rules = CSS_GENERATORS[cssProperty](hash, state !== '' ? ':' + state : '');
+            for (let i = 0; i < rules.length; i++) {
+                let crtRule = rule + rules[i];
+                if (hasMedia) {
+                    crtRule += '}';
+                }
+                style.insertRule(crtRule);
+            }
+            return;
+        }
+        rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+        if (hasMedia) {
+            rule += '}';
+        }
+        style.insertRule(rule);
+    }
+}
+
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 function init(options) {
     const settings = getUserSettings(options || document.currentScript.dataset);
     if (!settings.enabled) {
         return false;
     }
-    const style = document.createElement("style");
-    style.id = 'opis-assembler-css';
-    style.textContent = generateStyles(settings);
-    document.currentScript.parentElement.insertBefore(style, document.currentScript);
-    observeDocument(document, new StyleHandler());
+    const tracker = new Map();
+    let stylesheet;
+    if (settings.constructable && document.adoptedStyleSheets) {
+        stylesheet = new CSSStyleSheet();
+        if (settings.generate) {
+            stylesheet.replaceSync(generateStyles(settings, tracker));
+        }
+        document.adoptedStyleSheets = [stylesheet];
+    }
+    else {
+        const style = document.createElement("style");
+        style.id = 'opis-assembler-css';
+        style.textContent = generateStyles(settings, tracker);
+        document.currentScript.parentElement.insertBefore(style, document.currentScript);
+        stylesheet = style.sheet;
+    }
+    observeDocument(document, new StyleHandler(settings, stylesheet, tracker));
     return true;
 }
 if (typeof window !== 'undefined') {
@@ -1196,6 +1257,5 @@ if (typeof window !== 'undefined') {
 }
 
 exports.init = init;
-exports.observeShadow = observeShadow;
 exports.registerMixin = registerMixin;
 exports.style = style;

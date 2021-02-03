@@ -16,6 +16,8 @@
 
 export type UserSettings = {
     enabled: boolean,
+    generate: boolean,
+    constructable: boolean,
     cache: string|null,
     cacheKey: string,
     breakpoints: {mode: string, settings: object, enabled: string[]},
@@ -24,8 +26,12 @@ export type UserSettings = {
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 
+export const HASH_VAR_PREFIX = '--x-';
+
 export function getUserSettings(dataset: {[key: string]: string}): UserSettings {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
+    const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
+    const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
     const mode = dataset.mode || 'desktop-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
@@ -72,6 +78,8 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
 
     return  {
         enabled,
+        generate,
+        constructable,
         cache,
         cacheKey,
         breakpoints: {

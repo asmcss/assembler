@@ -14,15 +14,39 @@
  * limitations under the License.
  */
 
-import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST, VALUE_WRAPPER} from "./list";
+import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
+import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
+import {CSS_GENERATORS} from "./generators";
 
-type PropertyInfo = {entry: string, property: string, name: string, value: string|null};
+type PropertyInfo = {
+    entry: string,
+    property: string,
+    cssProperty: string,
+    media: string,
+    state: string,
+    name: string,
+    value: string|null,
+    hash: string,
+};
 
-export const HASH_VAR_PREFIX = '--x-';
 export const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 export const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 
 export default class StyleHandler {
+    private style: CSSStyleSheet;
+    private settings: UserSettings;
+    private tracker: Map<string, boolean>;
+    private mediaSettings: object;
+    private desktopMode: boolean;
+
+    constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Map<string, boolean>) {
+        this.style = style;
+        this.settings = settings;
+        this.tracker = tracker;
+        this.mediaSettings = settings.breakpoints.settings;
+        this.desktopMode = settings.breakpoints.mode === "desktop-first";
+    }
+
     handleStyleChange(element: HTMLElement, oldContent: string|null, content: string|null): void {
 
         if (content === null) {
@@ -45,10 +69,14 @@ export default class StyleHandler {
             }
         }
 
-        for (const {property, entry, value} of newEntries.values()) {
+        for (const info of newEntries.values()) {
+            const {entry, property, hash, value} = info;
             const index = classList.indexOf(entry);
             if (index < 0) {
                 classList.push(entry);
+            }
+            if (!this.tracker.has(hash)) {
+                this.generateCSS(info);
             }
             element.style.setProperty(property, value);
         }
@@ -130,6 +158,10 @@ export default class StyleHandler {
                 property: HASH_VAR_PREFIX + hash,
                 entry: 'x#' + hash,
                 value: value[index],
+                media: m.media || '',
+                state: m.state || '',
+                cssProperty: property,
+                hash
             });
         }
 
@@ -215,9 +247,56 @@ export default class StyleHandler {
                 yield {
                     name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                     property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash
+                    entry: 'x#' + hash,
                 };
             }
         }
+    }
+
+    private generateCSS(info: PropertyInfo) {
+        const {tracker, mediaSettings, desktopMode, style} = this;
+        const {hash, media, state, cssProperty, property} = info;
+        const hasMedia = media !== '';
+
+        tracker.set(hash, true);
+
+        let rule = '';
+
+        if (hasMedia) {
+            if (desktopMode) {
+                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
+            } else {
+                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
+            }
+        }
+
+        let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
+
+        if (variants) {
+            for (let i = 0, l = variants.length; i < l; i++) {
+                prefix += `${variants[i]}:var(${property}) !important;`;
+            }
+        }
+
+        if (cssProperty.startsWith('-opis-')) {
+            const rules: string[] = CSS_GENERATORS[cssProperty](hash, state !== '' ? ':' + state : '');
+
+            for (let i = 0; i < rules.length; i++) {
+                let crtRule = rule + rules[i];
+                if (hasMedia) {
+                    crtRule += '}';
+                }
+                style.insertRule(crtRule);
+            }
+            return;
+        }
+
+        rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+
+        if (hasMedia) {
+            rule += '}'
+        }
+
+        style.insertRule(rule);
     }
 }

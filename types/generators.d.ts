@@ -1,2 +1,20 @@
 import { UserSettings } from "./helpers";
-export declare function generateStyles(settings: UserSettings): string;
+export declare const CSS_GENERATORS: {
+    "-opis-grid": (hash: string, state: string) => string[];
+    "-opis-space-x": (hash: string, state: string) => string[];
+    "-opis-space-y": (hash: string, state: string) => string[];
+    "-opis-space-left": (hash: string, state: string) => string[];
+    "-opis-space-right": (hash: string, state: string) => string[];
+    "-opis-space-top": (hash: string, state: string) => string[];
+    "-opis-space-bottom": (hash: string, state: string) => string[];
+    "-opis-background-clip-text": (hash: string, state: string) => string[];
+    "-opis-sr-only": (hash: string, state: string) => string[];
+    "-opis-not-sr-only": (hash: string, state: string) => string[];
+    "-opis-stack": (hash: string, state: string) => string[];
+    '-opis-placeholder-color': (hash: string, state: string) => string[];
+    '-opis-placeholder-font': (hash: string, state: string) => string[];
+    '-opis-placeholder-size': (hash: string, state: string) => string[];
+    '-opis-placeholder-style': (hash: string, state: string) => string[];
+    '-opis-placeholder-weight': (hash: string, state: string) => string[];
+};
+export declare function generateStyles(settings: UserSettings, tracker: Map<string, boolean>): string;

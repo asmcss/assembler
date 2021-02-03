@@ -15,30 +15,27 @@
  */
 
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
-import {HASH_VAR_PREFIX} from "./StyleHandler";
 import {generateRootVariables} from "./variables";
-import {UserSettings} from "./helpers";
+import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
 
-const CSS_GENERATORS = {
-    "-opis-grid": (hash: string, state: string): string => {
-        if (state !== '') return '';
-        return `.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}
-        .x\\#${hash} > * {word-break: break-all !important}
-        .x\\#${hash} > * > * {max-width: 100% !important}
-        .x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}
-        `;
+export const CSS_GENERATORS = {
+    "-opis-grid": (hash: string, state: string): string[] => {
+        if (state !== '') return [];
+        return [`.x\\#${hash}{display:var(${HASH_VAR_PREFIX + hash}) !important}`,
+        `.x\\#${hash} > * {word-break: break-all !important}`,
+        `.x\\#${hash} > * > * {max-width: 100% !important}`,
+        `.x\\#${hash} > .x\\#${hash}{justify-self: normal !important;align-self: normal !important}`];
     },
-    "-opis-space-x": (hash: string, state: string): string => `.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-y": (hash: string, state: string): string => `.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-left": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-right": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-top": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-space-bottom": (hash: string, state: string): string => `.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`,
-    "-opis-background-clip-text": (hash: string, state: string): string => `.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`,
-    "-opis-sr-only": (hash: string, state: string): string => {
-        if (state !== '') return '';
-        return `.x\\#${hash}, .x\\#${hash}:focus{
-            position: absolute !important;
+    "-opis-space-x": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important; margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-y": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important; margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-left": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * + * {margin-left:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-right": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * + * {margin-right:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-top": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * + * {margin-top:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-space-bottom": (hash: string, state: string): string[] => [`.x\\#${hash}${state} > * + * {margin-bottom:var(${HASH_VAR_PREFIX + hash}) !important}`],
+    "-opis-background-clip-text": (hash: string, state: string): string[] => [`.x\\#${hash}${state}{-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important}`],
+    "-opis-sr-only": (hash: string, state: string): string[] => {
+        if (state !== '') return [];
+        const props = `position: absolute !important;
             width: 1px !important;
             height: 1px !important;
             padding: 0 !important;
@@ -46,40 +43,39 @@ const CSS_GENERATORS = {
             overflow: hidden !important;
             clip: rect(0, 0, 0, 0) !important;
             white-space: nowrap !important;
-            border-width: 0 !important;
-        }`;
+            border-width: 0 !important;`;
+        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
     },
-    "-opis-not-sr-only": (hash: string, state: string): string => {
-        if (state !== '') return '';
-        return `.x\\#${hash}, .x\\#${hash}:focus{
-            position: static !important;
+    "-opis-not-sr-only": (hash: string, state: string): string[] => {
+        if (state !== '') return [];
+        const props = `position: static !important;
             width: auto !important;
             height: auto !important;
             padding: 0 !important;
             margin: 0 !important;
             overflow: visible !important;
             clip: auto !important;
-            white-space: normal !important;
-        }`;
+            white-space: normal !important;`;
+        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
     },
-    "-opis-stack": (hash: string, state: string): string => {
-        if (state !== '') return '';
+    "-opis-stack": (hash: string, state: string): string[] => {
+        if (state !== '') return [];
         const z = [];
         for (let i = 1; i <= 10; i++) {
             z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
         }
-        return `.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
-        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}
-        .x\\#${hash} > * {grid-area:stackarea}${z.join('')}`;
+        return [`.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
+        grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}`,
+        `.x\\#${hash} > * {grid-area:stackarea}`, ...z];
     },
-    '-opis-placeholder-color': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-font': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-size': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-style': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`,
-    '-opis-placeholder-weight': (hash: string, state: string): string => `.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`,
+    '-opis-placeholder-color': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-font': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-size': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{font-size:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-style': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{font-style:var(${HASH_VAR_PREFIX + hash})}`],
+    '-opis-placeholder-weight': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{font-weight:var(${HASH_VAR_PREFIX + hash})}`],
 }
 
-export function generateStyles(settings: UserSettings): string {
+export function generateStyles(settings: UserSettings, tracker: Map<string, boolean>): string {
     let content: string|null = null;
 
 
@@ -141,6 +137,7 @@ export function generateStyles(settings: UserSettings): string {
                 }
 
                 const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
+                tracker.set(hash, true);
                 let variants = PROPERTY_VARIANTS[name], prefix = '';
                 if (variants) {
                     for (let i = 0, l = variants.length; i < l; i++) {
@@ -148,7 +145,7 @@ export function generateStyles(settings: UserSettings): string {
                     }
                 }
                 if (name.startsWith('-opis-')) {
-                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '');
+                    str += CSS_GENERATORS[name](hash, state_index > 0 ? ':' + state : '').join('');
                 } else {
                     str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
                 }
