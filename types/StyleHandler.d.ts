@@ -1,6 +1,4 @@
 import { UserSettings } from "./helpers";
-export declare const VAR_REGEX: RegExp;
-export declare const PROPERTY_REGEX: RegExp;
 export default class StyleHandler {
     private style;
     private settings;

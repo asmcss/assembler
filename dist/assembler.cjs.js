@@ -1017,7 +1017,8 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  * limitations under the License.
  */
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+const REPLACE_REGEX = /\$(selector|class|value|property|state)/g;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-z]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 class StyleHandler {
     constructor(settings, style, tracker) {
         this.style = style;
@@ -1111,16 +1112,18 @@ class StyleHandler {
             if (name < 0) {
                 continue;
             }
-            const hash = (((name * base) + media) * base + state).toString(16);
+            const scope = m.scope || '';
+            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
             result.push({
-                name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
                 property: HASH_VAR_PREFIX + hash,
                 entry: 'x#' + hash,
                 value: value[index],
                 media: m.media || '',
                 state: m.state || '',
                 cssProperty: property,
-                hash
+                hash,
+                scope,
             });
         }
         return result;
@@ -1195,7 +1198,7 @@ class StyleHandler {
     }
     generateCSS(info) {
         const { tracker, mediaSettings, desktopMode, style } = this;
-        const { hash, media, state, cssProperty, property } = info;
+        const { hash, media, state, cssProperty, property, scope } = info;
         const hasMedia = media !== '';
         tracker.set(hash, true);
         let rule = '';
@@ -1224,7 +1227,30 @@ class StyleHandler {
             }
             return;
         }
-        rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+        if (scope) {
+            const scopeValue = Root.getPropertyValue(scope + '--scope');
+            if (scopeValue === '') {
+                return;
+            }
+            rule += scopeValue.replace(REPLACE_REGEX, (match, p1) => {
+                switch (p1) {
+                    case "selector":
+                        return `.x\\#${hash}${state ? ':' + state : ''}`;
+                    case "property":
+                        return cssProperty;
+                    case "value":
+                        return `var(${property})`;
+                    case "class":
+                        return `.x\\${hash}`;
+                    case "state":
+                        return state ? ':' + state : '';
+                }
+                return p1;
+            });
+        }
+        else {
+            rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+        }
         if (hasMedia) {
             rule += '}';
         }
