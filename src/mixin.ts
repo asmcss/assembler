@@ -15,6 +15,7 @@
  */
 
 import {style} from "./helpers";
+import {Root} from "./Root";
 
 type Mixin = {name: string, args: string[]};
 type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
@@ -22,7 +23,7 @@ const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallbac
 
 mixinRepository.set('mixin', function (...names: string[]): string {
     return names
-        .map(name => rootElement.getPropertyValue(name))
+        .map(name => Root.getPropertyValue(name))
         .filter(v => v !== '')
         .join(';');
 });
@@ -64,29 +65,3 @@ function* extractMixins(value: string): Iterable<Mixin> {
         }
     }
 }
-
-const rootElement = new class {
-    private styles: CSSStyleDeclaration = null;
-
-    getComputedStyle(): CSSStyleDeclaration {
-        if (this.styles === null) {
-            this.styles = window.getComputedStyle(document.documentElement);
-        }
-        return this.styles;
-    }
-
-    getPropertyValue(property: string): string {
-        const mixins = window['OPIS_ASSEMBLER_MIXINS'] || {};
-        if (mixins.hasOwnProperty(property)) {
-            return mixins[property];
-        }
-        property = '--' + property;
-        let value = this.getComputedStyle().getPropertyValue(property).trim();
-
-        if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.substring(1, value.length - 1).trim();
-        }
-
-        return value;
-    }
-};
