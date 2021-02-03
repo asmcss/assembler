@@ -23,7 +23,7 @@ const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallbac
 
 mixinRepository.set('mixin', function (...names: string[]): string {
     return names
-        .map(name => Root.getPropertyValue(name))
+        .map(name => Root.getPropertyValue(name + '--mixin'))
         .filter(v => v !== '')
         .join(';');
 });

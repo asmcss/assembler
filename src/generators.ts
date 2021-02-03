@@ -44,7 +44,7 @@ export const CSS_GENERATORS = {
             clip: rect(0, 0, 0, 0) !important;
             white-space: nowrap !important;
             border-width: 0 !important;`;
-        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
+        return [`.x\\#${hash}{${props}}`, `.x\\#${hash}:focus{${props}}`];
     },
     "-opis-not-sr-only": (hash: string, state: string): string[] => {
         if (state !== '') return [];
@@ -56,17 +56,20 @@ export const CSS_GENERATORS = {
             overflow: visible !important;
             clip: auto !important;
             white-space: normal !important;`;
-        return [`.x\\#${hash}{${props}`, `.x\\#${hash}:focus{${props}`];
+        return [`.x\\#${hash}{${props}}`, `.x\\#${hash}:focus{${props}}`];
     },
     "-opis-stack": (hash: string, state: string): string[] => {
         if (state !== '') return [];
-        const z = [];
-        for (let i = 1; i <= 10; i++) {
-            z.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
-        }
-        return [`.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
+
+        const props = [`.x\\#${hash}{display:grid;grid-template-columns:minmax(0,1fr);
         grid-template-rows:minmax(0,1fr);grid-template-areas:"stackarea";width:100%;height:100%}`,
-        `.x\\#${hash} > * {grid-area:stackarea}`, ...z];
+        `.x\\#${hash} > * {grid-area:stackarea}`];
+
+        for (let i = 1; i <= 10; i++) {
+            props.push(`.x\\#${hash} > *:nth-child(${i}){z-index: ${i} !important}`);
+        }
+
+        return props;
     },
     '-opis-placeholder-color': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{color:var(${HASH_VAR_PREFIX + hash})}`],
     '-opis-placeholder-font': (hash: string, state: string): string[] => [`.x\\#${hash}${state}::placeholder{font-family:var(${HASH_VAR_PREFIX + hash})}`],
