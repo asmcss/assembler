@@ -431,143 +431,58 @@
     const HASH_VAR_PREFIX = '--x-';
     const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
     const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
-    const STYLE_ATTR = "x-style";
-    function handleStyleChange(element, oldContent, content) {
-        if (content === null) {
-            return handleStyleRemoved(element, oldContent);
-        }
-        const newEntries = getStyleEntries(content);
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        // remove old entries
-        if (oldContent !== null) {
-            for (const { name, property, entry } of getStyleProperties(oldContent)) {
-                if (!newEntries.has(name)) {
-                    const index = classList.indexOf(entry);
-                    if (index >= 0) {
-                        classList.splice(index, 1);
+    class StyleHandler {
+        handleStyleChange(element, oldContent, content) {
+            if (content === null) {
+                return this.handleStyleRemoved(element, oldContent);
+            }
+            const newEntries = this.getStyleEntries(content);
+            const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+            // remove old entries
+            if (oldContent !== null) {
+                for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
+                    if (!newEntries.has(name)) {
+                        const index = classList.indexOf(entry);
+                        if (index >= 0) {
+                            classList.splice(index, 1);
+                        }
+                        element.style.removeProperty(property);
                     }
-                    element.style.removeProperty(property);
                 }
             }
-        }
-        for (const { property, entry, value } of newEntries.values()) {
-            const index = classList.indexOf(entry);
-            if (index < 0) {
-                classList.push(entry);
+            for (const { property, entry, value } of newEntries.values()) {
+                const index = classList.indexOf(entry);
+                if (index < 0) {
+                    classList.push(entry);
+                }
+                element.style.setProperty(property, value);
             }
-            element.style.setProperty(property, value);
+            element.setAttribute('class', classList.join(' '));
         }
-        element.setAttribute('class', classList.join(' '));
-    }
-    function handleStyleRemoved(element, content) {
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        for (const { property, entry } of getStyleProperties(content)) {
-            const index = classList.indexOf(entry);
-            if (index >= 0) {
-                classList.splice(index, 1);
+        handleStyleRemoved(element, content) {
+            const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+            for (const { property, entry } of this.getStyleProperties(content)) {
+                const index = classList.indexOf(entry);
+                if (index >= 0) {
+                    classList.splice(index, 1);
+                }
+                element.style.removeProperty(property);
             }
-            element.style.removeProperty(property);
+            element.setAttribute('class', classList.join(' '));
         }
-        element.setAttribute('class', classList.join(' '));
-    }
-    function extract(attr, value = null) {
-        var _a;
-        const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-        if (!m || !m.property) {
-            return [];
-        }
-        const media = MEDIA_LIST.indexOf(m.media || 'all');
-        const state = STATE_LIST.indexOf(m.state || 'normal');
-        if (media < 0 || state < 0) {
-            return [];
-        }
-        let properties = m.property;
-        const original = properties;
-        if (ALIASES.hasOwnProperty(properties)) {
-            properties = ALIASES[properties];
-            if (typeof properties === 'function') {
-                properties = properties(value);
-            }
-        }
-        if (!Array.isArray(properties)) {
-            properties = [properties];
-        }
-        if (value === null) {
-            value = DEFAULT_VALUES[original] || '';
-        }
-        if (VALUE_WRAPPER.hasOwnProperty(original)) {
-            value = VALUE_WRAPPER[original](value, original, media, state);
-        }
-        if (!Array.isArray(value)) {
-            value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
-        }
-        else {
-            value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
-        }
-        const result = [];
-        const base = STATE_LIST.length;
-        let index = -1;
-        for (const property of properties) {
-            index++;
-            const name = PROPERTY_LIST.indexOf(property);
-            if (name < 0) {
-                continue;
-            }
-            const hash = (((name * base) + media) * base + state).toString(16);
-            result.push({
-                name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
-                value: value[index],
-            });
-        }
-        return result;
-    }
-    function getStyleEntries(content, resolve = true) {
-        const entries = new Map();
-        for (let name of content.split(';')) {
-            name = name.trim();
-            if (name === '') {
-                continue;
-            }
-            let value = null;
-            const pos = name.indexOf(':');
-            if (pos < 0) {
-                name = name.trim();
-            }
-            else {
-                value = resolve ? name.substr(pos + 1) : null;
-                name = name.substr(0, pos).trim();
-            }
-            for (const info of extract(name, value)) {
-                entries.set(info.name, info);
-            }
-        }
-        return entries;
-    }
-    function* getStyleProperties(content) {
-        var _a;
-        const base = STATE_LIST.length;
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            }
-            else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
-            }
+        extract(attr, value = null) {
+            var _a;
             const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
             if (!m || !m.property) {
-                continue;
+                return [];
             }
             const media = MEDIA_LIST.indexOf(m.media || 'all');
             const state = STATE_LIST.indexOf(m.state || 'normal');
             if (media < 0 || state < 0) {
-                continue;
+                return [];
             }
             let properties = m.property;
+            const original = properties;
             if (ALIASES.hasOwnProperty(properties)) {
                 properties = ALIASES[properties];
                 if (typeof properties === 'function') {
@@ -577,17 +492,103 @@
             if (!Array.isArray(properties)) {
                 properties = [properties];
             }
+            if (value === null) {
+                value = DEFAULT_VALUES[original] || '';
+            }
+            if (VALUE_WRAPPER.hasOwnProperty(original)) {
+                value = VALUE_WRAPPER[original](value, original, media, state);
+            }
+            if (!Array.isArray(value)) {
+                value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
+            }
+            else {
+                value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
+            }
+            const result = [];
+            const base = STATE_LIST.length;
+            let index = -1;
             for (const property of properties) {
+                index++;
                 const name = PROPERTY_LIST.indexOf(property);
                 if (name < 0) {
                     continue;
                 }
                 const hash = (((name * base) + media) * base + state).toString(16);
-                yield {
+                result.push({
                     name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
                     property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash
-                };
+                    entry: 'x#' + hash,
+                    value: value[index],
+                });
+            }
+            return result;
+        }
+        getStyleEntries(content, resolve = true) {
+            const entries = new Map();
+            for (let name of content.split(';')) {
+                name = name.trim();
+                if (name === '') {
+                    continue;
+                }
+                let value = null;
+                const pos = name.indexOf(':');
+                if (pos < 0) {
+                    name = name.trim();
+                }
+                else {
+                    value = resolve ? name.substr(pos + 1) : null;
+                    name = name.substr(0, pos).trim();
+                }
+                for (const info of this.extract(name, value)) {
+                    entries.set(info.name, info);
+                }
+            }
+            return entries;
+        }
+        *getStyleProperties(content) {
+            var _a;
+            const base = STATE_LIST.length;
+            for (let attr of content.split(';')) {
+                let value = null;
+                const pos = attr.indexOf(':');
+                if (pos < 0) {
+                    attr = attr.trim();
+                }
+                else {
+                    value = attr.substr(pos + 1);
+                    attr = attr.substr(0, pos).trim();
+                }
+                const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+                if (!m || !m.property) {
+                    continue;
+                }
+                const media = MEDIA_LIST.indexOf(m.media || 'all');
+                const state = STATE_LIST.indexOf(m.state || 'normal');
+                if (media < 0 || state < 0) {
+                    continue;
+                }
+                let properties = m.property;
+                if (ALIASES.hasOwnProperty(properties)) {
+                    properties = ALIASES[properties];
+                    if (typeof properties === 'function') {
+                        properties = properties(value);
+                    }
+                }
+                if (!Array.isArray(properties)) {
+                    properties = [properties];
+                }
+                for (const property of properties) {
+                    const name = PROPERTY_LIST.indexOf(property);
+                    if (name < 0) {
+                        continue;
+                    }
+                    const hash = (((name * base) + media) * base + state).toString(16);
+                    yield {
+                        name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                        property: HASH_VAR_PREFIX + hash,
+                        entry: 'x#' + hash
+                    };
+                }
             }
         }
     }
@@ -846,6 +847,23 @@
         }
         return content;
     }
+
+    /*
+     * Copyright 2021 Zindex Software
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *    http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
     function getUserSettings(dataset) {
         const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
         const mode = dataset.mode || 'desktop-first';
@@ -900,6 +918,33 @@
             }
         };
     }
+    function style(...styles) {
+        let str = [];
+        for (const item of styles) {
+            if (typeof item === 'string') {
+                str.push(item.trim());
+            }
+            else if (Array.isArray(item)) {
+                str.push(style(...item));
+            }
+            else {
+                for (const key in item) {
+                    const itemValue = item[key];
+                    if (itemValue === undefined) {
+                        continue;
+                    }
+                    const property = key.replace(regex, '$1-$2').toLowerCase();
+                    if (itemValue === null) {
+                        str.push(property);
+                    }
+                    else {
+                        str.push(property + ':' + itemValue);
+                    }
+                }
+            }
+        }
+        return str.join('; ');
+    }
     function getStringItemList(value, unique = true) {
         const items = value
             .replace(/[,;]/g, ' ')
@@ -928,14 +973,12 @@
      * limitations under the License.
      */
     const mixinRepository = new Map();
-    const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
     mixinRepository.set('mixin', function (...names) {
         return names
             .map(name => rootElement.getPropertyValue(name))
             .filter(v => v !== '')
             .join(';');
     });
-    const APPLY_ATTR = 'x-apply';
     function parseApplyAttribute(value) {
         if (value == null || value === '') {
             return null;
@@ -951,33 +994,6 @@
     }
     function registerMixin(name, callback) {
         mixinRepository.set(name, callback);
-    }
-    function style(...styles) {
-        let str = [];
-        for (const item of styles) {
-            if (typeof item === 'string') {
-                str.push(item.trim());
-            }
-            else if (Array.isArray(item)) {
-                str.push(style(...item));
-            }
-            else {
-                for (const key in item) {
-                    const itemValue = item[key];
-                    if (itemValue === undefined) {
-                        continue;
-                    }
-                    const property = key.replace(regex, '$1-$2').toLowerCase();
-                    if (itemValue === null) {
-                        str.push(property);
-                    }
-                    else {
-                        str.push(property + ':' + itemValue);
-                    }
-                }
-            }
-        }
-        return str.join('; ');
     }
     // do not match comma inside parenthesis
     // 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
@@ -1038,25 +1054,27 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    const APPLY_ATTR = 'x-apply';
+    const STYLE_ATTR = "x-style";
     let _documentObserver = null;
     let _elementObserver = null;
     const observedElements = new WeakMap();
-    function observeDocument(document, options) {
+    function observeDocument(document, handler) {
         if (_documentObserver === null) {
             _documentObserver = new MutationObserver(function (mutations) {
                 for (let i = 0, l = mutations.length; i < l; i++) {
                     const nodes = mutations[i].addedNodes;
                     for (let i = 0; i < nodes.length; i++) {
                         if (nodes[i] instanceof HTMLElement) {
-                            observe(nodes[i]);
+                            observe(nodes[i], handler);
                         }
                     }
                 }
             });
         }
-        _documentObserver.observe(document, options);
+        _documentObserver.observe(document, { childList: true, subtree: true });
     }
-    function observeElement(element, options) {
+    function observeElement(element, handler) {
         if (_elementObserver === null) {
             _elementObserver = new MutationObserver(function (mutations) {
                 for (const mutation of mutations) {
@@ -1064,23 +1082,23 @@
                     const newValue = target.getAttribute(mutation.attributeName);
                     switch (mutation.attributeName) {
                         case STYLE_ATTR:
-                            whenStyleChanged(target, mutation.oldValue, newValue);
+                            whenStyleChanged(handler, target, mutation.oldValue, newValue);
                             break;
                         case APPLY_ATTR:
-                            whenApplyChanged(target, newValue);
+                            whenApplyChanged(handler, target, newValue);
                             break;
                     }
                 }
             });
         }
-        _elementObserver.observe(element, options);
+        _elementObserver.observe(element, { attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
     }
-    function observeShadow(shadow) {
+    function observeShadow(shadow, handler) {
         for (let n = shadow.firstElementChild; n !== null; n = n.nextElementSibling) {
-            observe(n);
+            observe(n, handler);
         }
     }
-    function observe(element) {
+    function observe(element, handler) {
         if (observedElements.has(element)) {
             return;
         }
@@ -1099,14 +1117,14 @@
             content += style.value;
         }
         if (content !== '') {
-            handleStyleChange(element, null, content);
+            handler.handleStyleChange(element, null, content);
         }
-        observeElement(element, { attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
+        observeElement(element, handler);
         for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
-            observe(child);
+            observe(child, handler);
         }
     }
-    function whenApplyChanged(element, newApply) {
+    function whenApplyChanged(handler, element, newApply) {
         let prevApply = observedElements.get(element) || null;
         if (newApply != null) {
             newApply = parseApplyAttribute(newApply);
@@ -1127,9 +1145,9 @@
                 newApply += ';' + style;
             }
         }
-        handleStyleChange(element, prevApply, newApply);
+        handler.handleStyleChange(element, prevApply, newApply);
     }
-    function whenStyleChanged(element, prevValue, newValue) {
+    function whenStyleChanged(handler, element, prevValue, newValue) {
         const apply = observedElements.get(element) || null;
         if (apply != null) {
             if (prevValue == null) {
@@ -1145,7 +1163,7 @@
                 newValue = apply + ';' + newValue;
             }
         }
-        handleStyleChange(element, prevValue, newValue);
+        handler.handleStyleChange(element, prevValue, newValue);
     }
 
     /*
@@ -1172,17 +1190,15 @@
         style.id = 'opis-assembler-css';
         style.textContent = generateStyles(settings);
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
-        observeDocument(document, { childList: true, subtree: true });
+        observeDocument(document, new StyleHandler());
         return true;
     }
     if (typeof window !== 'undefined') {
         init();
     }
 
-    exports.extract = extract;
     exports.init = init;
     exports.observeShadow = observeShadow;
-    exports.parse = getStyleEntries;
     exports.registerMixin = registerMixin;
     exports.style = style;
 

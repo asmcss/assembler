@@ -1,7 +1,8 @@
 import { observeShadow } from "./observers";
+import { style } from "./helpers";
 export { observeShadow };
-export { extract, getStyleEntries as parse } from "./handlers";
-export { style, registerMixin } from "./mixin";
+export { registerMixin } from "./mixin";
+export { style };
 export declare function init(options?: {
     [key: string]: string;
 }): boolean;

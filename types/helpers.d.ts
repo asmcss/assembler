@@ -1,4 +1,4 @@
-declare type UserSettings = {
+export declare type UserSettings = {
     enabled: boolean;
     cache: string | null;
     cacheKey: string;
@@ -11,8 +11,11 @@ declare type UserSettings = {
         enabled: string[];
     };
 };
-export declare function generateStyles(settings: UserSettings): string;
+declare type StyleType = string | {
+    [key: string]: string;
+};
 export declare function getUserSettings(dataset: {
     [key: string]: string;
 }): UserSettings;
+export declare function style(...styles: (StyleType | StyleType[])[]): string;
 export {};

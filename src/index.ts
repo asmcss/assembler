@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {generateStyles, getUserSettings} from "./common";
+import {generateStyles} from "./generators";
 import {observeDocument, observeShadow} from "./observers";
+import {getUserSettings, style} from "./helpers";
+import StyleHandler from "./StyleHandler";
 
 export {observeShadow};
-export {extract, getStyleEntries as parse} from "./handlers";
-export {style, registerMixin} from "./mixin";
+export {registerMixin} from "./mixin";
+export {style};
 
 export function init(options?: {[key: string]: string}): boolean {
     const settings = getUserSettings(options || document.currentScript.dataset);
@@ -32,7 +34,7 @@ export function init(options?: {[key: string]: string}): boolean {
     style.id = 'opis-assembler-css';
     style.textContent = generateStyles(settings);
     document.currentScript.parentElement.insertBefore(style, document.currentScript);
-    observeDocument(document, {childList: true, subtree: true});
+    observeDocument(document, new StyleHandler());
 
     return true;
 }

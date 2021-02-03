@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
+import {style} from "./helpers";
+
 type Mixin = {name: string, args: string[]};
 type MixinCallback = (...args: string[]) => {[key: string]: string}|string;
-type StyleType = string|{[key: string]: string};
-
 const mixinRepository: Map<string, MixinCallback> = new Map<string, MixinCallback>();
-const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 
 mixinRepository.set('mixin', function (...names: string[]): string {
     return names
@@ -27,8 +26,6 @@ mixinRepository.set('mixin', function (...names: string[]): string {
         .filter(v => v !== '')
         .join(';');
 });
-
-export const APPLY_ATTR = 'x-apply';
 
 export function parseApplyAttribute(value: string|null): string|null {
     if (value == null || value === '') {
@@ -46,34 +43,6 @@ export function parseApplyAttribute(value: string|null): string|null {
 
 export function registerMixin(name: string, callback: MixinCallback) {
     mixinRepository.set(name, callback);
-}
-
-export function style(...styles: (StyleType|StyleType[])[]): string {
-    let str = [];
-
-
-    for (const item of styles) {
-        if (typeof item === 'string') {
-            str.push(item.trim());
-        } else if (Array.isArray(item)) {
-            str.push(style(...item));
-        } else {
-            for (const key in item) {
-                const itemValue = item[key];
-                if (itemValue === undefined) {
-                    continue;
-                }
-                const property = key.replace(regex, '$1-$2').toLowerCase();
-                if (itemValue === null) {
-                    str.push(property);
-                } else {
-                    str.push(property + ':' + itemValue);
-                }
-            }
-        }
-    }
-
-    return str.join('; ');
 }
 
 // do not match comma inside parenthesis

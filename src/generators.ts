@@ -15,16 +15,9 @@
  */
 
 import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
-import {HASH_VAR_PREFIX} from "./handlers";
+import {HASH_VAR_PREFIX} from "./StyleHandler";
 import {generateRootVariables} from "./variables";
-
-type UserSettings = {
-    enabled: boolean,
-    cache: string|null,
-    cacheKey: string,
-    breakpoints: {mode: string, settings: object, enabled: string[]},
-    states: {enabled: string[]}
-};
+import {UserSettings} from "./helpers";
 
 const CSS_GENERATORS = {
     "-opis-grid": (hash: string, state: string): string => {
@@ -176,79 +169,4 @@ export function generateStyles(settings: UserSettings): string {
     }
 
     return content;
-}
-
-export function getUserSettings(dataset: {[key: string]: string}): UserSettings {
-    const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
-    const mode = dataset.mode || 'desktop-first';
-    const isDesktopFirst = mode === "desktop-first";
-    const cache = dataset.cache === undefined ? null : dataset.cache;
-    const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
-
-    // Consider all bp
-    let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
-
-    if (isDesktopFirst) {
-        // handle desktop-first - no xl, reverse
-        breakpoints.pop();
-        breakpoints.reverse();
-    } else {
-        // handle mobile-first - no xs
-        breakpoints.shift();
-    }
-
-    if (dataset.breakpoints) {
-        const allowed = getStringItemList(dataset.breakpoints.toLowerCase());
-        if (allowed.length) {
-            breakpoints = breakpoints.filter(v => allowed.indexOf(v) !== -1);
-        } else {
-            breakpoints = [];
-        }
-    }
-
-    // Add all
-    breakpoints.unshift('all');
-
-    const states = dataset.states === undefined
-        ? ["normal", "hover"]
-        : getStringItemList(dataset.states.toLowerCase());
-    if (states.indexOf("normal") === -1) {
-        // always add normal state
-        states.unshift("normal");
-    }
-
-    const xs = dataset.breakpointXs || "512px";
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024px");
-    const xl = dataset.breakpointXl || "1280px";
-
-
-    return  {
-        enabled,
-        cache,
-        cacheKey,
-        breakpoints: {
-            mode,
-            settings: {xs, sm, md, lg, xl},
-            enabled: breakpoints,
-        },
-        states: {
-            enabled: states
-        }
-    };
-}
-
-function getStringItemList(value: string, unique: boolean = true): string[] {
-    const items = value
-        .replace(/[,;]/g, ' ')
-        .split(/\s\s*/g)
-        .map(v => v.trim())
-        .filter(v => v !== '');
-
-    if (unique) {
-        return items.filter((value, index, self) => self.indexOf(value) === index);
-    }
-
-    return items;
 }
