@@ -173,7 +173,7 @@ export declare const VALUE_WRAPPER: {
     "radius-bl": (v: any) => any;
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
-    break: (v: any) => string[] | "break-word" | "break-all";
+    break: (v: any) => string[] | "break-all" | "break-word";
     grid: () => string;
     "flex-wrap": (v: any) => any;
     "flex-row": (v: any) => any;

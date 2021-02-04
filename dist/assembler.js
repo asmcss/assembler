@@ -302,13 +302,11 @@
         "leading": "line-height",
         "tracking": "letter-spacing",
         "break": v => {
-            if (v === "normal")
-                return ["overflow-wrap", "word-break"];
             if (v === "words")
                 return ["overflow-wrap"];
             if (v === "all")
                 return ["word-break"];
-            return [];
+            return ["overflow-wrap", "word-break"];
         },
         "truncate": ["overflow", "text-overflow", "white-space"],
         "text-clip": ["-opis-background-clip-text", "text-fill-color"],
@@ -401,11 +399,11 @@
     const letterSpacing = v => letter_spacing_regex.test(v) ? "@letter-spacing-" + v : v;
     const radius = v => radius_regex.test(v) ? "@border-radius-" + v : v;
     const breakCallback = v => {
-        if (v === "normal")
-            return ["normal", "normal"];
+        if (v === "all")
+            return "break-all";
         if (v === "words")
             return "break-word";
-        return "break-all";
+        return ["normal", "normal"];
     };
     const orderCallback = v => {
         if (!order_regex.test(v)) {
