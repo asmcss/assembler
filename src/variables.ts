@@ -75,7 +75,26 @@ const FONT_SIZES = {
     "3xl": "1.875rem",
     "4xl": "2.25rem",
     "5xl": "3rem",
-    "6xl": "4rem",
+    "6xl": "3.75rem",
+    "7xl": "4.5rem",
+    "8xl": "6rem",
+    "9xl": "8rem",
+};
+
+const FONT_SIZE_LEADING = {
+    xs: "1rem",
+    sm: "1.25rem",
+    base: "1.5rem",
+    lg: "1.75rem",
+    xl: "1.75rem",
+    "2xl": "2rem",
+    "3xl": "2.25rem",
+    "4xl": "2.5rem",
+    "5xl": "1",
+    "6xl": "1",
+    "7xl": "1",
+    "8xl": "1",
+    "9xl": "1",
 };
 
 const FONT_FAMILIES = {
@@ -104,6 +123,10 @@ export function generateRootVariables() {
     for (const [key, value] of Object.entries(FONT_SIZES)) {
         vars += `--font-size-${key}:${value};`;
     }
+    for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
+        vars += `--font-size-leading-${key}:${value};`;
+    }
+    vars += '--unit-size:0.25rem;'
 
     return ':root{' + vars + '}';
 }

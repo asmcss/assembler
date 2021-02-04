@@ -17,6 +17,7 @@
 import {generateStyles} from "./generators";
 import {observeDocument} from "./observers";
 import {getUserSettings, style} from "./helpers";
+import {generateRootVariables} from "./variables";
 import StyleHandler from "./StyleHandler";
 
 export {registerMixin} from "./mixin";
@@ -46,6 +47,8 @@ export function init(options?: {[key: string]: string}): boolean {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             stylesheet.replaceSync(generateStyles(settings, tracker));
+        } else {
+            stylesheet.replaceSync(generateRootVariables());
         }
         document.adoptedStyleSheets = [stylesheet];
     } else {

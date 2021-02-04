@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+const positive_number_regex = /^[0-9]+(\.5)?$/;
+const number_regex = /^-?[0-9]+(\.5)?$/;
+const font_size_regex = /^(xs|sm|base|lg|([2-9])?xl)$/;
+const line_height_regex = /^(none|tight|snug|normal|relaxed|loose)$/;
+const elevation_regex = /^[0-9]|1[0-9]|2[0-4]$/;
+const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
+const radius_regex = /^(xs|sm|md|lg|xl)$/;
+const order_regex = /^(first|last|none)$/;
+
 export const PROPERTY_LIST = [
     "align-content",
     "align-items",
@@ -63,6 +72,7 @@ export const PROPERTY_LIST = [
     "clear",
     "color",
     "column-gap",
+    "content",
     "cursor",
     "display",
     "filter",
@@ -243,6 +253,11 @@ export const ALIASES = {
     "radius-br": "border-bottom-right-radius",
     "radius-tl": "border-top-left-radius",
     "radius-tr": "border-top-right-radius",
+    "b": "border",
+    "bt": "border-top",
+    "bl": "border-left",
+    "br": "border-right",
+    "bb": "border-bottom",
     "m": "margin",
     "mt": "margin-top",
     "mb": "margin-bottom",
@@ -332,10 +347,12 @@ export const ALIASES = {
         }
         return "list-style-type";
     },
+    "text": v => font_size_regex.test(v) ? ["font-size", "line-height"] : "font-size",
     "uppercase": "text-transform",
     "lowercase": "text-transform",
     "capitalize": "text-transform",
     "normal-case": "text-transform",
+    "variant": "font-variant-numeric",
     "placeholder": "-opis-placeholder-color",
     "placeholder-font": "-opis-placeholder-font",
     "placeholder-size": "-opis-placeholder-size",
@@ -343,7 +360,7 @@ export const ALIASES = {
     "placeholder-weight": "-opis-placeholder-weight",
 };
 export const DEFAULT_VALUES = {
-    "border": ["1px solid black"],
+    "border": ["1px solid transparent"],
     "truncate": ["hidden", "ellipsis", "nowrap"],
     "text-clip": ["text", "transparent"],
     "flex": "flex",
@@ -370,24 +387,33 @@ export const DEFAULT_VALUES = {
     "normal-case": "none",
 }
 
+const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
+const positive_unit = v => positive_number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
 const grid_repeat = v => `repeat(${v}, minmax(0, 1fr))`;
 const grid_rowspan = v => `span ${v}`;
-const elevation = v => /^[0-9]|1[0-9]|2[0-4]$/.test(v) ? `@elevation-${v}` : v;
+const elevation = v => elevation_regex.test(v) ? `@elevation-${v}` : v;
 const ring = v => `0 0 0 ${v}`;
-const fontSize = v => /^(xs|sm|base|lg|([2-6])?xl)$/.test(v) ? "@font-size-" + v : v;
-const lineHeight = v => /^(none|tight|snug|normal|relaxed|loose)$/.test(v) ? "@line-height-" + v : v;
-const letterSpacing = v => /^(tighter|tight|normal|wide|wider|widest)$/.test(v) ? "@letter-spacing-" + v : v;
-const radius = v => /^(xs|sm|md|lg|xl)$/.test(v) ? "@border-radius-" + v : v;
+const fontSize = v => font_size_regex.test(v) ? "@font-size-" + v : v;
+const lineHeight = v => {
+    if (positive_number_regex.test(v)) {
+        return `calc(${v} * @unit-size)`;
+    }
+    return line_height_regex.test(v) ? "@line-height-" + v : v
+};
+const letterSpacing = v => letter_spacing_regex.test(v) ? "@letter-spacing-" + v : v;
+const radius = v => radius_regex.test(v) ? "@border-radius-" + v : v;
 const breakCallback = v => {
     if (v === "normal") return ["normal", "normal"];
     if (v === "words") return "break-word";
     return "break-all";
 };
 const orderCallback = v => {
+    if (!order_regex.test(v)) {
+        return v;
+    }
     if (v === "first") return "-9999";
     if (v === "last") return "9999";
-    if (v === "none") return "0";
-    return v;
+    return "0";
 }
 
 export const VALUE_WRAPPER = {
@@ -403,6 +429,7 @@ export const VALUE_WRAPPER = {
     "font-size": fontSize,
     "leading": lineHeight,
     "tracking": letterSpacing,
+    "text": v => font_size_regex.test(v) ? ["@font-size-" + v, "@font-size-leading-" + v] : v,
     "radius": radius,
     "radius-top": radius,
     "radius-left": radius,
@@ -417,4 +444,29 @@ export const VALUE_WRAPPER = {
     "flex-wrap": (v) => v === "reverse" ? "wrap-reverse" : v,
     "flex-row": v => v === "reverse" ? "row-reverse" : v,
     "flex-col": v => v === "reverse" ? "column-reverse" : v,
+    "order": orderCallback,
+    "padding": positive_unit,
+    "padding-top": positive_unit,
+    "padding-bottom": positive_unit,
+    "padding-left": positive_unit,
+    "padding-right": positive_unit,
+    "p": positive_unit,
+    "pt": positive_unit,
+    "pb": positive_unit,
+    "pl": positive_unit,
+    "pr": positive_unit,
+    "px": positive_unit,
+    "py": positive_unit,
+    "margin": unit,
+    "margin-top": unit,
+    "margin-bottom": unit,
+    "margin-left": unit,
+    "margin-right": unit,
+    "m": unit,
+    "mt": unit,
+    "mb": unit,
+    "ml": unit,
+    "mr": unit,
+    "mx": unit,
+    "my": unit,
 };
