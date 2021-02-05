@@ -55,6 +55,7 @@ export declare const ALIASES: {
     "max-h": string;
     w: string;
     h: string;
+    img: string;
     gradient: string;
     "radial-gradient": string;
     "conic-gradient": string;
@@ -137,6 +138,7 @@ export declare const DEFAULT_VALUES: {
     "normal-case": string;
 };
 export declare const VALUE_WRAPPER: {
+    img: (v: any) => string;
     gradient: (value: any) => string;
     "radial-gradient": (value: any) => string;
     "conic-gradient": (value: any) => string;

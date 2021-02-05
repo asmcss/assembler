@@ -264,6 +264,7 @@ const ALIASES = {
     "max-h": "max-height",
     "w": "width",
     "h": "height",
+    "img": "background-image",
     "gradient": "background-image",
     "radial-gradient": "background-image",
     "conic-gradient": "background-image",
@@ -389,6 +390,7 @@ const orderCallback = v => {
     return "0";
 };
 const VALUE_WRAPPER = {
+    "img": v => `url(${v})`,
     "gradient": (value) => `linear-gradient(${value})`,
     "radial-gradient": (value) => `radial-gradient(${value})`,
     "conic-gradient": (value) => `conic-gradient(${value})`,
