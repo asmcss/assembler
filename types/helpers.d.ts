@@ -12,6 +12,7 @@ export declare type UserSettings = {
     states: {
         enabled: string[];
     };
+    scopes: string[];
 };
 declare type StyleType = string | {
     [key: string]: string;

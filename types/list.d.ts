@@ -85,15 +85,6 @@ export declare const ALIASES: {
     tracking: string;
     break: (v: any) => string[];
     truncate: string[];
-    "text-clip": string[];
-    "space-x": string;
-    "space-y": string;
-    "space-x-rev": string;
-    "space-y-rev": string;
-    "space-x-alt": string;
-    "space-y-alt": string;
-    "sr-only": (v: any) => "-opis-sr-only" | "-opis-not-sr-only";
-    stack: string;
     flex: (v: any) => "display" | "flex";
     "inline-flex": string;
     grid: string;
@@ -117,18 +108,13 @@ export declare const ALIASES: {
     capitalize: string;
     "normal-case": string;
     variant: string;
-    placeholder: string;
-    "placeholder-font": string;
-    "placeholder-size": string;
-    "placeholder-style": string;
-    "placeholder-weight": string;
 };
 export declare const DEFAULT_VALUES: {
     border: string[];
     truncate: string[];
-    "text-clip": string[];
     flex: string;
     "inline-flex": string;
+    grid: string;
     "inline-grid": string;
     hidden: string;
     block: string;
@@ -174,7 +160,6 @@ export declare const VALUE_WRAPPER: {
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
     break: (v: any) => string[] | "break-all" | "break-word";
-    grid: () => string;
     "flex-wrap": (v: any) => any;
     "flex-row": (v: any) => any;
     "flex-col": (v: any) => any;

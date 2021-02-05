@@ -70,6 +70,8 @@ export const PROPERTY_LIST = [
     "box-shadow",
     "box-sizing",
     "clear",
+    "clip",
+    "clip-path",
     "color",
     "column-gap",
     "content",
@@ -172,22 +174,6 @@ export const PROPERTY_LIST = [
     "width",
     "word-break",
     "z-index",
-    "-opis-grid",
-    "-opis-space-x",
-    "-opis-space-y",
-    "-opis-space-top",
-    "-opis-space-bottom",
-    "-opis-space-left",
-    "-opis-space-right",
-    "-opis-background-clip-text",
-    "-opis-sr-only",
-    "-opis-not-sr-only",
-    "-opis-stack",
-    "-opis-placeholder-color",
-    "-opis-placeholder-font",
-    "-opis-placeholder-size",
-    "-opis-placeholder-style",
-    "-opis-placeholder-weight",
 ];
 export const PROPERTY_VARIANTS = {
     "animation": ["-webkit-animation"],
@@ -232,7 +218,14 @@ export const STATE_LIST = [
     "disabled",
     "enabled",
 ];
-export const MEDIA_LIST = ["all", "xs", "sm", "md", "lg", "xl"];
+export const MEDIA_LIST = [
+    "all",
+    "xs",
+    "sm",
+    "md",
+    "lg",
+    "xl"
+];
 export const ALIASES = {
     "backdrop": "backdrop-filter",
     "bg": "background",
@@ -302,7 +295,7 @@ export const ALIASES = {
     "z": "z-index",
     "decoration": "text-decoration",
     "v-align": "vertical-align",
-    "ws": "whitespace",
+    "ws": "white-space",
     "ring": "box-shadow",
     "leading": "line-height",
     "tracking": "letter-spacing",
@@ -312,21 +305,9 @@ export const ALIASES = {
         return ["overflow-wrap", "word-break"];
     },
     "truncate": ["overflow", "text-overflow", "white-space"],
-    "text-clip": ["-opis-background-clip-text", "text-fill-color"],
-    "space-x": "-opis-space-left",
-    "space-y": "-opis-space-top",
-    "space-x-rev": "-opis-space-right",
-    "space-y-rev": "-opis-space-bottom",
-    "space-x-alt": "-opis-space-y",
-    "space-y-alt": "-opis-space-y",
-    "sr-only": v => {
-        if (v === "false") return "-opis-not-sr-only";
-        return "-opis-sr-only";
-    },
-    "stack": "-opis-stack",
     "flex": v => v ? "flex" : "display",
     "inline-flex": "display",
-    "grid": "-opis-grid",
+    "grid": "display",
     "inline-grid": "display",
     "hidden": "display",
     "block": "display",
@@ -352,18 +333,13 @@ export const ALIASES = {
     "capitalize": "text-transform",
     "normal-case": "text-transform",
     "variant": "font-variant-numeric",
-    "placeholder": "-opis-placeholder-color",
-    "placeholder-font": "-opis-placeholder-font",
-    "placeholder-size": "-opis-placeholder-size",
-    "placeholder-style": "-opis-placeholder-style",
-    "placeholder-weight": "-opis-placeholder-weight",
 };
 export const DEFAULT_VALUES = {
     "border": ["1px solid transparent"],
     "truncate": ["hidden", "ellipsis", "nowrap"],
-    "text-clip": ["text", "transparent"],
     "flex": "flex",
     "inline-flex": "inline-flex",
+    "grid": "grid",
     "inline-grid": "inline-grid",
     "hidden": "none",
     "block": "block",
@@ -439,7 +415,6 @@ export const VALUE_WRAPPER = {
     "radius-tr": radius,
     "radius-br": radius,
     "break": breakCallback,
-    "grid": () => "grid",
     "flex-wrap": (v) => v === "reverse" ? "wrap-reverse" : v,
     "flex-row": v => v === "reverse" ? "row-reverse" : v,
     "flex-col": v => v === "reverse" ? "column-reverse" : v,

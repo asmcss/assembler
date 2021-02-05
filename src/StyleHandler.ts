@@ -16,7 +16,6 @@
 
 import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
 import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
-import {CSS_GENERATORS} from "./generators";
 import {Root} from "./Root";
 
 type PropertyInfo = {
@@ -28,12 +27,13 @@ type PropertyInfo = {
     name: string,
     value: string|null,
     hash: string,
-    scope: string
+    scope: string,
+    rank: number
 };
 
 
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
-const REPLACE_REGEX = /\$(selector|class|value|property|state)/g;
+const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-z]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 
 export default class StyleHandler {
@@ -42,6 +42,8 @@ export default class StyleHandler {
     private tracker: Map<string, boolean>;
     private mediaSettings: object;
     private desktopMode: boolean;
+    private rules: number[];
+    private padding: number;
 
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Map<string, boolean>) {
         this.style = style;
@@ -49,6 +51,8 @@ export default class StyleHandler {
         this.tracker = tracker;
         this.mediaSettings = settings.breakpoints.settings;
         this.desktopMode = settings.breakpoints.mode === "desktop-first";
+        this.rules = [];
+        this.padding = style.cssRules.length;
     }
 
     handleStyleChange(element: HTMLElement, oldContent: string|null, content: string|null): void {
@@ -119,6 +123,7 @@ export default class StyleHandler {
 
         let properties: string|string[] = m.property;
         const original = properties;
+        const scopes = this.settings.scopes;
 
         if (ALIASES.hasOwnProperty(properties)) {
             properties = ALIASES[properties];
@@ -156,7 +161,9 @@ export default class StyleHandler {
             }
 
             const scope = m.scope || '';
-            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+            const rank = ((name * base) + media) * base + state;
+            const hash = rank.toString(16) + (scope ? `-${scope}` : '');
+            const scopeRank = scopes.indexOf(scope) * 100000;
 
             result.push({
                 name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
@@ -168,6 +175,7 @@ export default class StyleHandler {
                 cssProperty: property,
                 hash,
                 scope,
+                rank: scopeRank < 0 ? -1 : rank + scopeRank,
             });
         }
 
@@ -261,10 +269,14 @@ export default class StyleHandler {
 
     private generateCSS(info: PropertyInfo) {
         const {tracker, mediaSettings, desktopMode, style} = this;
-        const {hash, media, state, cssProperty, property, scope} = info;
+        const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
 
         tracker.set(hash, true);
+
+        if (rank < 0) {
+            return;
+        }
 
         let rule = '';
 
@@ -284,19 +296,6 @@ export default class StyleHandler {
             }
         }
 
-        if (cssProperty.startsWith('-opis-')) {
-            const rules: string[] = CSS_GENERATORS[cssProperty](hash, state !== '' ? ':' + state : '');
-
-            for (let i = 0; i < rules.length; i++) {
-                let crtRule = rule + rules[i];
-                if (hasMedia) {
-                    crtRule += '}';
-                }
-                style.insertRule(crtRule);
-            }
-            return;
-        }
-
         if (scope) {
             const scopeValue = Root.getPropertyValue(scope + '--scope')
             if (scopeValue === '') {
@@ -306,6 +305,10 @@ export default class StyleHandler {
                 switch (p1) {
                     case "selector":
                         return `.x\\#${hash}${state ? ':' + state : ''}`;
+                    case "body":
+                        return prefix + cssProperty + ': var(' + property + ') !important';
+                    case "variants":
+                        return prefix;
                     case "property":
                         return cssProperty;
                     case "value":
@@ -314,6 +317,8 @@ export default class StyleHandler {
                         return `.x\\${hash}`;
                     case "state":
                         return state ? ':' + state : '';
+                    case "var":
+                        return property;
                 }
                 return p1;
             });
@@ -324,7 +329,23 @@ export default class StyleHandler {
         if (hasMedia) {
             rule += '}'
         }
+        const ruleIndex = this.getRuleIndex(rank);
+        this.rules.splice(ruleIndex, 0, rank);
+        try {
+            style.insertRule(rule, this.padding + ruleIndex);
+        } catch {
+            console.log("Unsupported rule:", rule);
+            this.rules.splice(ruleIndex, 1);
+        }
+    }
 
-        style.insertRule(rule);
+    private getRuleIndex(rank: number): number {
+        const {rules} = this;
+        for (let i = 0, l = rules.length; i < l; i++) {
+            if (rank < rules[i]) {
+                return i;
+            }
+        }
+        return rules.length;
     }
 }

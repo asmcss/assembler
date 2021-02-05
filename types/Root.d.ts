@@ -1,6 +1,7 @@
 declare class RootClass {
     private styles;
     private cache;
+    constructor();
     private getComputedStyle;
     getPropertyValue(property: string): string;
 }

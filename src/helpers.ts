@@ -22,6 +22,7 @@ export type UserSettings = {
     cacheKey: string,
     breakpoints: {mode: string, settings: object, enabled: string[]},
     states: {enabled: string[]}
+    scopes: string[]
 };
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
@@ -36,6 +37,16 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
+    const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
+    const scopes = ["", "placeholder", "before", "after", "first-letter", "first-line",
+        "l1", "l2", "sibling", "child", "dark", "light"];
+
+    for (let i = 0, l = dataScopes.length; i < l; i++) {
+        const scope = dataScopes[i];
+        if (scopes.indexOf(scope) < 0) {
+            scopes.push(scope);
+        }
+    }
 
     // Consider all bp
     let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
@@ -82,6 +93,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         constructable,
         cache,
         cacheKey,
+        scopes,
         breakpoints: {
             mode,
             settings: {xs, sm, md, lg, xl},
