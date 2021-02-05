@@ -34,7 +34,7 @@ type PropertyInfo = {
 
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-z]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 
 export default class StyleHandler {
     private style: CSSStyleSheet;

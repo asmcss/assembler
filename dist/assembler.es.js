@@ -859,8 +859,8 @@ functionRepository.set('space-x', function (...args) {
 functionRepository.set('space-y', function (...args) {
     const space = args[0] || '0';
     if (args[1] === 'true')
-        return `sibling!mt:${space}`;
-    return `sibling!mb:${space}`;
+        return `sibling!mb:${space}`;
+    return `sibling!mt:${space}`;
 });
 functionRepository.set('grid', function (...args) {
     return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
@@ -1050,7 +1050,7 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  */
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-z]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 class StyleHandler {
     constructor(settings, style, tracker) {
         this.style = style;

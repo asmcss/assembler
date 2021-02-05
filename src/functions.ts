@@ -36,8 +36,8 @@ functionRepository.set('space-x', function (...args: string[]): string {
 
 functionRepository.set('space-y', function (...args: string[]): string {
     const space = args[0] || '0';
-    if (args[1] === 'true') return `sibling!mt:${space}`;
-    return `sibling!mb:${space}`;
+    if (args[1] === 'true') return `sibling!mb:${space}`;
+    return `sibling!mt:${space}`;
 });
 
 functionRepository.set('grid', function (...args: string[]): string {
