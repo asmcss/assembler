@@ -1238,9 +1238,10 @@ class StyleHandler {
                 if (name < 0) {
                     continue;
                 }
-                const hash = (((name * base) + media) * base + state).toString(16);
+                const scope = m.scope || '';
+                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
                 yield {
-                    name: (m.media ? m.media + '|' : '') + property + (m.state ? '.' + m.state : ''),
+                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
                     property: HASH_VAR_PREFIX + hash,
                     entry: 'x#' + hash,
                 };
