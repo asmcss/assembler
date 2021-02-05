@@ -71,9 +71,7 @@ export function generateStyles(settings: UserSettings, tracker: Map<string, bool
 
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
             const name = PROPERTY_LIST[name_index];
-            if (name === null) {
-                continue;
-            }
+
             // generate all states for default media
             const stateList = media_index === 0 ? STATE_LIST : states;
             for (const state of stateList) {

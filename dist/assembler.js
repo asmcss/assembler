@@ -593,7 +593,7 @@
         const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
         const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
         const scopes = ["", "placeholder", "before", "after", "first-letter", "first-line",
-            "l1", "l2", "sibling", "child", "dark", "light"];
+            "l1", "l2", "sibling", "child", "dark", "light", "text-clip"];
         for (let i = 0, l = dataScopes.length; i < l; i++) {
             const scope = dataScopes[i];
             if (scopes.indexOf(scope) < 0) {
@@ -747,9 +747,6 @@
             }
             for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
                 const name = PROPERTY_LIST[name_index];
-                if (name === null) {
-                    continue;
-                }
                 // generate all states for default media
                 const stateList = media_index === 0 ? STATE_LIST : states;
                 for (const state of stateList) {

@@ -39,7 +39,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
     const scopes = ["", "placeholder", "before", "after", "first-letter", "first-line",
-        "l1", "l2", "sibling", "child", "dark", "light"];
+        "l1", "l2", "sibling", "child", "dark", "light", "text-clip"];
 
     for (let i = 0, l = dataScopes.length; i < l; i++) {
         const scope = dataScopes[i];
