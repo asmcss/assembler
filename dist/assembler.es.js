@@ -586,8 +586,8 @@ function getUserSettings(dataset) {
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
-    const scopes = ["", "placeholder", "before", "after", "first-letter", "first-line",
-        "l1", "l2", "sibling", "child", "dark", "light", "text-clip"];
+    const scopes = ["", "text-clip", "placeholder", "before", "after", "first-letter", "first-line",
+        "l1", "l2", "sibling", "child", "dark", "light", "landscape", "portrait"];
     for (let i = 0, l = dataScopes.length; i < l; i++) {
         const scope = dataScopes[i];
         if (scopes.indexOf(scope) < 0) {
@@ -793,6 +793,7 @@ class RootClass {
         this.cache = new Map();
         const { cache } = this;
         const tc = '-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important;';
+        cache.set("text-clip--scope", `$selector {${tc}$body}`);
         cache.set("l1--scope", "$selector > * {$body}");
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
@@ -804,7 +805,8 @@ class RootClass {
         cache.set("first-line--scope", "$selector::first-line {$body}");
         cache.set("dark--scope", "@media(prefers-color-scheme: dark) {$selector {$body}}");
         cache.set("light--scope", "@media(prefers-color-scheme: light) {$selector {$body}}");
-        cache.set("text-clip--scope", `$selector {${tc}$body}`);
+        cache.set("landscape--scope", "@media(orientation: landscape) {$selector {$body}}");
+        cache.set("portrait--scope", "@media(orientation: portrait) {$selector {$body}}");
     }
     getComputedStyle() {
         if (this.styles === null) {
@@ -844,37 +846,41 @@ const Root = new RootClass();
  * limitations under the License.
  */
 const functionRepository = new Map();
-functionRepository.set('mixin', function (...names) {
+functionRepository.set('mixin', function (settings, ...names) {
     return names
         .map(name => Root.getPropertyValue(name + '--mixin'))
         .filter(v => v !== '')
         .join(';');
 });
-functionRepository.set('space-x', function (...args) {
+functionRepository.set('space-x', function (settings, ...args) {
     const space = args[0] || '0';
     if (args[1] === 'true')
         return `sibling!mr:${space}`;
     return `sibling!ml:${space}`;
 });
-functionRepository.set('space-y', function (...args) {
+functionRepository.set('space-y', function (settings, ...args) {
     const space = args[0] || '0';
     if (args[1] === 'true')
         return `sibling!mb:${space}`;
     return `sibling!mt:${space}`;
 });
-functionRepository.set('grid', function (...args) {
+functionRepository.set('grid', function (settings, ...args) {
     return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
 });
-functionRepository.set('stack', function (...args) {
+functionRepository.set('stack', function (settings, ...args) {
     return 'grid; grid-cols:minmax(0,1fr); grid-rows:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
 });
-functionRepository.set('sr-only', function (...args) {
+functionRepository.set('sr-only', function (settings, ...args) {
     if ((args[0] || 'true') !== 'true') {
         return 'static; w:auto; h:auto; p:0; m:0; ws:normal; overflow:visible; clip:auto';
     }
     return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
 });
-function parseApplyAttribute(value) {
+functionRepository.set('container', function (settings, ...args) {
+    const { mode, settings: bp } = settings.breakpoints;
+    return `px: 1rem; mx:auto; max-w:${mode === 'desktop-first' ? bp['xl'] : '100%'}; sm|max-w:${bp['sm']}; md|max-w:${bp['md']}; lg|max-w:${bp['lg']}`;
+});
+function parseApplyAttribute(settings, value) {
     if (value == null || value === '') {
         return null;
     }
@@ -882,7 +888,7 @@ function parseApplyAttribute(value) {
     for (const { name, args } of extractFunctions(value)) {
         if (functionRepository.has(name)) {
             const callback = functionRepository.get(name);
-            collection.push(callback(...args));
+            collection.push(callback(settings, ...args));
         }
     }
     return style(collection);
@@ -974,7 +980,7 @@ function observe(element, handler) {
     const apply = element.attributes.getNamedItem(APPLY_ATTR);
     let content = '';
     if (apply) {
-        content = parseApplyAttribute(apply.value);
+        content = parseApplyAttribute(handler.userSettings, apply.value);
         if (content !== '') {
             observedElements.set(element, content);
             content += ';';
@@ -994,7 +1000,7 @@ function observe(element, handler) {
 function whenApplyChanged(handler, element, newApply) {
     let prevApply = observedElements.get(element) || null;
     if (newApply != null) {
-        newApply = parseApplyAttribute(newApply);
+        newApply = parseApplyAttribute(handler.userSettings, newApply);
     }
     observedElements.set(element, newApply);
     if (element.hasAttribute(STYLE_ATTR)) {
@@ -1060,6 +1066,9 @@ class StyleHandler {
         this.desktopMode = settings.breakpoints.mode === "desktop-first";
         this.rules = [];
         this.padding = style.cssRules.length;
+    }
+    get userSettings() {
+        return this.settings;
     }
     handleStyleChange(element, oldContent, content) {
         if (content === null) {

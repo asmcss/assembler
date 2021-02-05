@@ -43,7 +43,7 @@ export default class StyleHandler {
     private mediaSettings: object;
     private desktopMode: boolean;
     private rules: number[];
-    private padding: number;
+    private readonly padding: number;
 
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Map<string, boolean>) {
         this.style = style;
@@ -53,6 +53,10 @@ export default class StyleHandler {
         this.desktopMode = settings.breakpoints.mode === "desktop-first";
         this.rules = [];
         this.padding = style.cssRules.length;
+    }
+
+    get userSettings(): UserSettings {
+        return this.settings;
     }
 
     handleStyleChange(element: HTMLElement, oldContent: string|null, content: string|null): void {

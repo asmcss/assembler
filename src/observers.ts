@@ -79,7 +79,7 @@ function observe(element: HTMLElement, handler: StyleHandler): void {
     let content = '';
 
     if (apply) {
-        content = parseApplyAttribute(apply.value);
+        content = parseApplyAttribute(handler.userSettings, apply.value);
         if (content !== '') {
             observedElements.set(element, content);
             content += ';';
@@ -105,7 +105,7 @@ function whenApplyChanged(handler: StyleHandler, element: HTMLElement, newApply:
     let prevApply = observedElements.get(element) || null;
 
     if (newApply != null) {
-        newApply = parseApplyAttribute(newApply);
+        newApply = parseApplyAttribute(handler.userSettings, newApply);
     }
 
     observedElements.set(element, newApply);

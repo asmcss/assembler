@@ -21,6 +21,7 @@ class RootClass {
     constructor() {
         const {cache} = this;
         const tc = '-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important;';
+        cache.set("text-clip--scope", `$selector {${tc}$body}`);
         cache.set("l1--scope", "$selector > * {$body}");
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
@@ -32,7 +33,8 @@ class RootClass {
         cache.set("first-line--scope", "$selector::first-line {$body}");
         cache.set("dark--scope", "@media(prefers-color-scheme: dark) {$selector {$body}}");
         cache.set("light--scope", "@media(prefers-color-scheme: light) {$selector {$body}}");
-        cache.set("text-clip--scope", `$selector {${tc}$body}`);
+        cache.set("landscape--scope", "@media(orientation: landscape) {$selector {$body}}");
+        cache.set("portrait--scope", "@media(orientation: portrait) {$selector {$body}}");
     }
 
     private getComputedStyle(): CSSStyleDeclaration {
