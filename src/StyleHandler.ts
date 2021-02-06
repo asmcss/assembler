@@ -15,7 +15,7 @@
  */
 
 import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
-import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
+import {UserSettings, getStyleProperties, HASH_VAR_PREFIX, PROPERTY_REGEX} from "./helpers";
 import {Root} from "./Root";
 
 type PropertyInfo = {
@@ -34,11 +34,10 @@ type PropertyInfo = {
 
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 
 export default class StyleHandler {
     private style: CSSStyleSheet;
-    private settings: UserSettings;
+    private readonly settings: UserSettings;
     private tracker: Map<string, boolean>;
     private mediaSettings: object;
     private desktopMode: boolean;
@@ -70,7 +69,7 @@ export default class StyleHandler {
 
         // remove old entries
         if (oldContent !== null) {
-            for (const {name, property, entry} of this.getStyleProperties(oldContent)) {
+            for (const {name, property, entry} of getStyleProperties(oldContent)) {
                 if (!newEntries.has(name)) {
                     const index = classList.indexOf(entry);
                     if (index >= 0) {
@@ -100,7 +99,7 @@ export default class StyleHandler {
 
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
 
-        for (const {property, entry} of this.getStyleProperties(content)) {
+        for (const {property, entry} of getStyleProperties(content)) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -211,65 +210,6 @@ export default class StyleHandler {
         }
 
         return entries;
-    }
-
-    private * getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
-        const base = STATE_LIST.length;
-
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            } else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
-            }
-
-            const m = PROPERTY_REGEX.exec(attr)?.groups;
-
-            if (!m || !m.property) {
-                continue;
-            }
-
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-
-            if (media < 0 || state < 0) {
-                continue;
-            }
-
-            let properties: string|string[] = m.property;
-
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-                if (typeof properties === 'function') {
-                    properties = (properties as (a: string|null) => string[])(value as string|null);
-                }
-            }
-
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-
-                if (name < 0) {
-                    continue;
-                }
-
-                const scope = m.scope || '';
-                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-
-
-                yield {
-                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash,
-                };
-            }
-        }
     }
 
     private generateCSS(info: PropertyInfo) {

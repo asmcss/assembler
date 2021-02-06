@@ -16,12 +16,12 @@
 
 import {generateStyles} from "./generators";
 import {observeDocument} from "./observers";
-import {getUserSettings, style} from "./helpers";
+import {getUserSettings, style, getClasses} from "./helpers";
 import {generateRootVariables} from "./variables";
 import StyleHandler from "./StyleHandler";
 
 export {registerFunction} from "./functions";
-export {style};
+export {style, getClasses};
 
 declare global {
     interface Document {

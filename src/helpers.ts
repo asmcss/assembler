@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ALIASES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST} from "./list";
+
 export type UserSettings = {
     enabled: boolean,
     generate: boolean,
@@ -28,6 +30,7 @@ type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 
 export const HASH_VAR_PREFIX = '--x-';
+export const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 
 export function getUserSettings(dataset: {[key: string]: string}): UserSettings {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
@@ -103,6 +106,73 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
             enabled: states
         }
     };
+}
+
+export function * getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
+    const base = STATE_LIST.length;
+
+    for (let attr of content.split(';')) {
+        let value = null;
+        const pos = attr.indexOf(':');
+        if (pos < 0) {
+            attr = attr.trim();
+        } else {
+            value = attr.substr(pos + 1);
+            attr = attr.substr(0, pos).trim();
+        }
+
+        const m = PROPERTY_REGEX.exec(attr)?.groups;
+
+        if (!m || !m.property) {
+            continue;
+        }
+
+        const media = MEDIA_LIST.indexOf(m.media || 'all');
+        const state = STATE_LIST.indexOf(m.state || 'normal');
+
+        if (media < 0 || state < 0) {
+            continue;
+        }
+
+        let properties: string|string[] = m.property;
+
+        if (ALIASES.hasOwnProperty(properties)) {
+            properties = ALIASES[properties];
+            if (typeof properties === 'function') {
+                properties = (properties as (a: string|null) => string[])(value as string|null);
+            }
+        }
+
+        if (!Array.isArray(properties)) {
+            properties = [properties];
+        }
+
+        for (const property of properties) {
+            const name = PROPERTY_LIST.indexOf(property);
+
+            if (name < 0) {
+                continue;
+            }
+
+            const scope = m.scope || '';
+            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+
+
+            yield {
+                name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
+                property: HASH_VAR_PREFIX + hash,
+                entry: 'x#' + hash,
+            };
+        }
+    }
+}
+
+export function getClasses(content: string): string {
+    const result = [];
+    for (const {entry} of getStyleProperties(content)) {
+        result.push(entry);
+    }
+    return result.join(' ');
 }
 
 export function style(...styles: (StyleType|StyleType[])[]): string {

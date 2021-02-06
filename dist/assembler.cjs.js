@@ -583,6 +583,7 @@ function generateRootVariables() {
  */
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 const HASH_VAR_PREFIX = '--x-';
+const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
@@ -650,6 +651,60 @@ function getUserSettings(dataset) {
             enabled: states
         }
     };
+}
+function* getStyleProperties(content) {
+    var _a;
+    const base = STATE_LIST.length;
+    for (let attr of content.split(';')) {
+        let value = null;
+        const pos = attr.indexOf(':');
+        if (pos < 0) {
+            attr = attr.trim();
+        }
+        else {
+            value = attr.substr(pos + 1);
+            attr = attr.substr(0, pos).trim();
+        }
+        const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+        if (!m || !m.property) {
+            continue;
+        }
+        const media = MEDIA_LIST.indexOf(m.media || 'all');
+        const state = STATE_LIST.indexOf(m.state || 'normal');
+        if (media < 0 || state < 0) {
+            continue;
+        }
+        let properties = m.property;
+        if (ALIASES.hasOwnProperty(properties)) {
+            properties = ALIASES[properties];
+            if (typeof properties === 'function') {
+                properties = properties(value);
+            }
+        }
+        if (!Array.isArray(properties)) {
+            properties = [properties];
+        }
+        for (const property of properties) {
+            const name = PROPERTY_LIST.indexOf(property);
+            if (name < 0) {
+                continue;
+            }
+            const scope = m.scope || '';
+            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+            yield {
+                name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
+                property: HASH_VAR_PREFIX + hash,
+                entry: 'x#' + hash,
+            };
+        }
+    }
+}
+function getClasses(content) {
+    const result = [];
+    for (const { entry } of getStyleProperties(content)) {
+        result.push(entry);
+    }
+    return result.join(' ');
 }
 function style(...styles) {
     let str = [];
@@ -1062,7 +1117,6 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  */
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
-const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 class StyleHandler {
     constructor(settings, style, tracker) {
         this.style = style;
@@ -1084,7 +1138,7 @@ class StyleHandler {
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
         // remove old entries
         if (oldContent !== null) {
-            for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
+            for (const { name, property, entry } of getStyleProperties(oldContent)) {
                 if (!newEntries.has(name)) {
                     const index = classList.indexOf(entry);
                     if (index >= 0) {
@@ -1109,7 +1163,7 @@ class StyleHandler {
     }
     handleStyleRemoved(element, content) {
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        for (const { property, entry } of this.getStyleProperties(content)) {
+        for (const { property, entry } of getStyleProperties(content)) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -1202,53 +1256,6 @@ class StyleHandler {
             }
         }
         return entries;
-    }
-    *getStyleProperties(content) {
-        var _a;
-        const base = STATE_LIST.length;
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            }
-            else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
-            }
-            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-            if (!m || !m.property) {
-                continue;
-            }
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-            if (media < 0 || state < 0) {
-                continue;
-            }
-            let properties = m.property;
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-                if (typeof properties === 'function') {
-                    properties = properties(value);
-                }
-            }
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-                if (name < 0) {
-                    continue;
-                }
-                const scope = m.scope || '';
-                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-                yield {
-                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash,
-                };
-            }
-        }
     }
     generateCSS(info) {
         const { tracker, mediaSettings, desktopMode, style } = this;
@@ -1373,6 +1380,7 @@ if (typeof window !== 'undefined') {
     init();
 }
 
+exports.getClasses = getClasses;
 exports.init = init;
 exports.registerFunction = registerFunction;
 exports.style = style;

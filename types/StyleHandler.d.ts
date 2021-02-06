@@ -1,7 +1,7 @@
 import { UserSettings } from "./helpers";
 export default class StyleHandler {
     private style;
-    private settings;
+    private readonly settings;
     private tracker;
     private mediaSettings;
     private desktopMode;
@@ -13,7 +13,6 @@ export default class StyleHandler {
     handleStyleRemoved(element: HTMLElement, content: string): void;
     private extract;
     private getStyleEntries;
-    private getStyleProperties;
     private generateCSS;
     private getRuleIndex;
 }

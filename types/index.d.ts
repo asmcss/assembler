@@ -1,6 +1,6 @@
-import { style } from "./helpers";
+import { style, getClasses } from "./helpers";
 export { registerFunction } from "./functions";
-export { style };
+export { style, getClasses };
 declare global {
     interface Document {
         adoptedStyleSheets: CSSStyleSheet[];
