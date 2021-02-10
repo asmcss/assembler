@@ -361,6 +361,7 @@ export const DEFAULT_VALUES = {
     "lowercase": "lowercase",
     "capitalize": "capitalize",
     "normal-case": "none",
+    "radius": "sm"
 }
 
 const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
@@ -445,4 +446,16 @@ export const VALUE_WRAPPER = {
     "mr": unit,
     "mx": unit,
     "my": unit,
+    "w": positive_unit,
+    "h": positive_unit,
+    "width": positive_unit,
+    "height": positive_unit,
+    "min-w": positive_unit,
+    "max-w": positive_unit,
+    "min-h": positive_unit,
+    "max-h": positive_unit,
+    "min-width": positive_unit,
+    "max-width": positive_unit,
+    "min-height": positive_unit,
+    "max-height": positive_unit
 };

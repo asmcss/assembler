@@ -136,6 +136,7 @@ export declare const DEFAULT_VALUES: {
     lowercase: string;
     capitalize: string;
     "normal-case": string;
+    radius: string;
 };
 export declare const VALUE_WRAPPER: {
     img: (v: any) => string;
@@ -190,4 +191,16 @@ export declare const VALUE_WRAPPER: {
     mr: (v: any) => any;
     mx: (v: any) => any;
     my: (v: any) => any;
+    w: (v: any) => any;
+    h: (v: any) => any;
+    width: (v: any) => any;
+    height: (v: any) => any;
+    "min-w": (v: any) => any;
+    "max-w": (v: any) => any;
+    "min-h": (v: any) => any;
+    "max-h": (v: any) => any;
+    "min-width": (v: any) => any;
+    "max-width": (v: any) => any;
+    "min-height": (v: any) => any;
+    "max-height": (v: any) => any;
 };
