@@ -26,15 +26,29 @@ class RootClass {
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
         cache.set("child--scope", "$selector > $class {$body}");
+
+        cache.set("selection--scope", "$selector::selection {$body}");
         cache.set("placeholder--scope", "$selector::placeholder {$body}");
+
         cache.set("before--scope", "$selector::before {$body}");
         cache.set("after--scope", "$selector::after {$body}");
+
+        cache.set("even--scope", "$selector:nth-child(even) {$body}");
+        cache.set("odd--scope", "$selector:nth-child(odd) {$body}");
+        cache.set("first--scope", "$selector:first-child {$body}");
+        cache.set("last--scope", "$selector:last-child {$body}");
+
         cache.set("first-letter--scope", "$selector::first-letter {$body}");
         cache.set("first-line--scope", "$selector::first-line {$body}");
+
         cache.set("dark--scope", "@media(prefers-color-scheme: dark) {$selector {$body}}");
         cache.set("light--scope", "@media(prefers-color-scheme: light) {$selector {$body}}");
+
         cache.set("landscape--scope", "@media(orientation: landscape) {$selector {$body}}");
         cache.set("portrait--scope", "@media(orientation: portrait) {$selector {$body}}");
+
+        cache.set("motion-reduce--scope", "@media(prefers-reduced-motion: reduce) {$selector {$body}}");
+        cache.set("motion-safe--scope", "@media(prefers-reduced-motion: no-preference) {$selector {$body}}");
     }
 
     private getComputedStyle(): CSSStyleDeclaration {
