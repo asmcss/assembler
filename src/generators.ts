@@ -18,14 +18,16 @@ import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {generateRootVariables} from "./variables";
 import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
 
-export function generateStyles(settings: UserSettings, tracker: Map<string, boolean>): string {
-    let content: string|null = null;
+type GeneratedStyles = {content: string, tracker: Set<string>};
 
+export function generateStyles(settings: UserSettings): GeneratedStyles {
 
     if (settings.cache) {
-        content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
+        const json = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
 
-        if (content !== null) {
+        if (json !== null) {
+            const content = JSON.parse(json);
+            content.tracker = new Set<string>(content.tracker);
             return content;
         }
 
@@ -49,6 +51,7 @@ export function generateStyles(settings: UserSettings, tracker: Map<string, bool
     const media_settings = settings.breakpoints.settings;
     const desktop = settings.breakpoints.mode === "desktop-first";
     const states = settings.states.enabled;
+    const tracker = new Set<string>();
 
     result.push(generateRootVariables());
 
@@ -81,7 +84,7 @@ export function generateStyles(settings: UserSettings, tracker: Map<string, bool
                 }
 
                 const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
-                tracker.set(hash, true);
+                tracker.add(hash);
 
                 let variants = PROPERTY_VARIANTS[name], prefix = '';
                 if (variants) {
@@ -99,11 +102,17 @@ export function generateStyles(settings: UserSettings, tracker: Map<string, bool
         result.push(str);
     }
 
-    content = result.join('');
+    const content = {
+        content: result.join(''),
+        tracker
+    };
 
     if (settings.cache) {
         localStorage.setItem(settings.cacheKey, settings.cache);
-        localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
+        localStorage.setItem(settings.cacheKey + ':' + settings.cache, JSON.stringify({
+            content: content.content,
+            tracker: [...tracker]
+        }));
     }
 
     return content;

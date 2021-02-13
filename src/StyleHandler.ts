@@ -38,13 +38,13 @@ const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)
 export default class StyleHandler {
     private style: CSSStyleSheet;
     private readonly settings: UserSettings;
-    private tracker: Map<string, boolean>;
+    private tracker: Set<string>;
     private mediaSettings: object;
     private desktopMode: boolean;
     private rules: number[];
     private readonly padding: number;
 
-    constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Map<string, boolean>) {
+    constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>) {
         this.style = style;
         this.settings = settings;
         this.tracker = tracker;
@@ -217,7 +217,7 @@ export default class StyleHandler {
         const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
 
-        tracker.set(hash, true);
+        tracker.add(hash);
 
         if (rank < 0) {
             return;

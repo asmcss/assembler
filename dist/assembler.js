@@ -775,11 +775,12 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    function generateStyles(settings, tracker) {
-        let content = null;
+    function generateStyles(settings) {
         if (settings.cache) {
-            content = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
-            if (content !== null) {
+            const json = localStorage.getItem(settings.cacheKey + ':' + settings.cache);
+            if (json !== null) {
+                const content = JSON.parse(json);
+                content.tracker = new Set(content.tracker);
                 return content;
             }
             const oldCacheKey = localStorage.getItem(settings.cacheKey);
@@ -800,6 +801,7 @@
         const media_settings = settings.breakpoints.settings;
         const desktop = settings.breakpoints.mode === "desktop-first";
         const states = settings.states.enabled;
+        const tracker = new Set();
         result.push(generateRootVariables());
         for (const bp of breakpoints) {
             const media_index = MEDIA_LIST.indexOf(bp);
@@ -825,7 +827,7 @@
                         continue;
                     }
                     const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
-                    tracker.set(hash, true);
+                    tracker.add(hash);
                     let variants = PROPERTY_VARIANTS[name], prefix = '';
                     if (variants) {
                         for (let i = 0, l = variants.length; i < l; i++) {
@@ -840,10 +842,16 @@
             }
             result.push(str);
         }
-        content = result.join('');
+        const content = {
+            content: result.join(''),
+            tracker
+        };
         if (settings.cache) {
             localStorage.setItem(settings.cacheKey, settings.cache);
-            localStorage.setItem(settings.cacheKey + ':' + settings.cache, content);
+            localStorage.setItem(settings.cacheKey + ':' + settings.cache, JSON.stringify({
+                content: content.content,
+                tracker: [...tracker]
+            }));
         }
         return content;
     }
@@ -1283,7 +1291,7 @@
             const { tracker, mediaSettings, desktopMode, style } = this;
             const { hash, media, state, cssProperty, property, scope, rank } = info;
             const hasMedia = media !== '';
-            tracker.set(hash, true);
+            tracker.add(hash);
             if (rank < 0) {
                 return;
             }
@@ -1376,22 +1384,27 @@
         if (!settings.enabled) {
             return false;
         }
-        const tracker = new Map();
+        let tracker;
         let stylesheet;
         if (settings.constructable && document.adoptedStyleSheets) {
             stylesheet = new CSSStyleSheet();
             if (settings.generate) {
-                stylesheet.replaceSync(generateStyles(settings, tracker));
+                const generated = generateStyles(settings);
+                tracker = generated.tracker;
+                stylesheet.replaceSync(generated.content);
             }
             else {
+                tracker = new Set();
                 stylesheet.replaceSync(generateRootVariables());
             }
             document.adoptedStyleSheets = [stylesheet];
         }
         else {
             const style = document.createElement("style");
+            const generated = generateStyles(settings);
+            tracker = generated.tracker;
             style.id = 'opis-assembler-css';
-            style.textContent = generateStyles(settings, tracker);
+            style.textContent = generated.content;
             document.currentScript.parentElement.insertBefore(style, document.currentScript);
             stylesheet = style.sheet;
         }

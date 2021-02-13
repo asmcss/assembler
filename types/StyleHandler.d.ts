@@ -7,7 +7,7 @@ export default class StyleHandler {
     private desktopMode;
     private rules;
     private readonly padding;
-    constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Map<string, boolean>);
+    constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);
     get userSettings(): UserSettings;
     handleStyleChange(element: HTMLElement, oldContent: string | null, content: string | null): void;
     handleStyleRemoved(element: HTMLElement, content: string): void;

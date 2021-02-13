@@ -1,2 +1,7 @@
 import { UserSettings } from "./helpers";
-export declare function generateStyles(settings: UserSettings, tracker: Map<string, boolean>): string;
+declare type GeneratedStyles = {
+    content: string;
+    tracker: Set<string>;
+};
+export declare function generateStyles(settings: UserSettings): GeneratedStyles;
+export {};

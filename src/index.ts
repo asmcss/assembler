@@ -40,21 +40,26 @@ export function init(options?: {[key: string]: string}): boolean {
         return false;
     }
 
-    const tracker = new Map<string, boolean>();
+    let tracker: Set<string>;
     let stylesheet: CSSStyleSheet;
 
     if (settings.constructable && document.adoptedStyleSheets) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
-            stylesheet.replaceSync(generateStyles(settings, tracker));
+            const generated = generateStyles(settings);
+            tracker = generated.tracker;
+            stylesheet.replaceSync(generated.content);
         } else {
+            tracker = new Set<string>();
             stylesheet.replaceSync(generateRootVariables());
         }
         document.adoptedStyleSheets = [stylesheet];
     } else {
         const style = document.createElement("style");
+        const generated = generateStyles(settings);
+        tracker = generated.tracker;
         style.id = 'opis-assembler-css';
-        style.textContent = generateStyles(settings, tracker);
+        style.textContent = generated.content;
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
         stylesheet = style.sheet;
     }
