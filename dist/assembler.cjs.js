@@ -599,9 +599,9 @@ const HASH_VAR_PREFIX = '--x-';
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
-    const generate = dataset.generate === undefined ? true : dataset.generate === 'true';
+    const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
-    const mode = dataset.mode || 'desktop-first';
+    const mode = dataset.mode || 'mobile-first';
     const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
