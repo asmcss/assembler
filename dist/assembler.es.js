@@ -1322,7 +1322,7 @@ class StyleHandler {
                     case "value":
                         return `var(${property})`;
                     case "class":
-                        return `.x\\${hash}`;
+                        return `.x\\#${hash}`;
                     case "state":
                         return state ? ':' + state : '';
                     case "var":
