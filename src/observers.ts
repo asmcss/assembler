@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {parseApplyAttribute} from "./functions";
+import {parseApplyAttribute} from "./mixins";
 import StyleHandler from "./StyleHandler";
 
 const APPLY_ATTR = 'x-apply';

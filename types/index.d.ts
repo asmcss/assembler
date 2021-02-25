@@ -1,5 +1,5 @@
 import { style, getClasses } from "./helpers";
-export { registerFunction } from "./functions";
+export { registerMixin } from "./mixins";
 export { style, getClasses };
 declare global {
     interface Document {

@@ -20,7 +20,7 @@ import {getUserSettings, style, getClasses} from "./helpers";
 import {generateRootVariables} from "./variables";
 import StyleHandler from "./StyleHandler";
 
-export {registerFunction} from "./functions";
+export {registerMixin} from "./mixins";
 export {style, getClasses};
 
 declare global {

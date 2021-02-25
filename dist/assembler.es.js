@@ -930,38 +930,45 @@ const Root = new RootClass();
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const functionRepository = new Map();
-functionRepository.set('mixin', function (settings, ...names) {
+const mixinRepository = new Map();
+const MIXIN_ARGS_REGEX = /\$\{([0-9]+)(?:=([^}]+))?}/g;
+const defaultMixinHandler = (name, ...args) => {
+    return Root.getPropertyValue(name + '--mixin')
+        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => {
+        return args[parseInt(arg)] || fallback || '';
+    });
+};
+mixinRepository.set('mixin', function (settings, ...names) {
     return names
         .map(name => Root.getPropertyValue(name + '--mixin'))
         .filter(v => v !== '')
         .join(';');
 });
-functionRepository.set('space-x', function (settings, ...args) {
+mixinRepository.set('space-x', function (settings, ...args) {
     const space = args[0] || '0';
     if (args[1] === 'true')
         return `sibling!mr:${space}`;
     return `sibling!ml:${space}`;
 });
-functionRepository.set('space-y', function (settings, ...args) {
+mixinRepository.set('space-y', function (settings, ...args) {
     const space = args[0] || '0';
     if (args[1] === 'true')
         return `sibling!mb:${space}`;
     return `sibling!mt:${space}`;
 });
-functionRepository.set('grid', function (settings, ...args) {
+mixinRepository.set('grid', function (settings, ...args) {
     return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
 });
-functionRepository.set('stack', function (settings, ...args) {
+mixinRepository.set('stack', function (settings, ...args) {
     return 'grid; grid-cols:minmax(0,1fr); grid-rows:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
 });
-functionRepository.set('sr-only', function (settings, ...args) {
+mixinRepository.set('sr-only', function (settings, ...args) {
     if ((args[0] || 'true') !== 'true') {
         return 'static; w:auto; h:auto; p:0; m:0; ws:normal; overflow:visible; clip:auto';
     }
     return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
 });
-functionRepository.set('container', function (settings, ...args) {
+mixinRepository.set('container', function (settings, ...args) {
     const { mode, settings: bp } = settings.breakpoints;
     return `px: 1rem; mx:auto; max-w:${mode === 'desktop-first' ? bp['xl'] : '100%'}; sm|max-w:${bp['sm']}; md|max-w:${bp['md']}; lg|max-w:${bp['lg']}`;
 });
@@ -971,15 +978,18 @@ function parseApplyAttribute(settings, value) {
     }
     const collection = [];
     for (const { name, args } of extractFunctions(value)) {
-        if (functionRepository.has(name)) {
-            const callback = functionRepository.get(name);
+        if (mixinRepository.has(name)) {
+            const callback = mixinRepository.get(name);
             collection.push(callback(settings, ...args));
+        }
+        else {
+            collection.push(defaultMixinHandler(name, ...args));
         }
     }
     return style(collection);
 }
-function registerFunction(name, callback) {
-    functionRepository.set(name, callback);
+function registerMixin(name, callback) {
+    mixinRepository.set(name, callback);
 }
 // do not match comma inside parenthesis
 // 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
@@ -1409,4 +1419,4 @@ if (typeof window !== 'undefined') {
     init();
 }
 
-export { getClasses, init, registerFunction, style };
+export { getClasses, init, registerMixin, style };
