@@ -67,8 +67,6 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     // Add all
     breakpoints.unshift('all');
 
-    console.log(breakpoints);
-
     const states = dataset.states === undefined
         ? ["normal", "hover"]
         : getStringItemList(dataset.states.toLowerCase());

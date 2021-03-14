@@ -626,7 +626,6 @@
         }
         // Add all
         breakpoints.unshift('all');
-        console.log(breakpoints);
         const states = dataset.states === undefined
             ? ["normal", "hover"]
             : getStringItemList(dataset.states.toLowerCase());
