@@ -966,7 +966,7 @@
         return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
     });
     mixinRepository.set('stack', function (settings, ...args) {
-        return 'grid; grid-cols:minmax(0,1fr); grid-rows:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
+        return 'grid; grid-template-columns:minmax(0,1fr); grid-template-columns:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
     });
     mixinRepository.set('sr-only', function (settings, ...args) {
         if ((args[0] || 'true') !== 'true') {

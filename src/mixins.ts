@@ -53,7 +53,7 @@ mixinRepository.set('grid', function (settings: UserSettings, ...args: string[])
 });
 
 mixinRepository.set('stack', function (settings: UserSettings, ...args: string[]): string {
-    return 'grid; grid-cols:minmax(0,1fr); grid-rows:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
+    return 'grid; grid-template-columns:minmax(0,1fr); grid-template-columns:minmax(0,1fr); grid-template-areas:"stackarea"; l1!grid-area:stackarea; w:100%; h:100%';
 });
 
 mixinRepository.set('sr-only', function (settings: UserSettings, ...args: string[]): string {
