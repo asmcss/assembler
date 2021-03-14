@@ -47,9 +47,9 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
     }
 
     const base = STATE_LIST.length, result = [];
-    const breakpoints = settings.breakpoints.enabled;
-    const media_settings = settings.breakpoints.settings;
-    const states = settings.states.enabled;
+    const breakpoints = settings.breakpoints;
+    const media_settings = settings.media;
+    const states = settings.states;
     const tracker = new Set<string>();
 
     result.push(generateRootVariables(settings));

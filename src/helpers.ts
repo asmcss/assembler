@@ -22,8 +22,9 @@ export type UserSettings = {
     constructable: boolean,
     cache: string|null,
     cacheKey: string,
-    breakpoints: {settings: {sm: string, md: string, lg:string, xl:string}, enabled: string[]},
-    states: {enabled: string[]}
+    breakpoints: string[],
+    media: {sm: string, md: string, lg:string, xl:string},
+    states: string[],
     scopes: string[]
 };
 type StyleType = string|{[key: string]: string};
@@ -52,15 +53,6 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     // Consider all bp
     let breakpoints = ['sm', 'md', 'lg', 'xl'];
 
-    if (dataset.breakpoints) {
-        const allowed = getStringItemList(dataset.breakpoints.toLowerCase());
-        if (allowed.length) {
-            breakpoints = breakpoints.filter(v => allowed.indexOf(v) !== -1);
-        } else {
-            breakpoints = [];
-        }
-    }
-
     // Add all
     breakpoints.unshift('all');
 
@@ -85,13 +77,9 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         cache,
         cacheKey,
         scopes,
-        breakpoints: {
-            settings: {sm, md, lg, xl},
-            enabled: breakpoints,
-        },
-        states: {
-            enabled: states
-        }
+        states,
+        breakpoints,
+        media: {sm, md, lg, xl},
     };
 }
 

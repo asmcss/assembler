@@ -4,18 +4,14 @@ export declare type UserSettings = {
     constructable: boolean;
     cache: string | null;
     cacheKey: string;
-    breakpoints: {
-        settings: {
-            sm: string;
-            md: string;
-            lg: string;
-            xl: string;
-        };
-        enabled: string[];
+    breakpoints: string[];
+    media: {
+        sm: string;
+        md: string;
+        lg: string;
+        xl: string;
     };
-    states: {
-        enabled: string[];
-    };
+    states: string[];
     scopes: string[];
 };
 declare type StyleType = string | {

@@ -577,7 +577,7 @@
         for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
             vars += `--font-size-leading-${key}:${value};`;
         }
-        for (const [key, value] of Object.entries(settings.breakpoints.settings)) {
+        for (const [key, value] of Object.entries(settings.media)) {
             vars += `--breakpoint-${key}: ${value};`;
         }
         vars += '--unit-size:0.25rem;';
@@ -619,15 +619,6 @@
         }
         // Consider all bp
         let breakpoints = ['sm', 'md', 'lg', 'xl'];
-        if (dataset.breakpoints) {
-            const allowed = getStringItemList(dataset.breakpoints.toLowerCase());
-            if (allowed.length) {
-                breakpoints = breakpoints.filter(v => allowed.indexOf(v) !== -1);
-            }
-            else {
-                breakpoints = [];
-            }
-        }
         // Add all
         breakpoints.unshift('all');
         const states = dataset.states === undefined
@@ -648,13 +639,9 @@
             cache,
             cacheKey,
             scopes,
-            breakpoints: {
-                settings: { sm, md, lg, xl },
-                enabled: breakpoints,
-            },
-            states: {
-                enabled: states
-            }
+            states,
+            breakpoints,
+            media: { sm, md, lg, xl },
         };
     }
     function* getStyleProperties(content) {
@@ -787,9 +774,9 @@
             }
         }
         const base = STATE_LIST.length, result = [];
-        const breakpoints = settings.breakpoints.enabled;
-        const media_settings = settings.breakpoints.settings;
-        const states = settings.states.enabled;
+        const breakpoints = settings.breakpoints;
+        const media_settings = settings.media;
+        const states = settings.states;
         const tracker = new Set();
         result.push(generateRootVariables(settings));
         for (const bp of breakpoints) {
@@ -1146,7 +1133,7 @@
             this.style = style;
             this.settings = settings;
             this.tracker = tracker;
-            this.mediaSettings = settings.breakpoints.settings;
+            this.mediaSettings = settings.media;
             this.rules = [];
             this.padding = style.cssRules.length;
         }

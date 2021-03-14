@@ -47,7 +47,7 @@ export default class StyleHandler {
         this.style = style;
         this.settings = settings;
         this.tracker = tracker;
-        this.mediaSettings = settings.breakpoints.settings;
+        this.mediaSettings = settings.media;
         this.rules = [];
         this.padding = style.cssRules.length;
     }
