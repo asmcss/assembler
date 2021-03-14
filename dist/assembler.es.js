@@ -207,14 +207,6 @@ const STATE_LIST = [
     "disabled",
     "enabled",
 ];
-const MEDIA_LIST = [
-    "all",
-    "xs",
-    "sm",
-    "md",
-    "lg",
-    "xl"
-];
 const ALIASES = {
     "backdrop": "backdrop-filter",
     "bg": "background",
@@ -571,8 +563,11 @@ function generateRootVariables(settings) {
     for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
         vars += `--font-size-leading-${key}:${value};`;
     }
-    for (const [key, value] of Object.entries(settings.media)) {
-        vars += `--breakpoint-${key}: ${value};`;
+    for (const bp of settings.breakpoints) {
+        if (bp === 'all') {
+            continue;
+        }
+        vars += `--breakpoint-${bp}: ${settings.media[bp]};`;
     }
     vars += '--unit-size:0.25rem;';
     return ':root{' + vars + '}';
@@ -600,6 +595,7 @@ function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
+    const desktopFirst = dataset.mode === undefined ? false : dataset.mode === 'desktop-first';
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -612,9 +608,19 @@ function getUserSettings(dataset) {
         }
     }
     // Consider all bp
-    let breakpoints = ['sm', 'md', 'lg', 'xl'];
+    let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
+    if (desktopFirst) {
+        // remove xl and reverse
+        breakpoints.pop();
+        breakpoints.reverse();
+    }
+    else {
+        // remove xs
+        breakpoints.shift();
+    }
     // Add all
     breakpoints.unshift('all');
+    console.log(breakpoints);
     const states = dataset.states === undefined
         ? ["normal", "hover"]
         : getStringItemList(dataset.states.toLowerCase());
@@ -622,75 +628,23 @@ function getUserSettings(dataset) {
         // always add normal state
         states.unshift("normal");
     }
-    const sm = dataset.breakpointSm || "512px";
-    const md = dataset.breakpointMd || "768px";
-    const lg = dataset.breakpointLg || "1024px";
-    const xl = dataset.breakpointXl || "1280px";
+    const xs = dataset.breakpointXs || "512px";
+    const sm = dataset.breakpointSm || (desktopFirst ? "768px" : "512px");
+    const md = dataset.breakpointMd || (desktopFirst ? "1024px" : "768px");
+    const lg = dataset.breakpointLg || (desktopFirst ? "1280px" : "1024px");
+    const xl = dataset.breakpointXl || ("1280px");
     return {
         enabled,
         generate,
         constructable,
         cache,
         cacheKey,
+        desktopFirst,
         scopes,
         states,
         breakpoints,
-        media: { sm, md, lg, xl },
+        media: { xs, sm, md, lg, xl },
     };
-}
-function* getStyleProperties(content) {
-    var _a;
-    const base = STATE_LIST.length;
-    for (let attr of content.split(';')) {
-        let value = null;
-        const pos = attr.indexOf(':');
-        if (pos < 0) {
-            attr = attr.trim();
-        }
-        else {
-            value = attr.substr(pos + 1);
-            attr = attr.substr(0, pos).trim();
-        }
-        const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-        if (!m || !m.property) {
-            continue;
-        }
-        const media = MEDIA_LIST.indexOf(m.media || 'all');
-        const state = STATE_LIST.indexOf(m.state || 'normal');
-        if (media < 0 || state < 0) {
-            continue;
-        }
-        let properties = m.property;
-        if (ALIASES.hasOwnProperty(properties)) {
-            properties = ALIASES[properties];
-            if (typeof properties === 'function') {
-                properties = properties(value);
-            }
-        }
-        if (!Array.isArray(properties)) {
-            properties = [properties];
-        }
-        for (const property of properties) {
-            const name = PROPERTY_LIST.indexOf(property);
-            if (name < 0) {
-                continue;
-            }
-            const scope = m.scope || '';
-            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-            yield {
-                name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
-            };
-        }
-    }
-}
-function getClasses(content) {
-    const result = [];
-    for (const { entry } of getStyleProperties(content)) {
-        result.push(entry);
-    }
-    return result.join(' ');
 }
 function style(...styles) {
     let str = [];
@@ -770,17 +724,20 @@ function generateStyles(settings) {
     const base = STATE_LIST.length, result = [];
     const breakpoints = settings.breakpoints;
     const media_settings = settings.media;
+    const desktopFirst = settings.desktopFirst;
     const states = settings.states;
     const tracker = new Set();
     result.push(generateRootVariables(settings));
-    for (const bp of breakpoints) {
-        const media_index = MEDIA_LIST.indexOf(bp);
-        if (media_index < 0) {
-            continue;
-        }
+    for (let media_index = 0, l = breakpoints.length; media_index < l; media_index++) {
+        const bp = breakpoints[media_index];
         let str = '';
         if (media_index !== 0) {
-            str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
+            if (desktopFirst) {
+                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
+            }
+            else {
+                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
+            }
         }
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
             const name = PROPERTY_LIST[name_index];
@@ -941,6 +898,9 @@ mixinRepository.set('sr-only', function (settings, ...args) {
     return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
 });
 mixinRepository.set('container', function (settings, ...args) {
+    if (settings.desktopFirst) {
+        return `px: 1rem; mx:auto; max-w:@breakpoint-lg; lg|max-w:@breakpoint-md; md|max-w:@breakpoint-sm; sm|max-w:@breakpoint-xs; xs|max-w:100%`;
+    }
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 function parseApplyAttribute(settings, value) {
@@ -1128,6 +1088,8 @@ class StyleHandler {
         this.settings = settings;
         this.tracker = tracker;
         this.mediaSettings = settings.media;
+        this.desktopFirst = settings.desktopFirst;
+        this.breakpoints = settings.breakpoints;
         this.rules = [];
         this.padding = style.cssRules.length;
     }
@@ -1142,7 +1104,7 @@ class StyleHandler {
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
         // remove old entries
         if (oldContent !== null) {
-            for (const { name, property, entry } of getStyleProperties(oldContent)) {
+            for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
                 if (!newEntries.has(name)) {
                     const index = classList.indexOf(entry);
                     if (index >= 0) {
@@ -1167,7 +1129,7 @@ class StyleHandler {
     }
     handleStyleRemoved(element, content) {
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        for (const { property, entry } of getStyleProperties(content)) {
+        for (const { property, entry } of this.getStyleProperties(content)) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -1182,6 +1144,7 @@ class StyleHandler {
         if (!m || !m.property) {
             return [];
         }
+        const MEDIA_LIST = this.breakpoints;
         const media = MEDIA_LIST.indexOf(m.media || 'all');
         const state = STATE_LIST.indexOf(m.state || 'normal');
         if (media < 0 || state < 0) {
@@ -1261,15 +1224,71 @@ class StyleHandler {
         }
         return entries;
     }
+    *getStyleProperties(content) {
+        var _a;
+        const base = STATE_LIST.length;
+        const MEDIA_LIST = this.breakpoints;
+        for (let attr of content.split(';')) {
+            let value = null;
+            const pos = attr.indexOf(':');
+            if (pos < 0) {
+                attr = attr.trim();
+            }
+            else {
+                value = attr.substr(pos + 1);
+                attr = attr.substr(0, pos).trim();
+            }
+            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
+            if (!m || !m.property) {
+                continue;
+            }
+            const media = MEDIA_LIST.indexOf(m.media || 'all');
+            const state = STATE_LIST.indexOf(m.state || 'normal');
+            if (media < 0 || state < 0) {
+                continue;
+            }
+            let properties = m.property;
+            if (ALIASES.hasOwnProperty(properties)) {
+                properties = ALIASES[properties];
+                if (typeof properties === 'function') {
+                    properties = properties(value);
+                }
+            }
+            if (!Array.isArray(properties)) {
+                properties = [properties];
+            }
+            for (const property of properties) {
+                const name = PROPERTY_LIST.indexOf(property);
+                if (name < 0) {
+                    continue;
+                }
+                const scope = m.scope || '';
+                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+                yield {
+                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
+                    property: HASH_VAR_PREFIX + hash,
+                    entry: 'x#' + hash,
+                };
+            }
+        }
+    }
     generateCSS(info) {
-        const { tracker, mediaSettings, style } = this;
+        const { tracker, mediaSettings, desktopFirst, style } = this;
         const { hash, media, state, cssProperty, property, scope, rank } = info;
         const hasMedia = media !== '';
         tracker.add(hash);
         if (rank < 0) {
             return;
         }
-        let rule = hasMedia ? `@media only screen and (min-width: ${mediaSettings[media]}) {` : '';
+        let rule = '';
+        if (hasMedia) {
+            if (desktopFirst) {
+                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
+            }
+            else {
+                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
+            }
+        }
         let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
         if (variants) {
             for (let i = 0, l = variants.length; i < l; i++) {
@@ -1381,4 +1400,4 @@ if (typeof window !== 'undefined') {
     init();
 }
 
-export { getClasses, init, registerMixin, style };
+export { init, registerMixin, style };

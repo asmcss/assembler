@@ -128,8 +128,11 @@ export function generateRootVariables(settings: UserSettings) {
     for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
         vars += `--font-size-leading-${key}:${value};`;
     }
-    for (const [key, value] of Object.entries(settings.media)) {
-        vars += `--breakpoint-${key}: ${value};`;
+    for (const bp of settings.breakpoints) {
+        if (bp === 'all') {
+            continue;
+        }
+        vars += `--breakpoint-${bp}: ${settings.media[bp]};`;
     }
     vars += '--unit-size:0.25rem;'
 

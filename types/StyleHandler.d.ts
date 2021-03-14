@@ -4,6 +4,8 @@ export default class StyleHandler {
     private readonly settings;
     private tracker;
     private mediaSettings;
+    private desktopFirst;
+    private breakpoints;
     private rules;
     private readonly padding;
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);
@@ -12,6 +14,7 @@ export default class StyleHandler {
     handleStyleRemoved(element: HTMLElement, content: string): void;
     private extract;
     private getStyleEntries;
+    private getStyleProperties;
     private generateCSS;
     private getRuleIndex;
 }

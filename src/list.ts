@@ -218,14 +218,7 @@ export const STATE_LIST = [
     "disabled",
     "enabled",
 ];
-export const MEDIA_LIST = [
-    "all",
-    "xs",
-    "sm",
-    "md",
-    "lg",
-    "xl"
-];
+
 export const ALIASES = {
     "backdrop": "backdrop-filter",
     "bg": "background",

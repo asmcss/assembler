@@ -65,6 +65,9 @@ mixinRepository.set('sr-only', function (settings: UserSettings, ...args: string
 });
 
 mixinRepository.set('container', function (settings: UserSettings, ...args: string[]): string {
+    if (settings.desktopFirst) {
+        return `px: 1rem; mx:auto; max-w:@breakpoint-lg; lg|max-w:@breakpoint-md; md|max-w:@breakpoint-sm; sm|max-w:@breakpoint-xs; xs|max-w:100%`;
+    }
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 

@@ -4,8 +4,10 @@ export declare type UserSettings = {
     constructable: boolean;
     cache: string | null;
     cacheKey: string;
+    desktopFirst: boolean;
     breakpoints: string[];
     media: {
+        xs: string;
         sm: string;
         md: string;
         lg: string;
@@ -22,11 +24,5 @@ export declare const PROPERTY_REGEX: RegExp;
 export declare function getUserSettings(dataset: {
     [key: string]: string;
 }): UserSettings;
-export declare function getStyleProperties(content: string): Iterable<{
-    property: string;
-    name: string;
-    entry: string;
-}>;
-export declare function getClasses(content: string): string;
 export declare function style(...styles: (StyleType | StyleType[])[]): string;
 export {};

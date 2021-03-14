@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ALIASES, MEDIA_LIST, PROPERTY_LIST, STATE_LIST} from "./list";
+import {ALIASES, PROPERTY_LIST, STATE_LIST} from "./list";
 
 export type UserSettings = {
     enabled: boolean,
@@ -22,8 +22,9 @@ export type UserSettings = {
     constructable: boolean,
     cache: string|null,
     cacheKey: string,
+    desktopFirst: boolean,
     breakpoints: string[],
-    media: {sm: string, md: string, lg:string, xl:string},
+    media: {xs: string, sm: string, md: string, lg:string, xl:string},
     states: string[],
     scopes: string[]
 };
@@ -37,6 +38,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
+    const desktopFirst = dataset.mode === undefined ? false : dataset.mode === 'desktop-first';
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -51,10 +53,21 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     }
 
     // Consider all bp
-    let breakpoints = ['sm', 'md', 'lg', 'xl'];
+    let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
+
+    if (desktopFirst) {
+        // remove xl and reverse
+        breakpoints.pop();
+        breakpoints.reverse();
+    } else {
+        // remove xs
+        breakpoints.shift();
+    }
 
     // Add all
     breakpoints.unshift('all');
+
+    console.log(breakpoints);
 
     const states = dataset.states === undefined
         ? ["normal", "hover"]
@@ -64,10 +77,11 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         states.unshift("normal");
     }
 
-    const sm = dataset.breakpointSm || "512px";
-    const md = dataset.breakpointMd || "768px";
-    const lg = dataset.breakpointLg || "1024px";
-    const xl = dataset.breakpointXl || "1280px";
+    const xs = dataset.breakpointXs || "512px";
+    const sm = dataset.breakpointSm || (desktopFirst ? "768px" : "512px");
+    const md = dataset.breakpointMd || (desktopFirst ? "1024px" : "768px");
+    const lg = dataset.breakpointLg || (desktopFirst ? "1280px": "1024px");
+    const xl = dataset.breakpointXl || ("1280px");
 
 
     return  {
@@ -76,78 +90,12 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         constructable,
         cache,
         cacheKey,
+        desktopFirst,
         scopes,
         states,
         breakpoints,
-        media: {sm, md, lg, xl},
+        media: {xs, sm, md, lg, xl},
     };
-}
-
-export function * getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
-    const base = STATE_LIST.length;
-
-    for (let attr of content.split(';')) {
-        let value = null;
-        const pos = attr.indexOf(':');
-        if (pos < 0) {
-            attr = attr.trim();
-        } else {
-            value = attr.substr(pos + 1);
-            attr = attr.substr(0, pos).trim();
-        }
-
-        const m = PROPERTY_REGEX.exec(attr)?.groups;
-
-        if (!m || !m.property) {
-            continue;
-        }
-
-        const media = MEDIA_LIST.indexOf(m.media || 'all');
-        const state = STATE_LIST.indexOf(m.state || 'normal');
-
-        if (media < 0 || state < 0) {
-            continue;
-        }
-
-        let properties: string|string[] = m.property;
-
-        if (ALIASES.hasOwnProperty(properties)) {
-            properties = ALIASES[properties];
-            if (typeof properties === 'function') {
-                properties = (properties as (a: string|null) => string[])(value as string|null);
-            }
-        }
-
-        if (!Array.isArray(properties)) {
-            properties = [properties];
-        }
-
-        for (const property of properties) {
-            const name = PROPERTY_LIST.indexOf(property);
-
-            if (name < 0) {
-                continue;
-            }
-
-            const scope = m.scope || '';
-            const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-
-
-            yield {
-                name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
-            };
-        }
-    }
-}
-
-export function getClasses(content: string): string {
-    const result = [];
-    for (const {entry} of getStyleProperties(content)) {
-        result.push(entry);
-    }
-    return result.join(' ');
 }
 
 export function style(...styles: (StyleType|StyleType[])[]): string {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {PROPERTY_LIST, MEDIA_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
+import {PROPERTY_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {generateRootVariables} from "./variables";
 import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
 
@@ -49,22 +49,23 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
     const base = STATE_LIST.length, result = [];
     const breakpoints = settings.breakpoints;
     const media_settings = settings.media;
+    const desktopFirst = settings.desktopFirst;
     const states = settings.states;
     const tracker = new Set<string>();
 
     result.push(generateRootVariables(settings));
 
-    for (const bp of breakpoints) {
-        const media_index = MEDIA_LIST.indexOf(bp);
-
-        if (media_index < 0) {
-            continue;
-        }
+    for (let media_index = 0, l = breakpoints.length; media_index < l; media_index++) {
+        const bp = breakpoints[media_index];
 
         let str = '';
 
         if (media_index !== 0) {
-            str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
+            if (desktopFirst) {
+                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
+            } else {
+                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
+            }
         }
 
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {

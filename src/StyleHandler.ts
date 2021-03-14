@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ALIASES, DEFAULT_VALUES, MEDIA_LIST, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
-import {UserSettings, getStyleProperties, HASH_VAR_PREFIX, PROPERTY_REGEX} from "./helpers";
+import {ALIASES, DEFAULT_VALUES, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
+import {UserSettings, HASH_VAR_PREFIX, PROPERTY_REGEX} from "./helpers";
 import {Root} from "./Root";
 
 type PropertyInfo = {
@@ -40,6 +40,8 @@ export default class StyleHandler {
     private readonly settings: UserSettings;
     private tracker: Set<string>;
     private mediaSettings: object;
+    private desktopFirst: boolean;
+    private breakpoints: string[];
     private rules: number[];
     private readonly padding: number;
 
@@ -48,6 +50,8 @@ export default class StyleHandler {
         this.settings = settings;
         this.tracker = tracker;
         this.mediaSettings = settings.media;
+        this.desktopFirst = settings.desktopFirst;
+        this.breakpoints = settings.breakpoints;
         this.rules = [];
         this.padding = style.cssRules.length;
     }
@@ -67,7 +71,7 @@ export default class StyleHandler {
 
         // remove old entries
         if (oldContent !== null) {
-            for (const {name, property, entry} of getStyleProperties(oldContent)) {
+            for (const {name, property, entry} of this.getStyleProperties(oldContent)) {
                 if (!newEntries.has(name)) {
                     const index = classList.indexOf(entry);
                     if (index >= 0) {
@@ -97,7 +101,7 @@ export default class StyleHandler {
 
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
 
-        for (const {property, entry} of getStyleProperties(content)) {
+        for (const {property, entry} of this.getStyleProperties(content)) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -114,6 +118,8 @@ export default class StyleHandler {
         if (!m || !m.property) {
             return [];
         }
+
+        const MEDIA_LIST = this.breakpoints;
 
         const media = MEDIA_LIST.indexOf(m.media || 'all');
         const state = STATE_LIST.indexOf(m.state || 'normal');
@@ -210,8 +216,68 @@ export default class StyleHandler {
         return entries;
     }
 
+    private * getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
+        const base = STATE_LIST.length;
+        const MEDIA_LIST = this.breakpoints;
+
+        for (let attr of content.split(';')) {
+            let value = null;
+            const pos = attr.indexOf(':');
+            if (pos < 0) {
+                attr = attr.trim();
+            } else {
+                value = attr.substr(pos + 1);
+                attr = attr.substr(0, pos).trim();
+            }
+
+            const m = PROPERTY_REGEX.exec(attr)?.groups;
+
+            if (!m || !m.property) {
+                continue;
+            }
+
+            const media = MEDIA_LIST.indexOf(m.media || 'all');
+            const state = STATE_LIST.indexOf(m.state || 'normal');
+
+            if (media < 0 || state < 0) {
+                continue;
+            }
+
+            let properties: string|string[] = m.property;
+
+            if (ALIASES.hasOwnProperty(properties)) {
+                properties = ALIASES[properties];
+                if (typeof properties === 'function') {
+                    properties = (properties as (a: string|null) => string[])(value as string|null);
+                }
+            }
+
+            if (!Array.isArray(properties)) {
+                properties = [properties];
+            }
+
+            for (const property of properties) {
+                const name = PROPERTY_LIST.indexOf(property);
+
+                if (name < 0) {
+                    continue;
+                }
+
+                const scope = m.scope || '';
+                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+
+
+                yield {
+                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
+                    property: HASH_VAR_PREFIX + hash,
+                    entry: 'x#' + hash,
+                };
+            }
+        }
+    }
+
     private generateCSS(info: PropertyInfo) {
-        const {tracker, mediaSettings, style} = this;
+        const {tracker, mediaSettings, desktopFirst, style} = this;
         const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
 
@@ -221,7 +287,15 @@ export default class StyleHandler {
             return;
         }
 
-        let rule = hasMedia ? `@media only screen and (min-width: ${mediaSettings[media]}) {` : '';
+        let rule = '';
+
+        if (hasMedia) {
+            if (desktopFirst) {
+                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
+            } else {
+                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
+            }
+        }
 
         let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
 

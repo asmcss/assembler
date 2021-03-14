@@ -9,7 +9,6 @@ export declare const PROPERTY_VARIANTS: {
     "text-fill-color": string[];
 };
 export declare const STATE_LIST: string[];
-export declare const MEDIA_LIST: string[];
 export declare const ALIASES: {
     backdrop: string;
     bg: string;
