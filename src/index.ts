@@ -51,7 +51,7 @@ export function init(options?: {[key: string]: string}): boolean {
             stylesheet.replaceSync(generated.content);
         } else {
             tracker = new Set<string>();
-            stylesheet.replaceSync(generateRootVariables());
+            stylesheet.replaceSync(generateRootVariables(settings));
         }
         document.adoptedStyleSheets = [stylesheet];
     } else {

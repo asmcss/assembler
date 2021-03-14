@@ -1,1 +1,2 @@
-export declare function generateRootVariables(): string;
+import { UserSettings } from "./helpers";
+export declare function generateRootVariables(settings: UserSettings): string;

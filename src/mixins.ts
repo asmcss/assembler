@@ -65,8 +65,7 @@ mixinRepository.set('sr-only', function (settings: UserSettings, ...args: string
 });
 
 mixinRepository.set('container', function (settings: UserSettings, ...args: string[]): string {
-    const {mode, settings: bp} = settings.breakpoints;
-    return `px: 1rem; mx:auto; max-w:${mode === 'desktop-first' ? bp['xl'] : '100%' }; sm|max-w:${bp['sm']}; md|max-w:${bp['md']}; lg|max-w:${bp['lg']}`;
+    return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 
 export function parseApplyAttribute(settings: UserSettings, value: string|null): string|null {

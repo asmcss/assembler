@@ -49,11 +49,10 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
     const base = STATE_LIST.length, result = [];
     const breakpoints = settings.breakpoints.enabled;
     const media_settings = settings.breakpoints.settings;
-    const desktop = settings.breakpoints.mode === "desktop-first";
     const states = settings.states.enabled;
     const tracker = new Set<string>();
 
-    result.push(generateRootVariables());
+    result.push(generateRootVariables(settings));
 
     for (const bp of breakpoints) {
         const media_index = MEDIA_LIST.indexOf(bp);
@@ -65,11 +64,7 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
         let str = '';
 
         if (media_index !== 0) {
-            if (desktop) {
-                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
-            } else {
-                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
-            }
+            str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
         }
 
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {

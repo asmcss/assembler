@@ -5,8 +5,12 @@ export declare type UserSettings = {
     cache: string | null;
     cacheKey: string;
     breakpoints: {
-        mode: string;
-        settings: object;
+        settings: {
+            sm: string;
+            md: string;
+            lg: string;
+            xl: string;
+        };
         enabled: string[];
     };
     states: {

@@ -22,7 +22,7 @@ export type UserSettings = {
     constructable: boolean,
     cache: string|null,
     cacheKey: string,
-    breakpoints: {mode: string, settings: object, enabled: string[]},
+    breakpoints: {settings: {sm: string, md: string, lg:string, xl:string}, enabled: string[]},
     states: {enabled: string[]}
     scopes: string[]
 };
@@ -36,8 +36,6 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
-    const mode = dataset.mode || 'mobile-first';
-    const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -52,16 +50,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     }
 
     // Consider all bp
-    let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
-
-    if (isDesktopFirst) {
-        // handle desktop-first - no xl, reverse
-        breakpoints.pop();
-        breakpoints.reverse();
-    } else {
-        // handle mobile-first - no xs
-        breakpoints.shift();
-    }
+    let breakpoints = ['sm', 'md', 'lg', 'xl'];
 
     if (dataset.breakpoints) {
         const allowed = getStringItemList(dataset.breakpoints.toLowerCase());
@@ -83,10 +72,9 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         states.unshift("normal");
     }
 
-    const xs = dataset.breakpointXs || "512px";
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024px");
+    const sm = dataset.breakpointSm || "512px";
+    const md = dataset.breakpointMd || "768px";
+    const lg = dataset.breakpointLg || "1024px";
     const xl = dataset.breakpointXl || "1280px";
 
 
@@ -98,8 +86,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         cacheKey,
         scopes,
         breakpoints: {
-            mode,
-            settings: {xs, sm, md, lg, xl},
+            settings: {sm, md, lg, xl},
             enabled: breakpoints,
         },
         states: {

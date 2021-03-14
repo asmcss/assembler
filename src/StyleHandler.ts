@@ -40,7 +40,6 @@ export default class StyleHandler {
     private readonly settings: UserSettings;
     private tracker: Set<string>;
     private mediaSettings: object;
-    private desktopMode: boolean;
     private rules: number[];
     private readonly padding: number;
 
@@ -49,7 +48,6 @@ export default class StyleHandler {
         this.settings = settings;
         this.tracker = tracker;
         this.mediaSettings = settings.breakpoints.settings;
-        this.desktopMode = settings.breakpoints.mode === "desktop-first";
         this.rules = [];
         this.padding = style.cssRules.length;
     }
@@ -213,7 +211,7 @@ export default class StyleHandler {
     }
 
     private generateCSS(info: PropertyInfo) {
-        const {tracker, mediaSettings, desktopMode, style} = this;
+        const {tracker, mediaSettings, style} = this;
         const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
 
@@ -223,15 +221,7 @@ export default class StyleHandler {
             return;
         }
 
-        let rule = '';
-
-        if (hasMedia) {
-            if (desktopMode) {
-                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
-            } else {
-                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
-            }
-        }
+        let rule = hasMedia ? `@media only screen and (min-width: ${mediaSettings[media]}) {` : '';
 
         let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
 

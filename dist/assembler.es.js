@@ -548,7 +548,7 @@ const FONT_FAMILIES = {
     serif: "Georgia, Cambria, Times New Roman, Times, serif",
     monospace: "Lucida Console, Monaco, monospace"
 };
-function generateRootVariables() {
+function generateRootVariables(settings) {
     let vars = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
     for (let i = 0; i < 25; i++) {
         vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
@@ -570,6 +570,9 @@ function generateRootVariables() {
     }
     for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
         vars += `--font-size-leading-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(settings.breakpoints.settings)) {
+        vars += `--breakpoint-${key}: ${value};`;
     }
     vars += '--unit-size:0.25rem;';
     return ':root{' + vars + '}';
@@ -597,8 +600,6 @@ function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
-    const mode = dataset.mode || 'mobile-first';
-    const isDesktopFirst = mode === "desktop-first";
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -611,16 +612,7 @@ function getUserSettings(dataset) {
         }
     }
     // Consider all bp
-    let breakpoints = ['xs', 'sm', 'md', 'lg', 'xl'];
-    if (isDesktopFirst) {
-        // handle desktop-first - no xl, reverse
-        breakpoints.pop();
-        breakpoints.reverse();
-    }
-    else {
-        // handle mobile-first - no xs
-        breakpoints.shift();
-    }
+    let breakpoints = ['sm', 'md', 'lg', 'xl'];
     if (dataset.breakpoints) {
         const allowed = getStringItemList(dataset.breakpoints.toLowerCase());
         if (allowed.length) {
@@ -639,10 +631,9 @@ function getUserSettings(dataset) {
         // always add normal state
         states.unshift("normal");
     }
-    const xs = dataset.breakpointXs || "512px";
-    const sm = dataset.breakpointSm || (isDesktopFirst ? "768px" : "512px");
-    const md = dataset.breakpointMd || (isDesktopFirst ? "1024px" : "768px");
-    const lg = dataset.breakpointLg || (isDesktopFirst ? "1280px" : "1024px");
+    const sm = dataset.breakpointSm || "512px";
+    const md = dataset.breakpointMd || "768px";
+    const lg = dataset.breakpointLg || "1024px";
     const xl = dataset.breakpointXl || "1280px";
     return {
         enabled,
@@ -652,8 +643,7 @@ function getUserSettings(dataset) {
         cacheKey,
         scopes,
         breakpoints: {
-            mode,
-            settings: { xs, sm, md, lg, xl },
+            settings: { sm, md, lg, xl },
             enabled: breakpoints,
         },
         states: {
@@ -793,10 +783,9 @@ function generateStyles(settings) {
     const base = STATE_LIST.length, result = [];
     const breakpoints = settings.breakpoints.enabled;
     const media_settings = settings.breakpoints.settings;
-    const desktop = settings.breakpoints.mode === "desktop-first";
     const states = settings.states.enabled;
     const tracker = new Set();
-    result.push(generateRootVariables());
+    result.push(generateRootVariables(settings));
     for (const bp of breakpoints) {
         const media_index = MEDIA_LIST.indexOf(bp);
         if (media_index < 0) {
@@ -804,12 +793,7 @@ function generateStyles(settings) {
         }
         let str = '';
         if (media_index !== 0) {
-            if (desktop) {
-                str += `@media only screen and (max-width: ${media_settings[bp]}) {`;
-            }
-            else {
-                str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
-            }
+            str += `@media only screen and (min-width: ${media_settings[bp]}) {`;
         }
         for (let name_index = 0, l = PROPERTY_LIST.length; name_index < l; name_index++) {
             const name = PROPERTY_LIST[name_index];
@@ -970,8 +954,7 @@ mixinRepository.set('sr-only', function (settings, ...args) {
     return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
 });
 mixinRepository.set('container', function (settings, ...args) {
-    const { mode, settings: bp } = settings.breakpoints;
-    return `px: 1rem; mx:auto; max-w:${mode === 'desktop-first' ? bp['xl'] : '100%'}; sm|max-w:${bp['sm']}; md|max-w:${bp['md']}; lg|max-w:${bp['lg']}`;
+    return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 function parseApplyAttribute(settings, value) {
     if (value == null || value === '') {
@@ -1158,7 +1141,6 @@ class StyleHandler {
         this.settings = settings;
         this.tracker = tracker;
         this.mediaSettings = settings.breakpoints.settings;
-        this.desktopMode = settings.breakpoints.mode === "desktop-first";
         this.rules = [];
         this.padding = style.cssRules.length;
     }
@@ -1293,22 +1275,14 @@ class StyleHandler {
         return entries;
     }
     generateCSS(info) {
-        const { tracker, mediaSettings, desktopMode, style } = this;
+        const { tracker, mediaSettings, style } = this;
         const { hash, media, state, cssProperty, property, scope, rank } = info;
         const hasMedia = media !== '';
         tracker.add(hash);
         if (rank < 0) {
             return;
         }
-        let rule = '';
-        if (hasMedia) {
-            if (desktopMode) {
-                rule += `@media only screen and (max-width: ${mediaSettings[media]}) {`;
-            }
-            else {
-                rule += `@media only screen and (min-width: ${mediaSettings[media]}) {`;
-            }
-        }
+        let rule = hasMedia ? `@media only screen and (min-width: ${mediaSettings[media]}) {` : '';
         let variants = PROPERTY_VARIANTS[cssProperty], prefix = '';
         if (variants) {
             for (let i = 0, l = variants.length; i < l; i++) {
@@ -1400,7 +1374,7 @@ function init(options) {
         }
         else {
             tracker = new Set();
-            stylesheet.replaceSync(generateRootVariables());
+            stylesheet.replaceSync(generateRootVariables(settings));
         }
         document.adoptedStyleSheets = [stylesheet];
     }

@@ -4,7 +4,6 @@ export default class StyleHandler {
     private readonly settings;
     private tracker;
     private mediaSettings;
-    private desktopMode;
     private rules;
     private readonly padding;
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);

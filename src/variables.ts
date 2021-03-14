@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {UserSettings} from "./helpers";
+
 const ELEVATION_UMBRA = [
     "0px 0px 0px 0px", "0px 2px 1px -1px", "0px 3px 1px -2px", "0px 3px 3px -2px", "0px 2px 4px -1px",
     "0px 3px 5px -1px", "0px 3px 5px -1px", "0px 4px 5px -2px", "0px 5px 5px -3px", "0px 5px 6px -3px",
@@ -103,7 +105,7 @@ const FONT_FAMILIES = {
     monospace: "Lucida Console, Monaco, monospace"
 };
 
-export function generateRootVariables() {
+export function generateRootVariables(settings: UserSettings) {
     let vars: string = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
     for (let i = 0; i < 25; i++) {
         vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
@@ -125,6 +127,9 @@ export function generateRootVariables() {
     }
     for (const [key, value] of Object.entries(FONT_SIZE_LEADING)) {
         vars += `--font-size-leading-${key}:${value};`;
+    }
+    for (const [key, value] of Object.entries(settings.breakpoints.settings)) {
+        vars += `--breakpoint-${key}: ${value};`;
     }
     vars += '--unit-size:0.25rem;'
 
