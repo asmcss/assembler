@@ -34,6 +34,18 @@ export declare const ALIASES: {
     bl: string;
     br: string;
     bb: string;
+    "bt-color": string;
+    "bt-style": string;
+    "bt-width": string;
+    "bl-color": string;
+    "bl-style": string;
+    "bl-width": string;
+    "br-color": string;
+    "br-style": string;
+    "br-width": string;
+    "bb-color": string;
+    "bb-style": string;
+    "bb-width": string;
     m: string;
     mt: string;
     mb: string;

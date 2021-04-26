@@ -236,6 +236,18 @@ const ALIASES = {
     "bl": "border-left",
     "br": "border-right",
     "bb": "border-bottom",
+    "bt-color": "border-top-color",
+    "bt-style": "border-top-style",
+    "bt-width": "border-top-width",
+    "bl-color": "border-left-color",
+    "bl-style": "border-left-style",
+    "bl-width": "border-left-width",
+    "br-color": "border-right-color",
+    "br-style": "border-right-style",
+    "br-width": "border-right-width",
+    "bb-color": "border-bottom-color",
+    "bb-style": "border-bottom-style",
+    "bb-width": "border-bottom-width",
     "m": "margin",
     "mt": "margin-top",
     "mb": "margin-bottom",
@@ -348,7 +360,7 @@ const DEFAULT_VALUES = {
     "lowercase": "lowercase",
     "capitalize": "capitalize",
     "normal-case": "none",
-    "radius": "sm"
+    "radius": "sm",
 };
 const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
 const positive_unit = v => positive_number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
