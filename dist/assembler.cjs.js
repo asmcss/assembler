@@ -842,7 +842,11 @@ class RootClass {
         if (this.styles === null) {
             this.styles = [];
             for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
-                const rule = document.styleSheets[si].cssRules[0];
+                const styleSheet = document.styleSheets[si];
+                if (styleSheet.href.indexOf(window.location.origin) !== 0) {
+                    continue;
+                }
+                const rule = styleSheet.cssRules[0];
                 if (rule.type === CSSRule.STYLE_RULE && rule.selectorText === ':root') {
                     this.styles.unshift(rule.style);
                 }
