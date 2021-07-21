@@ -25,7 +25,7 @@
   ],
   "jest": {
     "setupFiles": [
-      "./__tests__/mocks/mock.js"
+      "./tests/mocks/mock.js"
     ],
     "modulePathIgnorePatterns": [
       "mocks"
