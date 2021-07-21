@@ -31,7 +31,7 @@ export type UserSettings = {
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 
-export const HASH_VAR_PREFIX = '--';
+export const HASH_VAR_PREFIX = '--asm-';
 export const HASH_CLASS_PREFIX = 'asm';
 export const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 

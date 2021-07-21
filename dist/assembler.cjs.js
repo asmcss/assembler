@@ -605,7 +605,7 @@ function generateRootVariables(settings) {
  * limitations under the License.
  */
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
-const HASH_VAR_PREFIX = '--';
+const HASH_VAR_PREFIX = '--asm-';
 const HASH_CLASS_PREFIX = 'asm';
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 function getUserSettings(dataset) {

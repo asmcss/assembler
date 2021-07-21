@@ -19,7 +19,7 @@ export declare type UserSettings = {
 declare type StyleType = string | {
     [key: string]: string;
 };
-export declare const HASH_VAR_PREFIX = "--";
+export declare const HASH_VAR_PREFIX = "--asm-";
 export declare const HASH_CLASS_PREFIX = "asm";
 export declare const PROPERTY_REGEX: RegExp;
 export declare function getUserSettings(dataset: {
