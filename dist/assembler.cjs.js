@@ -838,11 +838,26 @@ class RootClass {
         cache.set("motion-reduce--scope", "@media(prefers-reduced-motion: reduce) {$selector {$body}}");
         cache.set("motion-safe--scope", "@media(prefers-reduced-motion: no-preference) {$selector {$body}}");
     }
-    getComputedStyle() {
+    getComputedStyles() {
         if (this.styles === null) {
-            this.styles = window.getComputedStyle(document.documentElement);
+            this.styles = [];
+            for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
+                const rule = document.styleSheets[si].cssRules[0];
+                if (rule.type === CSSRule.STYLE_RULE && rule.selectorText === ':root') {
+                    this.styles.unshift(rule.style);
+                }
+            }
         }
         return this.styles;
+    }
+    getPropertyValueFormComputedStyles(property) {
+        for (const style of this.getComputedStyles()) {
+            const value = style.getPropertyValue(property);
+            if (value !== '') {
+                return value;
+            }
+        }
+        return '';
     }
     getPropertyValue(property) {
         if (this.cache.has(property)) {
@@ -850,7 +865,7 @@ class RootClass {
         }
         const key = property;
         property = '--' + property;
-        let value = this.getComputedStyle().getPropertyValue(property).trim();
+        let value = this.getPropertyValueFormComputedStyles(property).trim();
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1).trim();
         }

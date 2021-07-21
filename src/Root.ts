@@ -15,7 +15,7 @@
  */
 
 class RootClass {
-    private styles: CSSStyleDeclaration = null;
+    private styles: CSSStyleDeclaration[] = null;
     private cache: Map<string, string> = new Map<string, string>();
 
     constructor() {
@@ -51,11 +51,27 @@ class RootClass {
         cache.set("motion-safe--scope", "@media(prefers-reduced-motion: no-preference) {$selector {$body}}");
     }
 
-    private getComputedStyle(): CSSStyleDeclaration {
+    private getComputedStyles(): CSSStyleDeclaration[] {
         if (this.styles === null) {
-            this.styles = window.getComputedStyle(document.documentElement);
+            this.styles = [];
+            for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
+                const rule = document.styleSheets[si].cssRules[0];
+                if (rule.type === CSSRule.STYLE_RULE && (rule as CSSStyleRule).selectorText === ':root') {
+                    this.styles.unshift((rule as CSSStyleRule).style);
+                }
+            }
         }
         return this.styles;
+    }
+
+    private getPropertyValueFormComputedStyles(property: string): string {
+        for (const style of this.getComputedStyles()) {
+            const value = style.getPropertyValue(property);
+            if (value !== '') {
+                return value;
+            }
+        }
+        return '';
     }
 
     getPropertyValue(property: string): string {
@@ -65,7 +81,7 @@ class RootClass {
 
         const key = property;
         property = '--' + property;
-        let value = this.getComputedStyle().getPropertyValue(property).trim();
+        let value = this.getPropertyValueFormComputedStyles(property).trim();
 
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1).trim();
