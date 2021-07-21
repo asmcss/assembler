@@ -601,7 +601,8 @@ function generateRootVariables(settings) {
  * limitations under the License.
  */
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
-const HASH_VAR_PREFIX = '--x-';
+const HASH_VAR_PREFIX = '--';
+const HASH_CLASS_PREFIX = 'asm';
 const PROPERTY_REGEX = /^(?:(?<media>[a-z]{2})\|)?(?:(?<scope>[-a-zA-Z0-9]+)!)?(?<property>[-a-z]+)(?:\.(?<state>[-a-z]+))?$/m;
 function getUserSettings(dataset) {
     const enabled = dataset.enabled === undefined ? true : dataset.enabled === 'true';
@@ -760,14 +761,15 @@ function generateStyles(settings) {
                     continue;
                 }
                 const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
+                const property = HASH_VAR_PREFIX + (media_index > 0 ? bp + '--' : '') + name + (state_index > 0 ? '__' + stateList[state_index] : '');
                 tracker.add(hash);
                 let variants = PROPERTY_VARIANTS[name], prefix = '';
                 if (variants) {
                     for (let i = 0, l = variants.length; i < l; i++) {
-                        prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
+                        prefix += `${variants[i]}:var(${property}) !important;`;
                     }
                 }
-                str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                str += `.${HASH_CLASS_PREFIX}\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
             }
         }
         if (media_index !== 0) {
@@ -1198,10 +1200,12 @@ class StyleHandler {
             const rank = ((name * base) + media) * base + state;
             const hash = rank.toString(16) + (scope ? `-${scope}` : '');
             const scopeRank = scopes.indexOf(scope) * 100000;
+            const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
             result.push({
                 name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
+                //property: HASH_VAR_PREFIX + hash,
+                property: HASH_VAR_PREFIX + internalProperty,
+                entry: HASH_CLASS_PREFIX + '#' + hash,
                 value: value[index],
                 media: m.media || '',
                 state: m.state || '',
@@ -1275,10 +1279,11 @@ class StyleHandler {
                 }
                 const scope = m.scope || '';
                 const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
+                const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
                 yield {
                     name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash,
+                    property: HASH_VAR_PREFIX + internalProperty,
+                    entry: HASH_CLASS_PREFIX + '#' + hash,
                 };
             }
         }
@@ -1314,7 +1319,7 @@ class StyleHandler {
             rule += scopeValue.replace(REPLACE_REGEX, (match, p1) => {
                 switch (p1) {
                     case "selector":
-                        return `.x\\#${hash}${state ? ':' + state : ''}`;
+                        return `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}`;
                     case "body":
                         return prefix + cssProperty + ': var(' + property + ') !important';
                     case "variants":
@@ -1324,7 +1329,7 @@ class StyleHandler {
                     case "value":
                         return `var(${property})`;
                     case "class":
-                        return `.x\\#${hash}`;
+                        return `.${HASH_CLASS_PREFIX}\\#${hash}`;
                     case "state":
                         return state ? ':' + state : '';
                     case "var":
@@ -1334,7 +1339,7 @@ class StyleHandler {
             });
         }
         else {
-            rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+            rule += `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
         }
         if (hasMedia) {
             rule += '}';

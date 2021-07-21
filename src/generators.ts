@@ -16,7 +16,7 @@
 
 import {PROPERTY_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {generateRootVariables} from "./variables";
-import {UserSettings, HASH_VAR_PREFIX} from "./helpers";
+import {UserSettings, HASH_VAR_PREFIX, HASH_CLASS_PREFIX} from "./helpers";
 
 type GeneratedStyles = {content: string, tracker: Set<string>};
 
@@ -80,15 +80,16 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
                 }
 
                 const hash = (((name_index * base) + media_index) * base + state_index).toString(16);
+                const property = HASH_VAR_PREFIX + (media_index > 0 ? bp + '--' : '') + name + (state_index > 0 ? '__' + stateList[state_index] : '');
                 tracker.add(hash);
 
                 let variants = PROPERTY_VARIANTS[name], prefix = '';
                 if (variants) {
                     for (let i = 0, l = variants.length; i < l; i++) {
-                        prefix += `${variants[i]}:var(${HASH_VAR_PREFIX}${hash}) !important;`;
+                        prefix += `${variants[i]}:var(${property}) !important;`;
                     }
                 }
-                str += `.x\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${HASH_VAR_PREFIX}${hash}) !important}`;
+                str += `.${HASH_CLASS_PREFIX}\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
             }
         }
 

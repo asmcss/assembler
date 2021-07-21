@@ -15,7 +15,7 @@
  */
 
 import {ALIASES, DEFAULT_VALUES, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
-import {UserSettings, HASH_VAR_PREFIX, PROPERTY_REGEX} from "./helpers";
+import {UserSettings, HASH_VAR_PREFIX, PROPERTY_REGEX, HASH_CLASS_PREFIX} from "./helpers";
 import {Root} from "./Root";
 
 type PropertyInfo = {
@@ -171,11 +171,13 @@ export default class StyleHandler {
             const rank = ((name * base) + media) * base + state;
             const hash = rank.toString(16) + (scope ? `-${scope}` : '');
             const scopeRank = scopes.indexOf(scope) * 100000;
+            const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
 
             result.push({
                 name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                property: HASH_VAR_PREFIX + hash,
-                entry: 'x#' + hash,
+                //property: HASH_VAR_PREFIX + hash,
+                property: HASH_VAR_PREFIX + internalProperty,
+                entry: HASH_CLASS_PREFIX + '#' + hash,
                 value: value[index],
                 media: m.media || '',
                 state: m.state || '',
@@ -265,12 +267,12 @@ export default class StyleHandler {
 
                 const scope = m.scope || '';
                 const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-
+                const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
 
                 yield {
                     name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + hash,
-                    entry: 'x#' + hash,
+                    property: HASH_VAR_PREFIX + internalProperty,
+                    entry: HASH_CLASS_PREFIX + '#' + hash,
                 };
             }
         }
@@ -313,7 +315,7 @@ export default class StyleHandler {
             rule += scopeValue.replace(REPLACE_REGEX, (match, p1) => {
                 switch (p1) {
                     case "selector":
-                        return `.x\\#${hash}${state ? ':' + state : ''}`;
+                        return `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}`;
                     case "body":
                         return prefix + cssProperty + ': var(' + property + ') !important';
                     case "variants":
@@ -323,7 +325,7 @@ export default class StyleHandler {
                     case "value":
                         return `var(${property})`;
                     case "class":
-                        return `.x\\#${hash}`;
+                        return `.${HASH_CLASS_PREFIX}\\#${hash}`;
                     case "state":
                         return state ? ':' + state : '';
                     case "var":
@@ -332,7 +334,7 @@ export default class StyleHandler {
                 return p1;
             });
         } else {
-            rule += `.x\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+            rule += `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
         }
 
         if (hasMedia) {
