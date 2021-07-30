@@ -56,7 +56,11 @@ class RootClass {
             this.styles = [];
             for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
                 const styleSheet = document.styleSheets[si];
-                if (styleSheet.href.indexOf(window.location.origin) !== 0) {
+                if (styleSheet.href !== null && styleSheet.href.indexOf(window.location.origin) !== 0) {
+                    continue;
+                }
+                if (styleSheet.href === null && styleSheet.ownerNode !== null
+                    && styleSheet.ownerNode instanceof Element && (styleSheet.ownerNode as Element).id === 'opis-assembler-css') {
                     continue;
                 }
                 const rule = styleSheet.cssRules[0];
