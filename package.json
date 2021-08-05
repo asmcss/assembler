@@ -1,5 +1,5 @@
 {
-  "name": "@zindex/asmcss",
+  "name": "@asmcss/assembler",
   "version": "0.1.0",
   "main": "dist/assembler.cjs.js",
   "module": "dist/assembler.es.js",

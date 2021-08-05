@@ -50,13 +50,13 @@ The full documentation for Assembler CSS can be found [here][documentation].
 You could also install Assembler CSS as an npm package by issuing the following command:
 
 ```shell
-npm install --save @zindex/asmcss
+npm install --save @asmcss/assembler
 ```
 
 Or, if you are a Yarn user
 
 ```shell
-yarn add @zindex/asmcss
+yarn add @asmcss/assembler
 ```
 
 ## License
