@@ -617,7 +617,8 @@ function getUserSettings(dataset) {
     const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
     const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
-        "l1", "l2", "sibling", "child", "even", "odd", "first", "last", "dark", "light", "landscape", "portrait", "motion-reduce", "motion-safe"];
+        "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
+        "landscape", "portrait", "motion-reduce", "motion-safe"];
     for (let i = 0, l = dataScopes.length; i < l; i++) {
         const scope = dataScopes[i];
         if (scopes.indexOf(scope) < 0) {
@@ -821,10 +822,10 @@ class RootClass {
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
         cache.set("child--scope", "$selector > $class {$body}");
-        cache.set("marker-l1--scope", "$selector > *::marker {$body}");
         cache.set("selection--scope", "$selector::selection {$body}");
         cache.set("placeholder--scope", "$selector::placeholder {$body}");
         cache.set("marker--scope", "$selector::marker {$body}");
+        cache.set("marker-l1--scope", "$selector > *::marker {$body}");
         cache.set("before--scope", "$selector::before {$body}");
         cache.set("after--scope", "$selector::after {$body}");
         cache.set("even--scope", "$selector:nth-child(even) {$body}");
