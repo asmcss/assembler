@@ -19,10 +19,22 @@
     "tslib": "^2.1.0",
     "typescript": "^4.1.3"
   },
+  "description": "Modern utility-first framework",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asmcss/assembler.git"
+  },
   "types": "types/index.d.ts",
   "files": [
-    "dist"
+    "dist/*",
+    "types/*"
   ],
+  "author": "Zindex Software",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/asmcss/assembler/issues"
+  },
+  "homepage": "https://asmcss.com",
   "jest": {
     "setupFiles": [
       "./tests/mocks/mock.js"
