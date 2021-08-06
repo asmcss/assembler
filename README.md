@@ -76,6 +76,13 @@ We have conducted intensive manual testing on the following operating systems an
 - Android (tablet and mobile): Chrome
 - iOS 14 (tablet and mobile): Safari and Chrome
 
+## Road to v1.0.0
+
+- [ ] Add automated tests, so we can make sure we don’t mess up things in future releases
+- [ ] Add support for alternative attribute rules.
+- [ ] Add support for custom elements
+- [ ] Cleanup & prepare stable release
+
 
 
 [apache_license]: https://www.apache.org/licenses/LICENSE-2.0 "Apache License"

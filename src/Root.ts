@@ -26,9 +26,11 @@ class RootClass {
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
         cache.set("child--scope", "$selector > $class {$body}");
+        cache.set("marker-l1--scope", "$selector > *::marker {$body}");
 
         cache.set("selection--scope", "$selector::selection {$body}");
         cache.set("placeholder--scope", "$selector::placeholder {$body}");
+        cache.set("marker--scope", "$selector::marker {$body}");
 
         cache.set("before--scope", "$selector::before {$body}");
         cache.set("after--scope", "$selector::after {$body}");
