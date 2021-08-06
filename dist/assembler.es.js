@@ -1120,7 +1120,6 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  * limitations under the License.
  */
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
-const REF_REGEX = /&([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
 class StyleHandler {
     constructor(settings, style, tracker) {
@@ -1209,14 +1208,10 @@ class StyleHandler {
             value = VALUE_WRAPPER[original](value, original, media, state);
         }
         if (!Array.isArray(value)) {
-            value = Array(properties.length).fill(value
-                .replace(REF_REGEX, (match, property) => Root.getPropertyValue('--' + property))
-                .replace(VAR_REGEX, "var(--$1)"));
+            value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));
         }
         else {
-            value = value.map(value => value
-                .replace(REF_REGEX, (match, property) => Root.getPropertyValue('--' + property))
-                .replace(VAR_REGEX, "var(--$1)"));
+            value = value.map(value => value.replace(VAR_REGEX, "var(--$1)"));
         }
         const result = [];
         const base = STATE_LIST.length;

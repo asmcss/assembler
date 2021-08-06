@@ -3,7 +3,7 @@ import ts from "@rollup/plugin-typescript";
 import {terser} from "rollup-plugin-terser";
 import pkg from './package.json';
 
-const NAME = 'Opis.Assembler';
+const NAME = 'Assembler';
 const MAIN = 'src/index.ts';
 const GLOBALS = {};
 const EXTERNAL = Object.keys(GLOBALS);
