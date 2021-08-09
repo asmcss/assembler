@@ -19,7 +19,7 @@ const font_size_regex = /^(xs|sm|base|lg|([2-9])?xl)$/;
 const line_height_regex = /^(none|tight|snug|normal|relaxed|loose)$/;
 const elevation_regex = /^[0-9]|1[0-9]|2[0-4]$/;
 const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
-const radius_regex = /^(xs|sm|md|lg|xl)$/;
+const radius_regex = /^(xs|sm|md|lg|xl|pill)$/;
 const order_regex = /^(first|last|none)$/;
 const PROPERTY_LIST = [
     "align-content",
@@ -106,6 +106,7 @@ const PROPERTY_LIST = [
     "grid-template-columns",
     "grid-template-rows",
     "height",
+    "isolation",
     "justify-content",
     "justify-items",
     "justify-self",
@@ -228,6 +229,9 @@ const ALIASES = {
     "radius-tl": "border-top-left-radius",
     "radius-tr": "border-top-right-radius",
     "b": "border",
+    "bc": "border-color",
+    "bs": "border-style",
+    "bw": "border-width",
     "bt": "border-top",
     "bl": "border-left",
     "br": "border-right",
@@ -414,6 +418,7 @@ const VALUE_WRAPPER = {
     "radius-bl": radius,
     "radius-tr": radius,
     "radius-br": radius,
+    "border-radius": radius,
     "break": breakCallback,
     "flex-wrap": (v) => v === "reverse" ? "wrap-reverse" : v,
     "flex-row": v => v === "reverse" ? "row-reverse" : v,
@@ -500,6 +505,7 @@ const BORDER_RADIUS = {
     md: "0.5rem",
     lg: "0.75rem",
     xl: "1rem",
+    pill: "9999px"
 };
 const LETTER_SPACING = {
     tighter: "-0.05rem",

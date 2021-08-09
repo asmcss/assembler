@@ -30,6 +30,9 @@ export declare const ALIASES: {
     "radius-tl": string;
     "radius-tr": string;
     b: string;
+    bc: string;
+    bs: string;
+    bw: string;
     bt: string;
     bl: string;
     br: string;
@@ -173,6 +176,7 @@ export declare const VALUE_WRAPPER: {
     "radius-bl": (v: any) => any;
     "radius-tr": (v: any) => any;
     "radius-br": (v: any) => any;
+    "border-radius": (v: any) => any;
     break: (v: any) => string[] | "break-all" | "break-word";
     "flex-wrap": (v: any) => any;
     "flex-row": (v: any) => any;
