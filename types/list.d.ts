@@ -85,6 +85,7 @@ export declare const ALIASES: {
     "auto-cols": string;
     "auto-rows": string;
     e: string;
+    shadow: string;
     overscroll: string;
     "overscroll-x": string;
     "overscroll-y": string;
@@ -151,6 +152,7 @@ export declare const DEFAULT_VALUES: {
     capitalize: string;
     "normal-case": string;
     radius: string;
+    shadow: string;
 };
 export declare const VALUE_WRAPPER: {
     img: (v: any) => string;
@@ -162,6 +164,7 @@ export declare const VALUE_WRAPPER: {
     "grid-cols": (v: any) => string;
     "col-span": (v: any) => string;
     e: (v: any) => any;
+    shadow: (v: any) => any;
     ring: (v: any) => string;
     "font-size": (v: any) => any;
     leading: (v: any) => any;

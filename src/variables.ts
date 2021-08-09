@@ -106,10 +106,22 @@ const FONT_FAMILIES = {
     monospace: "Lucida Console, Monaco, monospace"
 };
 
+const SHADOW = [
+    "0px 2px 4px 0px hsla(0, 0%, 20%, 0.1), 0px 6px 6px -8px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 8px -1px hsla(0, 0%, 20%, 0.1), 0px 16px 16px -12px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 16px -2px hsla(0, 0%, 20%, 0.1), 0px 22px 18px -16px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 20px -3px hsla(0, 0%, 20%, 0.1), 0px 28px 22px -18px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 32px -2px hsla(0, 0%, 20%, 0.1), 0px 32px 26px -18px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 36px -1px hsla(0, 0%, 20%, 0.1), 0px 42px 34px -24px hsla(0, 0%, 0%, 15%)"
+]
+
 export function generateRootVariables(settings: UserSettings) {
     let vars: string = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
     for (let i = 0; i < 25; i++) {
         vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (let i = 0; i < 6; i++) {
+        vars += `--shadow-${i + 1}:${SHADOW[i]};`
     }
     for (const [key, value] of Object.entries(BORDER_RADIUS)) {
         vars += `--border-radius-${key}:${value};`;

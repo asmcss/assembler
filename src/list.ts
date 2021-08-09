@@ -19,6 +19,7 @@ const number_regex = /^-?[0-9]+(\.5)?$/;
 const font_size_regex = /^(xs|sm|base|lg|([2-9])?xl)$/;
 const line_height_regex = /^(none|tight|snug|normal|relaxed|loose)$/;
 const elevation_regex = /^[0-9]|1[0-9]|2[0-4]$/;
+const shadow_regex = /^[1-6]$/;
 const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
 const radius_regex = /^(xs|sm|md|lg|xl|pill)$/;
 const order_regex = /^(first|last|none)$/;
@@ -296,6 +297,7 @@ export const ALIASES = {
     "auto-cols": "grid-auto-columns",
     "auto-rows": "grid-auto-rows",
     "e": "box-shadow",
+    "shadow": "box-shadow",
     "overscroll": "overscroll-behavior",
     "overscroll-x": "overscroll-behavior-x",
     "overscroll-y": "overscroll-behavior-y",
@@ -371,6 +373,7 @@ export const DEFAULT_VALUES = {
     "capitalize": "capitalize",
     "normal-case": "none",
     "radius": "sm",
+    "shadow": "1"
 }
 
 const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
@@ -412,6 +415,7 @@ export const VALUE_WRAPPER = {
     "grid-cols": grid_repeat,
     "col-span": grid_rowspan,
     "e": elevation,
+    "shadow": v => shadow_regex.test(v) ? `@shadow-${v}` : v,
     "ring": ring,
     "font-size": fontSize,
     "leading": lineHeight,

@@ -18,6 +18,7 @@ const number_regex = /^-?[0-9]+(\.5)?$/;
 const font_size_regex = /^(xs|sm|base|lg|([2-9])?xl)$/;
 const line_height_regex = /^(none|tight|snug|normal|relaxed|loose)$/;
 const elevation_regex = /^[0-9]|1[0-9]|2[0-4]$/;
+const shadow_regex = /^[1-6]$/;
 const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
 const radius_regex = /^(xs|sm|md|lg|xl|pill)$/;
 const order_regex = /^(first|last|none)$/;
@@ -284,6 +285,7 @@ const ALIASES = {
     "auto-cols": "grid-auto-columns",
     "auto-rows": "grid-auto-rows",
     "e": "box-shadow",
+    "shadow": "box-shadow",
     "overscroll": "overscroll-behavior",
     "overscroll-x": "overscroll-behavior-x",
     "overscroll-y": "overscroll-behavior-y",
@@ -361,6 +363,7 @@ const DEFAULT_VALUES = {
     "capitalize": "capitalize",
     "normal-case": "none",
     "radius": "sm",
+    "shadow": "1"
 };
 const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
 const positive_unit = v => positive_number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
@@ -404,6 +407,7 @@ const VALUE_WRAPPER = {
     "grid-cols": grid_repeat,
     "col-span": grid_rowspan,
     "e": elevation,
+    "shadow": v => shadow_regex.test(v) ? `@shadow-${v}` : v,
     "ring": ring,
     "font-size": fontSize,
     "leading": lineHeight,
@@ -558,10 +562,21 @@ const FONT_FAMILIES = {
     serif: "Georgia, Cambria, Times New Roman, Times, serif",
     monospace: "Lucida Console, Monaco, monospace"
 };
+const SHADOW = [
+    "0px 2px 4px 0px hsla(0, 0%, 20%, 0.1), 0px 6px 6px -8px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 8px -1px hsla(0, 0%, 20%, 0.1), 0px 16px 16px -12px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 16px -2px hsla(0, 0%, 20%, 0.1), 0px 22px 18px -16px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 20px -3px hsla(0, 0%, 20%, 0.1), 0px 28px 22px -18px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 32px -2px hsla(0, 0%, 20%, 0.1), 0px 32px 26px -18px hsla(0, 0%, 0%, 15%)",
+    "0px 2px 36px -1px hsla(0, 0%, 20%, 0.1), 0px 42px 34px -24px hsla(0, 0%, 0%, 15%)"
+];
 function generateRootVariables(settings) {
     let vars = '--elevation-umbra: rgba(0, 0, 0, .2);--elevation-penumbra: rgba(0, 0, 0, .14);--elevation-ambient: rgba(0, 0, 0, .12);';
     for (let i = 0; i < 25; i++) {
         vars += `--elevation-${i}:${ELEVATION_UMBRA[i]} var(--elevation-umbra), ${ELEVATION_PENUMBRA[i]} var(--elevation-penumbra), ${ELEVATION_AMBIENT[i]} var(--elevation-ambient);`;
+    }
+    for (let i = 0; i < 6; i++) {
+        vars += `--shadow-${i + 1}:${SHADOW[i]};`;
     }
     for (const [key, value] of Object.entries(BORDER_RADIUS)) {
         vars += `--border-radius-${key}:${value};`;
