@@ -834,7 +834,7 @@ class RootClass {
         this.cache = new Map();
         const { cache } = this;
         const tc = '-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important;';
-        cache.set("text-clip--scope", `$selector {${tc}$body}`);
+        cache.set("text-clip--scope", `$selector {${tc}}`);
         cache.set("l1--scope", "$selector > * {$body}");
         cache.set("l2--scope", "$selector > * > * {$body}");
         cache.set("sibling--scope", "$selector > * + * {$body}");
