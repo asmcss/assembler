@@ -78,11 +78,14 @@ We have conducted intensive manual testing on the following operating systems an
 
 ## Road to v1.0.0
 
-- [ ] Add automated tests, so we can make sure we don’t mess up things in future releases
+- [x] Basic functionalities
+- [x] Add support for states
+- [x] Add support for scopes
+- [x] Add support for mixins
 - [ ] Add support for alternative attribute rules.
 - [ ] Add support for custom elements
-- [ ] Cleanup & prepare stable release
-
+- [ ] Add automated tests, so we can make sure we don’t mess up things in future releases
+- [ ] Cleanup & prepare stable releases
 
 
 [apache_license]: https://www.apache.org/licenses/LICENSE-2.0 "Apache License"
