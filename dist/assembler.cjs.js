@@ -639,7 +639,7 @@ function getUserSettings(dataset) {
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
     const desktopFirst = dataset.mode === undefined ? false : dataset.mode === 'desktop-first';
     const cache = dataset.cache === undefined ? null : dataset.cache;
-    const cacheKey = dataset.cacheKey === undefined ? "opis-assembler-cache" : dataset.cacheKey;
+    const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
     const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
         "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
