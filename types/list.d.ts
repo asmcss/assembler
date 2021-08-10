@@ -74,6 +74,8 @@ export declare const ALIASES: {
     "radial-gradient": string;
     "conic-gradient": string;
     "flex-dir": string;
+    "col-reverse": string;
+    "row-reverse": string;
     "grid-rows": string;
     "grid-flow": string;
     "row-start": string;
@@ -147,6 +149,8 @@ export declare const DEFAULT_VALUES: {
     "flex-wrap": string;
     "flex-grow": string;
     "flex-shrink": string;
+    "col-reverse": string;
+    "row-reverse": string;
     uppercase: string;
     lowercase: string;
     capitalize: string;
