@@ -952,10 +952,7 @@ mixinRepository.set('stack', function (settings, ...args) {
             grid-template-areas:"stackarea"; l1!grid-area:stackarea; l1!z:0; w:100%; h:100%`;
 });
 mixinRepository.set('sr-only', function (settings, ...args) {
-    if ((args[0] || 'true') !== 'true') {
-        return 'static; w:auto; h:auto; p:0; m:0; ws:normal; overflow:visible; clip:auto';
-    }
-    return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
+    return 'absolute; w:1px; h:1px; p:0; m:-1px; bw:0; overflow:hidden; clip:rect(0, 0, 0, 0); left:-9999px';
 });
 mixinRepository.set('container', function (settings, ...args) {
     if (settings.desktopFirst) {

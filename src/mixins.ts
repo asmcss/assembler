@@ -58,10 +58,7 @@ mixinRepository.set('stack', function (settings: UserSettings, ...args: string[]
 });
 
 mixinRepository.set('sr-only', function (settings: UserSettings, ...args: string[]): string {
-    if ((args[0] || 'true') !== 'true') {
-        return 'static; w:auto; h:auto; p:0; m:0; ws:normal; overflow:visible; clip:auto';
-    }
-    return 'absolute; w:1px; h:1px; p:0; m:-1px; ws:nowrap; border-width:0; overflow:hidden; clip:rect(0, 0, 0, 0)';
+    return 'absolute; w:1px; h:1px; p:0; m:-1px; bw:0; overflow:hidden; clip:rect(0, 0, 0, 0); left:-9999px';
 });
 
 mixinRepository.set('container', function (settings: UserSettings, ...args: string[]): string {
