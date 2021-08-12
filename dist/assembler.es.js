@@ -671,6 +671,8 @@ function getUserSettings(dataset) {
     const md = dataset.breakpointMd || (desktopFirst ? "1024px" : "768px");
     const lg = dataset.breakpointLg || (desktopFirst ? "1280px" : "1024px");
     const xl = dataset.breakpointXl || ("1280px");
+    const xStyleAttribute = dataset.xStyleAttribute || "x-style";
+    const xApplyAttribute = dataset.xApplyAttribute || "x-apply";
     return {
         enabled,
         generate,
@@ -682,6 +684,8 @@ function getUserSettings(dataset) {
         states,
         breakpoints,
         media: { xs, sm, md, lg, xl },
+        xStyleAttribute,
+        xApplyAttribute,
     };
 }
 function style(...styles) {
@@ -1019,8 +1023,6 @@ function* extractFunctions(value) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const APPLY_ATTR = 'x-apply';
-const STYLE_ATTR = "x-style";
 let _documentObserver = null;
 let _elementObserver = null;
 const observedElements = new WeakMap();
@@ -1046,25 +1048,30 @@ function observeElement(element, handler) {
                 const target = mutation.target;
                 const newValue = target.getAttribute(mutation.attributeName);
                 switch (mutation.attributeName) {
-                    case STYLE_ATTR:
+                    case handler.userSettings.xStyleAttribute:
                         whenStyleChanged(handler, target, mutation.oldValue, newValue);
                         break;
-                    case APPLY_ATTR:
+                    case handler.userSettings.xApplyAttribute:
                         whenApplyChanged(handler, target, newValue);
                         break;
                 }
             }
         });
     }
-    _elementObserver.observe(element, { attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR] });
+    _elementObserver.observe(element, {
+        attributes: true,
+        attributeOldValue: true,
+        childList: true,
+        attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
+    });
 }
 function observe(element, handler) {
     if (observedElements.has(element)) {
         return;
     }
     observedElements.set(element, null);
-    const style = element.attributes.getNamedItem(STYLE_ATTR);
-    const apply = element.attributes.getNamedItem(APPLY_ATTR);
+    const style = element.attributes.getNamedItem(handler.userSettings.xStyleAttribute);
+    const apply = element.attributes.getNamedItem(handler.userSettings.xApplyAttribute);
     let content = '';
     if (apply) {
         content = parseApplyAttribute(handler.userSettings, apply.value);
@@ -1090,8 +1097,8 @@ function whenApplyChanged(handler, element, newApply) {
         newApply = parseApplyAttribute(handler.userSettings, newApply);
     }
     observedElements.set(element, newApply);
-    if (element.hasAttribute(STYLE_ATTR)) {
-        const style = element.getAttribute(STYLE_ATTR);
+    if (element.hasAttribute(handler.userSettings.xStyleAttribute)) {
+        const style = element.getAttribute(handler.userSettings.xStyleAttribute);
         if (prevApply == null) {
             prevApply = style;
         }

@@ -17,9 +17,6 @@
 import {parseApplyAttribute} from "./mixins";
 import StyleHandler from "./StyleHandler";
 
-const APPLY_ATTR = 'x-apply';
-const STYLE_ATTR = "x-style";
-
 let _documentObserver:MutationObserver = null;
 let _elementObserver:MutationObserver = null;
 const observedElements = new WeakMap<HTMLElement, string|null>();
@@ -47,17 +44,22 @@ function observeElement(element: Element, handler: StyleHandler) {
                 const target = mutation.target as HTMLElement;
                 const newValue = target.getAttribute(mutation.attributeName);
                 switch (mutation.attributeName) {
-                    case STYLE_ATTR:
+                    case handler.userSettings.xStyleAttribute:
                         whenStyleChanged(handler, target, mutation.oldValue, newValue);
                         break;
-                    case APPLY_ATTR:
+                    case handler.userSettings.xApplyAttribute:
                         whenApplyChanged(handler, target, newValue);
                         break;
                 }
             }
         });
     }
-    _elementObserver.observe(element, {attributes: true, attributeOldValue: true, childList: true, attributeFilter: [STYLE_ATTR, APPLY_ATTR]});
+    _elementObserver.observe(element, {
+        attributes: true,
+        attributeOldValue: true,
+        childList: true,
+        attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
+    });
 }
 
 export function observeShadow(shadow: ShadowRoot, handler: StyleHandler) {
@@ -73,8 +75,8 @@ function observe(element: HTMLElement, handler: StyleHandler): void {
 
     observedElements.set(element, null);
 
-    const style = element.attributes.getNamedItem(STYLE_ATTR);
-    const apply = element.attributes.getNamedItem(APPLY_ATTR);
+    const style = element.attributes.getNamedItem(handler.userSettings.xStyleAttribute);
+    const apply = element.attributes.getNamedItem(handler.userSettings.xApplyAttribute);
 
     let content = '';
 
@@ -110,8 +112,8 @@ function whenApplyChanged(handler: StyleHandler, element: HTMLElement, newApply:
 
     observedElements.set(element, newApply);
 
-    if (element.hasAttribute(STYLE_ATTR)) {
-        const style = element.getAttribute(STYLE_ATTR);
+    if (element.hasAttribute(handler.userSettings.xStyleAttribute)) {
+        const style = element.getAttribute(handler.userSettings.xStyleAttribute);
         if (prevApply == null) {
             prevApply = style;
         } else {
