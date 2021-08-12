@@ -1,7 +1,7 @@
 # Assembler CSS
 
 Assembler CSS is a highly performant utility-first framework that allows you to quickly prototype and build modern 
-websites and UI components without the need to install and maintain additional software.
+websites and UI components without the need to install and maintain complex software.
 
 ## Usage
 
