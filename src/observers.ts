@@ -19,6 +19,7 @@ import StyleHandler from "./StyleHandler";
 
 let _documentObserver:MutationObserver = null;
 let _elementObserver:MutationObserver = null;
+let _shadowRootObserver:MutationObserver = null;
 const observedElements = new WeakMap<HTMLElement, string|null>();
 
 export function observeDocument(document: Document, handler: StyleHandler): void {
@@ -63,9 +64,19 @@ function observeElement(element: Element, handler: StyleHandler): void {
 }
 
 export function observeShadow(shadow: ShadowRoot, handler: StyleHandler) {
-    for (let n = shadow.firstElementChild; n !== null; n = n.nextElementSibling) {
-        observe(n as HTMLElement, handler);
+    if (_shadowRootObserver === null) {
+        _shadowRootObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
+            for (let i = 0, l = mutations.length; i < l; i++) {
+                const nodes = mutations[i].addedNodes;
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i] instanceof HTMLElement) {
+                        observe(nodes[i] as HTMLElement, handler);
+                    }
+                }
+            }
+        });
     }
+    _shadowRootObserver.observe(shadow, {childList: true, subtree: true});
 }
 
 function observe(element: HTMLElement, handler: StyleHandler): void {
