@@ -83,7 +83,7 @@ We have conducted intensive manual testing on the following operating systems an
 - [x] Add support for scopes
 - [x] Add support for mixins
 - [ ] Add support for alternative attribute rules.
-- [ ] Add support for custom elements
+- [x] Add support for custom elements
 - [ ] Add automated tests, so we can make sure we don’t mess up things in future releases
 - [ ] Cleanup & prepare stable releases
 
