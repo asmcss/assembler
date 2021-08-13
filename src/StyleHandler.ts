@@ -36,7 +36,7 @@ const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
 
 export default class StyleHandler {
-    private style: CSSStyleSheet;
+    readonly style: CSSStyleSheet;
     private readonly settings: UserSettings;
     private tracker: Set<string>;
     private mediaSettings: object;
@@ -343,9 +343,12 @@ export default class StyleHandler {
         const ruleIndex = this.getRuleIndex(rank);
         this.rules.splice(ruleIndex, 0, rank);
         try {
+            console.log(style.cssRules.length, this.padding);
             style.insertRule(rule, this.padding + ruleIndex);
-        } catch {
-            console.log("Unsupported rule:", rule);
+        } catch(e) {
+
+            console.log("Unsupported rule1:", rule, ruleIndex);
+            console.log(e);
             this.rules.splice(ruleIndex, 1);
         }
     }

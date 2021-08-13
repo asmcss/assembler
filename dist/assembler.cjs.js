@@ -1029,6 +1029,7 @@ function* extractFunctions(value) {
  */
 let _documentObserver = null;
 let _elementObserver = null;
+let _shadowRootObserver = null;
 const observedElements = new WeakMap();
 function observeDocument(document, handler) {
     if (_documentObserver === null) {
@@ -1068,6 +1069,21 @@ function observeElement(element, handler) {
         childList: true,
         attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
     });
+}
+function observeShadow(shadow, handler) {
+    if (_shadowRootObserver === null) {
+        _shadowRootObserver = new MutationObserver(function (mutations) {
+            for (let i = 0, l = mutations.length; i < l; i++) {
+                const nodes = mutations[i].addedNodes;
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i] instanceof HTMLElement) {
+                        observe(nodes[i], handler);
+                    }
+                }
+            }
+        });
+    }
+    _shadowRootObserver.observe(shadow, { childList: true, subtree: true });
 }
 function observe(element, handler) {
     if (observedElements.has(element)) {
@@ -1406,10 +1422,12 @@ class StyleHandler {
         const ruleIndex = this.getRuleIndex(rank);
         this.rules.splice(ruleIndex, 0, rank);
         try {
+            console.log(style.cssRules.length, this.padding);
             style.insertRule(rule, this.padding + ruleIndex);
         }
-        catch (_a) {
-            console.log("Unsupported rule:", rule);
+        catch (e) {
+            console.log("Unsupported rule1:", rule, ruleIndex);
+            console.log(e);
             this.rules.splice(ruleIndex, 1);
         }
     }
@@ -1439,14 +1457,18 @@ class StyleHandler {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+let styleHandler = null;
+let supportsConstructable = true;
+let settings = null;
+const observedShadowRoots = new WeakMap();
 function init(options) {
-    const settings = getUserSettings(options || document.currentScript.dataset);
+    settings = getUserSettings(options || document.currentScript.dataset);
     if (!settings.enabled) {
         return false;
     }
     let tracker;
     let stylesheet;
-    if (settings.constructable && document.adoptedStyleSheets) {
+    if (settings.constructable && document.adoptedStyleSheets && Object.isFrozen(document.adoptedStyleSheets)) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             const generated = generateStyles(settings);
@@ -1457,9 +1479,10 @@ function init(options) {
             tracker = new Set();
             stylesheet.replaceSync(generateRootVariables(settings));
         }
-        document.adoptedStyleSheets = [stylesheet];
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, stylesheet];
     }
     else {
+        supportsConstructable = false;
         const style = document.createElement("style");
         const generated = generateStyles(settings);
         tracker = generated.tracker;
@@ -1468,13 +1491,30 @@ function init(options) {
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
         stylesheet = style.sheet;
     }
-    observeDocument(document, new StyleHandler(settings, stylesheet, tracker));
+    styleHandler = new StyleHandler(settings, stylesheet, tracker);
+    observeDocument(document, styleHandler);
+    return true;
+}
+function handleShadow(shadowRoot) {
+    if (styleHandler === null) {
+        init();
+    }
+    if (!supportsConstructable || !shadowRoot.adoptedStyleSheets || !Object.isFrozen(shadowRoot.adoptedStyleSheets)) {
+        return false;
+    }
+    if (observedShadowRoots.has(shadowRoot)) {
+        return true;
+    }
+    observedShadowRoots.set(shadowRoot, true);
+    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+    observeShadow(shadowRoot, styleHandler);
     return true;
 }
 if (typeof window !== 'undefined') {
     init();
 }
 
+exports.handleShadow = handleShadow;
 exports.init = init;
 exports.registerMixin = registerMixin;
 exports.style = style;

@@ -15,7 +15,7 @@
  */
 
 import {generateStyles} from "./generators";
-import {observeDocument} from "./observers";
+import {observeDocument, observeShadow} from "./observers";
 import {getUserSettings, style} from "./helpers";
 import {generateRootVariables} from "./variables";
 import StyleHandler from "./StyleHandler";
@@ -31,10 +31,18 @@ declare global {
         replace(css: string);
         replaceSync(css: string);
     }
+    interface ShadowRoot {
+        adoptedStyleSheets?: CSSStyleSheet[];
+    }
 }
 
+let styleHandler: StyleHandler = null;
+let supportsConstructable = true;
+let settings = null;
+const observedShadowRoots = new WeakMap<ShadowRoot, boolean>();
+
 export function init(options?: {[key: string]: string}): boolean {
-    const settings = getUserSettings(options || document.currentScript.dataset);
+    settings = getUserSettings(options || document.currentScript.dataset);
 
     if (!settings.enabled) {
         return false;
@@ -43,7 +51,7 @@ export function init(options?: {[key: string]: string}): boolean {
     let tracker: Set<string>;
     let stylesheet: CSSStyleSheet;
 
-    if (settings.constructable && document.adoptedStyleSheets) {
+    if (settings.constructable && document.adoptedStyleSheets && Object.isFrozen(document.adoptedStyleSheets)) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             const generated = generateStyles(settings);
@@ -53,8 +61,9 @@ export function init(options?: {[key: string]: string}): boolean {
             tracker = new Set<string>();
             stylesheet.replaceSync(generateRootVariables(settings));
         }
-        document.adoptedStyleSheets = [stylesheet];
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, stylesheet];
     } else {
+        supportsConstructable = false;
         const style = document.createElement("style");
         const generated = generateStyles(settings);
         tracker = generated.tracker;
@@ -64,7 +73,31 @@ export function init(options?: {[key: string]: string}): boolean {
         stylesheet = style.sheet;
     }
 
-    observeDocument(document, new StyleHandler(settings, stylesheet, tracker));
+    styleHandler = new StyleHandler(settings, stylesheet, tracker);
+
+    observeDocument(document, styleHandler);
+
+    return true;
+}
+
+export function handleShadow(shadowRoot: ShadowRoot): boolean {
+    if (styleHandler === null) {
+        init();
+    }
+
+    if (!supportsConstructable || !shadowRoot.adoptedStyleSheets || !Object.isFrozen(shadowRoot.adoptedStyleSheets)) {
+        return false;
+    }
+
+    if (observedShadowRoots.has(shadowRoot)) {
+        return true;
+    }
+
+    observedShadowRoots.set(shadowRoot, true);
+
+    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+
+    observeShadow(shadowRoot, styleHandler);
 
     return true;
 }

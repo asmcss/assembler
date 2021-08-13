@@ -1,6 +1,6 @@
 import { UserSettings } from "./helpers";
 export default class StyleHandler {
-    private style;
+    readonly style: CSSStyleSheet;
     private readonly settings;
     private tracker;
     private mediaSettings;
