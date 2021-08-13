@@ -678,7 +678,6 @@
         const lg = dataset.breakpointLg || (desktopFirst ? "1280px" : "1024px");
         const xl = dataset.breakpointXl || ("1280px");
         const xStyleAttribute = dataset.xStyleAttribute || "x-style";
-        const xApplyAttribute = dataset.xApplyAttribute || "x-apply";
         return {
             enabled,
             generate,
@@ -691,7 +690,6 @@
             breakpoints,
             media: { xs, sm, md, lg, xl },
             xStyleAttribute,
-            xApplyAttribute,
         };
     }
     function style(item) {
