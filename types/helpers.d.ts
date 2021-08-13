@@ -16,7 +16,6 @@ export declare type UserSettings = {
     states: string[];
     scopes: string[];
     xStyleAttribute: string;
-    xApplyAttribute: string;
 };
 declare type StyleType = string | {
     [key: string]: string;

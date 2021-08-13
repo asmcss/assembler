@@ -26,7 +26,6 @@ export type UserSettings = {
     states: string[],
     scopes: string[],
     xStyleAttribute: string,
-    xApplyAttribute: string,
 };
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
@@ -84,7 +83,6 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const xl = dataset.breakpointXl || ("1280px");
 
     const xStyleAttribute = dataset.xStyleAttribute || "x-style";
-    const xApplyAttribute = dataset.xApplyAttribute || "x-apply";
 
     return  {
         enabled,
@@ -98,7 +96,6 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         breakpoints,
         media: {xs, sm, md, lg, xl},
         xStyleAttribute,
-        xApplyAttribute,
     };
 }
 

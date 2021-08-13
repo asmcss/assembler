@@ -672,7 +672,6 @@ function getUserSettings(dataset) {
     const lg = dataset.breakpointLg || (desktopFirst ? "1280px" : "1024px");
     const xl = dataset.breakpointXl || ("1280px");
     const xStyleAttribute = dataset.xStyleAttribute || "x-style";
-    const xApplyAttribute = dataset.xApplyAttribute || "x-apply";
     return {
         enabled,
         generate,
@@ -685,7 +684,6 @@ function getUserSettings(dataset) {
         breakpoints,
         media: { xs, sm, md, lg, xl },
         xStyleAttribute,
-        xApplyAttribute,
     };
 }
 function style(item) {
@@ -833,6 +831,83 @@ function generateStyles(settings) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+let _documentObserver = null;
+let _elementObserver = null;
+let _shadowRootObserver = null;
+const observedElements = new WeakMap();
+function observeDocument(document, handler) {
+    if (_documentObserver === null) {
+        _documentObserver = new MutationObserver(function (mutations) {
+            for (let i = 0, l = mutations.length; i < l; i++) {
+                const nodes = mutations[i].addedNodes;
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i] instanceof HTMLElement) {
+                        observe(nodes[i], handler);
+                    }
+                }
+            }
+        });
+    }
+    _documentObserver.observe(document, { childList: true, subtree: true });
+}
+function observeElement(element, handler) {
+    if (_elementObserver === null) {
+        _elementObserver = new MutationObserver(function (mutations) {
+            for (const mutation of mutations) {
+                const target = mutation.target;
+                observedElements.set(target, handler.handleStyleChange(target, target.getAttribute(mutation.attributeName), observedElements.get(target)));
+            }
+        });
+    }
+    _elementObserver.observe(element, {
+        attributes: true,
+        attributeOldValue: true,
+        childList: true,
+        attributeFilter: [handler.userSettings.xStyleAttribute],
+    });
+}
+function observeShadow(shadow, handler) {
+    if (_shadowRootObserver === null) {
+        _shadowRootObserver = new MutationObserver(function (mutations) {
+            for (let i = 0, l = mutations.length; i < l; i++) {
+                const nodes = mutations[i].addedNodes;
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i] instanceof HTMLElement) {
+                        observe(nodes[i], handler);
+                    }
+                }
+            }
+        });
+    }
+    _shadowRootObserver.observe(shadow, { childList: true, subtree: true });
+}
+function observe(element, handler) {
+    if (observedElements.has(element)) {
+        return;
+    }
+    const style = element.attributes.getNamedItem(handler.userSettings.xStyleAttribute);
+    observedElements.set(element, style ? handler.handleStyleChange(element, style.value, []) : []);
+    observeElement(element, handler);
+    for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
+        observe(child, handler);
+    }
+}
+
+/*
+ * Copyright 2021 Zindex Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 class RootClass {
     constructor() {
         this.styles = null;
@@ -923,7 +998,7 @@ const Root = new RootClass();
  */
 const mixinRepository = new Map();
 const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
-const defaultMixinHandler = (name, ...args) => {
+const defaultMixinHandler = (name, args) => {
     return Root.getPropertyValue(name + '--mixin')
         .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
@@ -949,184 +1024,14 @@ mixinRepository.set('container', function (settings) {
     }
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
-function parseApplyAttribute(settings, value) {
-    if (value == null || value === '') {
-        return null;
+function resolveMixin(settings, name, args) {
+    if (mixinRepository.has(name)) {
+        return style(mixinRepository.get(name)(settings, ...args));
     }
-    const collection = [];
-    for (const { name, args } of extractFunctions(value)) {
-        if (mixinRepository.has(name)) {
-            collection.push(style(mixinRepository.get(name)(settings, ...args)));
-        }
-        else {
-            collection.push(style(defaultMixinHandler(name, ...args)));
-        }
-    }
-    return collection.join(';');
+    return style(defaultMixinHandler(name, args));
 }
 function registerMixin(name, callback) {
     mixinRepository.set(name, callback);
-}
-// do not match comma inside parenthesis
-// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
-const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
-function* extractFunctions(value) {
-    for (let userFunction of value.split(';')) {
-        userFunction = userFunction.trim();
-        if (userFunction === '') {
-            continue;
-        }
-        const pos = userFunction.indexOf(':');
-        if (pos === -1) {
-            yield { name: userFunction, args: [] };
-        }
-        else {
-            const name = userFunction.substr(0, pos);
-            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
-            yield { name, args };
-        }
-    }
-}
-
-/*
- * Copyright 2021 Zindex Software
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-let _documentObserver = null;
-let _elementObserver = null;
-let _shadowRootObserver = null;
-const observedElements = new WeakMap();
-function observeDocument(document, handler) {
-    if (_documentObserver === null) {
-        _documentObserver = new MutationObserver(function (mutations) {
-            for (let i = 0, l = mutations.length; i < l; i++) {
-                const nodes = mutations[i].addedNodes;
-                for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i] instanceof HTMLElement) {
-                        observe(nodes[i], handler);
-                    }
-                }
-            }
-        });
-    }
-    _documentObserver.observe(document, { childList: true, subtree: true });
-}
-function observeElement(element, handler) {
-    if (_elementObserver === null) {
-        _elementObserver = new MutationObserver(function (mutations) {
-            for (const mutation of mutations) {
-                const target = mutation.target;
-                const newValue = target.getAttribute(mutation.attributeName);
-                switch (mutation.attributeName) {
-                    case handler.userSettings.xStyleAttribute:
-                        whenStyleChanged(handler, target, mutation.oldValue, newValue);
-                        break;
-                    case handler.userSettings.xApplyAttribute:
-                        whenApplyChanged(handler, target, newValue);
-                        break;
-                }
-            }
-        });
-    }
-    _elementObserver.observe(element, {
-        attributes: true,
-        attributeOldValue: true,
-        childList: true,
-        attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
-    });
-}
-function observeShadow(shadow, handler) {
-    if (_shadowRootObserver === null) {
-        _shadowRootObserver = new MutationObserver(function (mutations) {
-            for (let i = 0, l = mutations.length; i < l; i++) {
-                const nodes = mutations[i].addedNodes;
-                for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i] instanceof HTMLElement) {
-                        observe(nodes[i], handler);
-                    }
-                }
-            }
-        });
-    }
-    _shadowRootObserver.observe(shadow, { childList: true, subtree: true });
-}
-function observe(element, handler) {
-    if (observedElements.has(element)) {
-        return;
-    }
-    observedElements.set(element, null);
-    const style = element.attributes.getNamedItem(handler.userSettings.xStyleAttribute);
-    const apply = element.attributes.getNamedItem(handler.userSettings.xApplyAttribute);
-    let content = '';
-    if (apply) {
-        content = parseApplyAttribute(handler.userSettings, apply.value);
-        if (content !== '') {
-            observedElements.set(element, content);
-            content += ';';
-        }
-    }
-    if (style) {
-        content += style.value;
-    }
-    if (content !== '') {
-        handler.handleStyleChange(element, null, content);
-    }
-    observeElement(element, handler);
-    for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
-        observe(child, handler);
-    }
-}
-function whenApplyChanged(handler, element, newApply) {
-    let prevApply = observedElements.get(element) || null;
-    if (newApply != null) {
-        newApply = parseApplyAttribute(handler.userSettings, newApply);
-    }
-    observedElements.set(element, newApply);
-    if (element.hasAttribute(handler.userSettings.xStyleAttribute)) {
-        const style = element.getAttribute(handler.userSettings.xStyleAttribute);
-        if (prevApply == null) {
-            prevApply = style;
-        }
-        else {
-            prevApply += ';' + style;
-        }
-        if (newApply == null) {
-            newApply = style;
-        }
-        else {
-            newApply += ';' + style;
-        }
-    }
-    handler.handleStyleChange(element, prevApply, newApply);
-}
-function whenStyleChanged(handler, element, prevValue, newValue) {
-    const apply = observedElements.get(element) || null;
-    if (apply != null) {
-        if (prevValue == null) {
-            prevValue = apply;
-        }
-        else {
-            prevValue = apply + ';' + prevValue;
-        }
-        if (newValue == null) {
-            newValue = apply;
-        }
-        else {
-            newValue = apply + ';' + newValue;
-        }
-    }
-    handler.handleStyleChange(element, prevValue, newValue);
 }
 
 /*
@@ -1146,6 +1051,11 @@ function whenStyleChanged(handler, element, prevValue, newValue) {
  */
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
+const SPLIT_REGEX = /(?<!\\);/;
+const MIXIN_PREFIX = '^';
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
 class StyleHandler {
     constructor(settings, style, tracker) {
         this.style = style;
@@ -1160,26 +1070,25 @@ class StyleHandler {
     get userSettings() {
         return this.settings;
     }
-    handleStyleChange(element, oldContent, content) {
+    handleStyleChange(element, content, old) {
         if (content === null) {
-            return this.handleStyleRemoved(element, oldContent);
+            return this.handleStyleRemoved(element, old);
         }
         const newEntries = this.getStyleEntries(content);
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const assemblerEntries = [];
         // remove old entries
-        if (oldContent !== null) {
-            for (const { name, property, entry } of this.getStyleProperties(oldContent)) {
-                if (!newEntries.has(name)) {
-                    const index = classList.indexOf(entry);
-                    if (index >= 0) {
-                        classList.splice(index, 1);
-                    }
-                    element.style.removeProperty(property);
+        for (const { n: name, p: property, e: entry } of old) {
+            if (!newEntries.has(name)) {
+                const index = classList.indexOf(entry);
+                if (index >= 0) {
+                    classList.splice(index, 1);
                 }
+                element.style.removeProperty(property);
             }
         }
         for (const info of newEntries.values()) {
-            const { entry, property, hash, value } = info;
+            const { entry, property, hash, value, name } = info;
             const index = classList.indexOf(entry);
             if (index < 0) {
                 classList.push(entry);
@@ -1188,12 +1097,14 @@ class StyleHandler {
                 this.generateCSS(info);
             }
             element.style.setProperty(property, value);
+            assemblerEntries.push({ e: entry, n: name, p: property });
         }
         element.setAttribute('class', classList.join(' '));
+        return assemblerEntries;
     }
-    handleStyleRemoved(element, content) {
+    handleStyleRemoved(element, old) {
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
-        for (const { property, entry } of this.getStyleProperties(content)) {
+        for (const { p: property, e: entry } of old) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -1201,6 +1112,7 @@ class StyleHandler {
             element.style.removeProperty(property);
         }
         element.setAttribute('class', classList.join(' '));
+        return [];
     }
     extract(attr, value = null) {
         var _a;
@@ -1268,20 +1180,13 @@ class StyleHandler {
         }
         return result;
     }
-    getStyleEntries(content, resolve = true) {
+    getStyleEntries(content) {
         const entries = new Map();
-        for (let name of content.split(';')) {
-            name = name.trim();
-            if (name === '') {
-                continue;
-            }
+        for (let name of this.getResolvedProperties(content)) {
             let value = null;
             const pos = name.indexOf(':');
-            if (pos < 0) {
-                name = name.trim();
-            }
-            else {
-                value = resolve ? name.substr(pos + 1) : null;
+            if (pos >= 0) {
+                value = name.substr(pos + 1);
                 name = name.substr(0, pos).trim();
             }
             for (const info of this.extract(name, value)) {
@@ -1290,54 +1195,37 @@ class StyleHandler {
         }
         return entries;
     }
-    *getStyleProperties(content) {
-        var _a;
-        const base = STATE_LIST.length;
-        const MEDIA_LIST = this.breakpoints;
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            }
-            else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
-            }
-            const m = (_a = PROPERTY_REGEX.exec(attr)) === null || _a === void 0 ? void 0 : _a.groups;
-            if (!m || !m.property) {
+    getResolvedProperties(content, stack = []) {
+        const entries = [];
+        for (let name of content.split(SPLIT_REGEX)) {
+            name = name.trim();
+            if (name === '') {
                 continue;
             }
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-            if (media < 0 || state < 0) {
+            // extract mixin
+            if (name.startsWith(MIXIN_PREFIX)) {
+                const pos = name.indexOf(':');
+                let mixin, args;
+                if (pos < 0) {
+                    mixin = name.substr(1);
+                    args = [];
+                }
+                else {
+                    mixin = name.substr(1, pos - 1);
+                    args = name.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
+                }
+                if (stack.indexOf(mixin) >= 0) {
+                    stack.push(mixin);
+                    throw new Error('Recursive mixin detected: ' + stack.join('->'));
+                }
+                stack.push(mixin);
+                entries.push(...this.getResolvedProperties(resolveMixin(this.settings, mixin, args), stack));
+                stack.pop();
                 continue;
             }
-            let properties = m.property;
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-                if (typeof properties === 'function') {
-                    properties = properties(value);
-                }
-            }
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-                if (name < 0) {
-                    continue;
-                }
-                const scope = m.scope || '';
-                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-                const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
-                yield {
-                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + internalProperty,
-                    entry: HASH_CLASS_PREFIX + '#' + hash,
-                };
-            }
+            entries.push(name);
         }
+        return entries;
     }
     generateCSS(info) {
         const { tracker, mediaSettings, desktopFirst, style } = this;

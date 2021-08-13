@@ -15,9 +15,10 @@
  */
 
 import {ALIASES, DEFAULT_VALUES, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
-import {HASH_VAR_PREFIX, PROPERTY_REGEX, HASH_CLASS_PREFIX} from "./helpers";
+import {HASH_VAR_PREFIX, PROPERTY_REGEX, HASH_CLASS_PREFIX, trim} from "./helpers";
 import {Root} from "./Root";
 import type {UserSettings} from "./helpers";
+import {resolveMixin} from "./mixins";
 
 type PropertyInfo = {
     entry: string,
@@ -32,9 +33,20 @@ type PropertyInfo = {
     rank: number
 };
 
+type AssemblerEntry = {
+    n: string, //name
+    p: string, //property
+    e: string, //class|entry
+}
 
 const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
 const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
+const SPLIT_REGEX = /(?<!\\);/;
+const MIXIN_PREFIX = '^';
+
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
 
 export default class StyleHandler {
     readonly style: CSSStyleSheet;
@@ -61,30 +73,29 @@ export default class StyleHandler {
         return this.settings;
     }
 
-    handleStyleChange(element: HTMLElement, oldContent: string|null, content: string|null): void {
+    handleStyleChange(element: HTMLElement, content: string|null, old: AssemblerEntry[]): AssemblerEntry[] {
 
         if (content === null) {
-            return this.handleStyleRemoved(element, oldContent);
+            return this.handleStyleRemoved(element, old);
         }
 
         const newEntries = this.getStyleEntries(content);
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const assemblerEntries: AssemblerEntry[] = [];
 
         // remove old entries
-        if (oldContent !== null) {
-            for (const {name, property, entry} of this.getStyleProperties(oldContent)) {
-                if (!newEntries.has(name)) {
-                    const index = classList.indexOf(entry);
-                    if (index >= 0) {
-                        classList.splice(index, 1);
-                    }
-                    element.style.removeProperty(property);
+        for (const {n:name, p:property, e:entry} of old) {
+            if (!newEntries.has(name)) {
+                const index = classList.indexOf(entry);
+                if (index >= 0) {
+                    classList.splice(index, 1);
                 }
+                element.style.removeProperty(property);
             }
         }
 
         for (const info of newEntries.values()) {
-            const {entry, property, hash, value} = info;
+            const {entry, property, hash, value, name} = info;
             const index = classList.indexOf(entry);
             if (index < 0) {
                 classList.push(entry);
@@ -93,16 +104,19 @@ export default class StyleHandler {
                 this.generateCSS(info);
             }
             element.style.setProperty(property, value);
+            assemblerEntries.push({e:entry, n: name, p: property});
         }
 
         element.setAttribute('class', classList.join(' '));
+
+        return assemblerEntries;
     }
 
-    handleStyleRemoved(element: HTMLElement, content: string): void {
+    handleStyleRemoved(element: HTMLElement, old: AssemblerEntry[]): AssemblerEntry[] {
 
         const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
 
-        for (const {property, entry} of this.getStyleProperties(content)) {
+        for (const {p:property, e:entry} of old) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
                 classList.splice(index, 1);
@@ -111,6 +125,8 @@ export default class StyleHandler {
         }
 
         element.setAttribute('class', classList.join(' '));
+
+        return [];
     }
 
     private extract(attr: string, value: string|string[]|null = null): PropertyInfo[] {
@@ -192,22 +208,15 @@ export default class StyleHandler {
         return result;
     }
 
-    private getStyleEntries(content: string, resolve: boolean = true): Map<string, PropertyInfo> {
+    private getStyleEntries(content: string): Map<string, PropertyInfo> {
         const entries = new Map<string, PropertyInfo>();
 
-        for (let name of content.split(';')) {
-            name = name.trim();
-            if (name === '') {
-                continue;
-            }
-
+        for (let name of this.getResolvedProperties(content)) {
             let value = null;
-
             const pos = name.indexOf(':');
-            if (pos < 0) {
-                name = name.trim();
-            } else {
-                value = resolve ? name.substr(pos + 1) : null;
+
+            if (pos >= 0) {
+                value = name.substr(pos + 1);
                 name = name.substr(0, pos).trim();
             }
 
@@ -219,64 +228,42 @@ export default class StyleHandler {
         return entries;
     }
 
-    private * getStyleProperties(content: string): Iterable<{property: string, name: string, entry: string}> {
-        const base = STATE_LIST.length;
-        const MEDIA_LIST = this.breakpoints;
-
-        for (let attr of content.split(';')) {
-            let value = null;
-            const pos = attr.indexOf(':');
-            if (pos < 0) {
-                attr = attr.trim();
-            } else {
-                value = attr.substr(pos + 1);
-                attr = attr.substr(0, pos).trim();
+    private getResolvedProperties(content: string, stack: string[] = []): string[] {
+        const entries = [];
+        for (let name of content.split(SPLIT_REGEX)) {
+            name = name.trim();
+            if (name === '') {
+                continue;
             }
+            // extract mixin
+            if (name.startsWith(MIXIN_PREFIX)) {
+                const pos = name.indexOf(':');
+                let mixin, args;
 
-            const m = PROPERTY_REGEX.exec(attr)?.groups;
+                if (pos < 0) {
+                    mixin = name.substr(1);
+                    args = [];
+                } else {
+                    mixin = name.substr(1, pos - 1);
+                    args = name.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
+                }
 
-            if (!m || !m.property) {
+                if (stack.indexOf(mixin) >= 0) {
+                    stack.push(mixin);
+                    throw new Error('Recursive mixin detected: ' + stack.join('->'));
+                }
+
+                stack.push(mixin);
+                entries.push(...this.getResolvedProperties(resolveMixin(this.settings, mixin, args), stack))
+                stack.pop();
+
                 continue;
             }
 
-            const media = MEDIA_LIST.indexOf(m.media || 'all');
-            const state = STATE_LIST.indexOf(m.state || 'normal');
-
-            if (media < 0 || state < 0) {
-                continue;
-            }
-
-            let properties: string|string[] = m.property;
-
-            if (ALIASES.hasOwnProperty(properties)) {
-                properties = ALIASES[properties];
-                if (typeof properties === 'function') {
-                    properties = (properties as (a: string|null) => string[])(value as string|null);
-                }
-            }
-
-            if (!Array.isArray(properties)) {
-                properties = [properties];
-            }
-
-            for (const property of properties) {
-                const name = PROPERTY_LIST.indexOf(property);
-
-                if (name < 0) {
-                    continue;
-                }
-
-                const scope = m.scope || '';
-                const hash = (((name * base) + media) * base + state).toString(16) + (scope ? `-${scope}` : '');
-                const internalProperty = (m.media ? m.media + '--' : '') + (scope ? scope + '__' : '') + property + (m.state ? '__' + m.state : '');
-
-                yield {
-                    name: (m.media ? m.media + '|' : '') + (scope ? scope + '!' : '') + property + (m.state ? '.' + m.state : ''),
-                    property: HASH_VAR_PREFIX + internalProperty,
-                    entry: HASH_CLASS_PREFIX + '#' + hash,
-                };
-            }
+            entries.push(name);
         }
+
+        return entries;
     }
 
     private generateCSS(info: PropertyInfo): void {

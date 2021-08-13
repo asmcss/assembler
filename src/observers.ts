@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import {parseApplyAttribute} from "./mixins";
 import StyleHandler from "./StyleHandler";
 
 let _documentObserver:MutationObserver = null;
 let _elementObserver:MutationObserver = null;
 let _shadowRootObserver:MutationObserver = null;
-const observedElements = new WeakMap<HTMLElement, string|null>();
+const observedElements = new WeakMap<HTMLElement, any[]>();
 
 export function observeDocument(document: Document, handler: StyleHandler): void {
     if (_documentObserver === null) {
@@ -43,15 +42,11 @@ function observeElement(element: Element, handler: StyleHandler): void {
         _elementObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
             for (const mutation of mutations) {
                 const target = mutation.target as HTMLElement;
-                const newValue = target.getAttribute(mutation.attributeName);
-                switch (mutation.attributeName) {
-                    case handler.userSettings.xStyleAttribute:
-                        whenStyleChanged(handler, target, mutation.oldValue, newValue);
-                        break;
-                    case handler.userSettings.xApplyAttribute:
-                        whenApplyChanged(handler, target, newValue);
-                        break;
-                }
+                observedElements.set(target, handler.handleStyleChange(
+                    target,
+                    target.getAttribute(mutation.attributeName),
+                    observedElements.get(target)
+                ));
             }
         });
     }
@@ -59,7 +54,7 @@ function observeElement(element: Element, handler: StyleHandler): void {
         attributes: true,
         attributeOldValue: true,
         childList: true,
-        attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
+        attributeFilter: [handler.userSettings.xStyleAttribute],
     });
 }
 
@@ -83,78 +78,12 @@ function observe(element: HTMLElement, handler: StyleHandler): void {
     if (observedElements.has(element)) {
         return;
     }
-
-    observedElements.set(element, null);
-
     const style = element.attributes.getNamedItem(handler.userSettings.xStyleAttribute);
-    const apply = element.attributes.getNamedItem(handler.userSettings.xApplyAttribute);
-
-    let content = '';
-
-    if (apply) {
-        content = parseApplyAttribute(handler.userSettings, apply.value);
-        if (content !== '') {
-            observedElements.set(element, content);
-            content += ';';
-        }
-    }
-
-    if (style) {
-        content += style.value;
-    }
-
-    if (content !== '') {
-        handler.handleStyleChange(element, null, content);
-    }
+    observedElements.set(element, style ? handler.handleStyleChange(element, style.value, []) : []);
 
     observeElement(element, handler);
 
     for (let child = element.firstElementChild; child != null; child = child.nextElementSibling) {
         observe(child as HTMLElement, handler);
     }
-}
-
-function whenApplyChanged(handler: StyleHandler, element: HTMLElement, newApply: string | null): void {
-    let prevApply = observedElements.get(element) || null;
-
-    if (newApply != null) {
-        newApply = parseApplyAttribute(handler.userSettings, newApply);
-    }
-
-    observedElements.set(element, newApply);
-
-    if (element.hasAttribute(handler.userSettings.xStyleAttribute)) {
-        const style = element.getAttribute(handler.userSettings.xStyleAttribute);
-        if (prevApply == null) {
-            prevApply = style;
-        } else {
-            prevApply += ';' + style;
-        }
-        if (newApply == null) {
-            newApply = style;
-        } else {
-            newApply += ';' + style;
-        }
-    }
-
-    handler.handleStyleChange(element, prevApply, newApply);
-}
-
-function whenStyleChanged(handler: StyleHandler, element: HTMLElement, prevValue: string|null, newValue: string | null) {
-    const apply = observedElements.get(element) || null;
-
-    if (apply != null) {
-        if (prevValue == null) {
-            prevValue = apply;
-        } else {
-            prevValue = apply + ';' + prevValue;
-        }
-        if (newValue == null) {
-            newValue = apply;
-        } else {
-            newValue = apply + ';' + newValue;
-        }
-    }
-
-    handler.handleStyleChange(element, prevValue, newValue);
 }
