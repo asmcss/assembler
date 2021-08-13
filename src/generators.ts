@@ -16,7 +16,8 @@
 
 import {PROPERTY_LIST, STATE_LIST, PROPERTY_VARIANTS} from "./list";
 import {generateRootVariables} from "./variables";
-import {UserSettings, HASH_VAR_PREFIX, HASH_CLASS_PREFIX} from "./helpers";
+import {HASH_VAR_PREFIX, HASH_CLASS_PREFIX} from "./helpers";
+import type {UserSettings} from "./helpers";
 
 type GeneratedStyles = {content: string, tracker: Set<string>};
 

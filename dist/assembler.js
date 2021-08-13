@@ -694,43 +694,40 @@
             xApplyAttribute,
         };
     }
-    function style(...styles) {
-        let str = [];
-        for (const item of styles) {
-            if (typeof item === 'string') {
-                str.push(item.trim());
-            }
-            else if (Array.isArray(item)) {
-                str.push(style(...item));
-            }
-            else {
-                for (const key in item) {
-                    const itemValue = item[key];
-                    if (itemValue === undefined) {
-                        continue;
-                    }
-                    const property = key.replace(regex, '$1-$2').toLowerCase();
-                    if (itemValue === null) {
-                        str.push(property);
-                    }
-                    else {
-                        str.push(property + ':' + itemValue);
-                    }
-                }
-            }
+    function style(item) {
+        if (typeof item === 'string') {
+            return item.trim();
         }
-        return str.join('; ');
+        if (Array.isArray(item)) {
+            return item.map(style).join(';');
+        }
+        const list = [];
+        for (const key in item) {
+            const value = item[key];
+            if (value === undefined) {
+                continue;
+            }
+            const property = key.replace(regex, '$1-$2').toLowerCase();
+            list.push(value === null ? property : (property + ':' + value));
+        }
+        return list.join(';');
     }
     function getStringItemList(value, unique = true) {
         const items = value
             .replace(/[,;]/g, ' ')
             .split(/\s\s*/g)
-            .map(v => v.trim())
-            .filter(v => v !== '');
-        if (unique) {
-            return items.filter((value, index, self) => self.indexOf(value) === index);
-        }
-        return items;
+            .map(trim)
+            .filter(nonEmptyString);
+        return unique ? items.filter(uniqueItems) : items;
+    }
+    function trim(value) {
+        return value.trim();
+    }
+    function nonEmptyString(value) {
+        return value !== '';
+    }
+    function uniqueItems(value, index, self) {
+        return self.indexOf(value) === index;
     }
 
     /*
@@ -905,13 +902,11 @@
             if (this.cache.has(property)) {
                 return this.cache.get(property);
             }
-            const key = property;
-            property = '--' + property;
-            let value = this.getPropertyValueFormComputedStyles(property).trim();
+            let value = this.getPropertyValueFormComputedStyles('--' + property).trim();
             if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.substring(1, value.length - 1).trim();
             }
-            this.cache.set(key, value);
+            this.cache.set(property, value);
             return value;
         }
     }
@@ -933,42 +928,28 @@
      * limitations under the License.
      */
     const mixinRepository = new Map();
-    const MIXIN_ARGS_REGEX = /\$\{([0-9]+)(?:=([^}]+))?}/g;
+    const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
     const defaultMixinHandler = (name, ...args) => {
         return Root.getPropertyValue(name + '--mixin')
-            .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => {
-            return args[parseInt(arg)] || fallback || '';
-        });
+            .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
     };
-    mixinRepository.set('mixin', function (settings, ...names) {
-        return names
-            .map(name => Root.getPropertyValue(name + '--mixin'))
-            .filter(v => v !== '')
-            .join(';');
+    mixinRepository.set('space-x', function (_, space, right) {
+        return right === 'true' ? `sibling!mr:${space || '0'}` : `sibling!ml:${space || '0'}`;
     });
-    mixinRepository.set('space-x', function (settings, ...args) {
-        const space = args[0] || '0';
-        if (args[1] === 'true')
-            return `sibling!mr:${space}`;
-        return `sibling!ml:${space}`;
+    mixinRepository.set('space-y', function (_, space, bottom) {
+        return bottom === 'true' ? `sibling!mb:${space || '0'}` : `sibling!mt:${space || '0'}`;
     });
-    mixinRepository.set('space-y', function (settings, ...args) {
-        const space = args[0] || '0';
-        if (args[1] === 'true')
-            return `sibling!mb:${space}`;
-        return `sibling!mt:${space}`;
-    });
-    mixinRepository.set('grid', function (settings, ...args) {
+    mixinRepository.set('grid', function () {
         return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
     });
-    mixinRepository.set('stack', function (settings, ...args) {
+    mixinRepository.set('stack', function () {
         return `grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); 
             grid-template-areas:"stackarea"; l1!grid-area:stackarea; l1!z:0; w:100%; h:100%`;
     });
-    mixinRepository.set('sr-only', function (settings, ...args) {
+    mixinRepository.set('sr-only', function () {
         return 'absolute; w:1px; h:1px; p:0; m:-1px; bw:0; overflow:hidden; clip:rect(0, 0, 0, 0); left:-9999px';
     });
-    mixinRepository.set('container', function (settings, ...args) {
+    mixinRepository.set('container', function (settings) {
         if (settings.desktopFirst) {
             return `px: 1rem; mx:auto; max-w:@breakpoint-lg; lg|max-w:@breakpoint-md; md|max-w:@breakpoint-sm; sm|max-w:@breakpoint-xs; xs|max-w:100%`;
         }
@@ -981,14 +962,13 @@
         const collection = [];
         for (const { name, args } of extractFunctions(value)) {
             if (mixinRepository.has(name)) {
-                const callback = mixinRepository.get(name);
-                collection.push(callback(settings, ...args));
+                collection.push(style(mixinRepository.get(name)(settings, ...args)));
             }
             else {
-                collection.push(defaultMixinHandler(name, ...args));
+                collection.push(style(defaultMixinHandler(name, ...args)));
             }
         }
-        return style(collection);
+        return collection.join(';');
     }
     function registerMixin(name, callback) {
         mixinRepository.set(name, callback);
@@ -1008,7 +988,7 @@
             }
             else {
                 const name = userFunction.substr(0, pos);
-                const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
+                const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
                 yield { name, args };
             }
         }
@@ -1411,8 +1391,8 @@
                 style.insertRule(rule, this.padding + ruleIndex);
             }
             catch (_a) {
-                console.log("Unsupported rule:", rule);
                 this.rules.splice(ruleIndex, 1);
+                console.warn("Unsupported rule:", rule);
             }
         }
         getRuleIndex(rank) {
