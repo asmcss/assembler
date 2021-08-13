@@ -22,7 +22,7 @@ let _elementObserver:MutationObserver = null;
 let _shadowRootObserver:MutationObserver = null;
 const observedElements = new WeakMap<HTMLElement, string|null>();
 
-export function observeDocument(document: Document, handler: StyleHandler) {
+export function observeDocument(document: Document, handler: StyleHandler): void {
     if (_documentObserver === null) {
         _documentObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
             for (let i = 0, l = mutations.length; i < l; i++) {
@@ -38,7 +38,7 @@ export function observeDocument(document: Document, handler: StyleHandler) {
     _documentObserver.observe(document, {childList: true, subtree: true});
 }
 
-function observeElement(element: Element, handler: StyleHandler) {
+function observeElement(element: Element, handler: StyleHandler): void {
     if (_elementObserver === null) {
         _elementObserver = new MutationObserver(function (mutations: MutationRecord[]): void {
             for (const mutation of mutations) {

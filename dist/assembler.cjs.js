@@ -692,43 +692,40 @@ function getUserSettings(dataset) {
         xApplyAttribute,
     };
 }
-function style(...styles) {
-    let str = [];
-    for (const item of styles) {
-        if (typeof item === 'string') {
-            str.push(item.trim());
-        }
-        else if (Array.isArray(item)) {
-            str.push(style(...item));
-        }
-        else {
-            for (const key in item) {
-                const itemValue = item[key];
-                if (itemValue === undefined) {
-                    continue;
-                }
-                const property = key.replace(regex, '$1-$2').toLowerCase();
-                if (itemValue === null) {
-                    str.push(property);
-                }
-                else {
-                    str.push(property + ':' + itemValue);
-                }
-            }
-        }
+function style(item) {
+    if (typeof item === 'string') {
+        return item.trim();
     }
-    return str.join('; ');
+    if (Array.isArray(item)) {
+        return item.map(style).join(';');
+    }
+    const list = [];
+    for (const key in item) {
+        const value = item[key];
+        if (value === undefined) {
+            continue;
+        }
+        const property = key.replace(regex, '$1-$2').toLowerCase();
+        list.push(value === null ? property : (property + ':' + value));
+    }
+    return list.join(';');
 }
 function getStringItemList(value, unique = true) {
     const items = value
         .replace(/[,;]/g, ' ')
         .split(/\s\s*/g)
-        .map(v => v.trim())
-        .filter(v => v !== '');
-    if (unique) {
-        return items.filter((value, index, self) => self.indexOf(value) === index);
-    }
-    return items;
+        .map(trim)
+        .filter(nonEmptyString);
+    return unique ? items.filter(uniqueItems) : items;
+}
+function trim(value) {
+    return value.trim();
+}
+function nonEmptyString(value) {
+    return value !== '';
+}
+function uniqueItems(value, index, self) {
+    return self.indexOf(value) === index;
 }
 
 /*
@@ -903,13 +900,11 @@ class RootClass {
         if (this.cache.has(property)) {
             return this.cache.get(property);
         }
-        const key = property;
-        property = '--' + property;
-        let value = this.getPropertyValueFormComputedStyles(property).trim();
+        let value = this.getPropertyValueFormComputedStyles('--' + property).trim();
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1).trim();
         }
-        this.cache.set(key, value);
+        this.cache.set(property, value);
         return value;
     }
 }
@@ -931,42 +926,28 @@ const Root = new RootClass();
  * limitations under the License.
  */
 const mixinRepository = new Map();
-const MIXIN_ARGS_REGEX = /\$\{([0-9]+)(?:=([^}]+))?}/g;
+const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
 const defaultMixinHandler = (name, ...args) => {
     return Root.getPropertyValue(name + '--mixin')
-        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => {
-        return args[parseInt(arg)] || fallback || '';
-    });
+        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
-mixinRepository.set('mixin', function (settings, ...names) {
-    return names
-        .map(name => Root.getPropertyValue(name + '--mixin'))
-        .filter(v => v !== '')
-        .join(';');
+mixinRepository.set('space-x', function (_, space, right) {
+    return right === 'true' ? `sibling!mr:${space || '0'}` : `sibling!ml:${space || '0'}`;
 });
-mixinRepository.set('space-x', function (settings, ...args) {
-    const space = args[0] || '0';
-    if (args[1] === 'true')
-        return `sibling!mr:${space}`;
-    return `sibling!ml:${space}`;
+mixinRepository.set('space-y', function (_, space, bottom) {
+    return bottom === 'true' ? `sibling!mb:${space || '0'}` : `sibling!mt:${space || '0'}`;
 });
-mixinRepository.set('space-y', function (settings, ...args) {
-    const space = args[0] || '0';
-    if (args[1] === 'true')
-        return `sibling!mb:${space}`;
-    return `sibling!mt:${space}`;
-});
-mixinRepository.set('grid', function (settings, ...args) {
+mixinRepository.set('grid', function () {
     return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
 });
-mixinRepository.set('stack', function (settings, ...args) {
+mixinRepository.set('stack', function () {
     return `grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); 
             grid-template-areas:"stackarea"; l1!grid-area:stackarea; l1!z:0; w:100%; h:100%`;
 });
-mixinRepository.set('sr-only', function (settings, ...args) {
+mixinRepository.set('sr-only', function () {
     return 'absolute; w:1px; h:1px; p:0; m:-1px; bw:0; overflow:hidden; clip:rect(0, 0, 0, 0); left:-9999px';
 });
-mixinRepository.set('container', function (settings, ...args) {
+mixinRepository.set('container', function (settings) {
     if (settings.desktopFirst) {
         return `px: 1rem; mx:auto; max-w:@breakpoint-lg; lg|max-w:@breakpoint-md; md|max-w:@breakpoint-sm; sm|max-w:@breakpoint-xs; xs|max-w:100%`;
     }
@@ -979,14 +960,13 @@ function parseApplyAttribute(settings, value) {
     const collection = [];
     for (const { name, args } of extractFunctions(value)) {
         if (mixinRepository.has(name)) {
-            const callback = mixinRepository.get(name);
-            collection.push(callback(settings, ...args));
+            collection.push(style(mixinRepository.get(name)(settings, ...args)));
         }
         else {
-            collection.push(defaultMixinHandler(name, ...args));
+            collection.push(style(defaultMixinHandler(name, ...args)));
         }
     }
-    return style(collection);
+    return collection.join(';');
 }
 function registerMixin(name, callback) {
     mixinRepository.set(name, callback);
@@ -1006,7 +986,7 @@ function* extractFunctions(value) {
         }
         else {
             const name = userFunction.substr(0, pos);
-            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
+            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
             yield { name, args };
         }
     }
@@ -1029,7 +1009,6 @@ function* extractFunctions(value) {
  */
 let _documentObserver = null;
 let _elementObserver = null;
-let _shadowRootObserver = null;
 const observedElements = new WeakMap();
 function observeDocument(document, handler) {
     if (_documentObserver === null) {
@@ -1069,21 +1048,6 @@ function observeElement(element, handler) {
         childList: true,
         attributeFilter: [handler.userSettings.xStyleAttribute, handler.userSettings.xApplyAttribute],
     });
-}
-function observeShadow(shadow, handler) {
-    if (_shadowRootObserver === null) {
-        _shadowRootObserver = new MutationObserver(function (mutations) {
-            for (let i = 0, l = mutations.length; i < l; i++) {
-                const nodes = mutations[i].addedNodes;
-                for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i] instanceof HTMLElement) {
-                        observe(nodes[i], handler);
-                    }
-                }
-            }
-        });
-    }
-    _shadowRootObserver.observe(shadow, { childList: true, subtree: true });
 }
 function observe(element, handler) {
     if (observedElements.has(element)) {
@@ -1422,13 +1386,11 @@ class StyleHandler {
         const ruleIndex = this.getRuleIndex(rank);
         this.rules.splice(ruleIndex, 0, rank);
         try {
-            console.log(style.cssRules.length, this.padding);
             style.insertRule(rule, this.padding + ruleIndex);
         }
-        catch (e) {
-            console.log("Unsupported rule1:", rule, ruleIndex);
-            console.log(e);
+        catch (_a) {
             this.rules.splice(ruleIndex, 1);
+            console.warn("Unsupported rule:", rule);
         }
     }
     getRuleIndex(rank) {
@@ -1457,18 +1419,14 @@ class StyleHandler {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-let styleHandler = null;
-let supportsConstructable = true;
-let settings = null;
-const observedShadowRoots = new WeakMap();
 function init(options) {
-    settings = getUserSettings(options || document.currentScript.dataset);
+    const settings = getUserSettings(options || document.currentScript.dataset);
     if (!settings.enabled) {
         return false;
     }
     let tracker;
     let stylesheet;
-    if (settings.constructable && document.adoptedStyleSheets && Object.isFrozen(document.adoptedStyleSheets)) {
+    if (settings.constructable && document.adoptedStyleSheets) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             const generated = generateStyles(settings);
@@ -1479,10 +1437,9 @@ function init(options) {
             tracker = new Set();
             stylesheet.replaceSync(generateRootVariables(settings));
         }
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, stylesheet];
+        document.adoptedStyleSheets = [stylesheet];
     }
     else {
-        supportsConstructable = false;
         const style = document.createElement("style");
         const generated = generateStyles(settings);
         tracker = generated.tracker;
@@ -1491,30 +1448,13 @@ function init(options) {
         document.currentScript.parentElement.insertBefore(style, document.currentScript);
         stylesheet = style.sheet;
     }
-    styleHandler = new StyleHandler(settings, stylesheet, tracker);
-    observeDocument(document, styleHandler);
-    return true;
-}
-function handleShadow(shadowRoot) {
-    if (styleHandler === null) {
-        init();
-    }
-    if (!supportsConstructable || !shadowRoot.adoptedStyleSheets || !Object.isFrozen(shadowRoot.adoptedStyleSheets)) {
-        return false;
-    }
-    if (observedShadowRoots.has(shadowRoot)) {
-        return true;
-    }
-    observedShadowRoots.set(shadowRoot, true);
-    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
-    observeShadow(shadowRoot, styleHandler);
+    observeDocument(document, new StyleHandler(settings, stylesheet, tracker));
     return true;
 }
 if (typeof window !== 'undefined') {
     init();
 }
 
-exports.handleShadow = handleShadow;
 exports.init = init;
 exports.registerMixin = registerMixin;
 exports.style = style;

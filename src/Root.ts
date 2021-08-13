@@ -91,15 +91,14 @@ class RootClass {
             return this.cache.get(property);
         }
 
-        const key = property;
-        property = '--' + property;
-        let value = this.getPropertyValueFormComputedStyles(property).trim();
+        let value = this.getPropertyValueFormComputedStyles('--' + property).trim();
 
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1).trim();
         }
 
-        this.cache.set(key, value);
+        this.cache.set(property, value);
+
         return value;
     }
 }

@@ -1,11 +1,11 @@
-import { UserSettings } from "./helpers";
+import type { UserSettings } from "./helpers";
 export default class StyleHandler {
     readonly style: CSSStyleSheet;
     private readonly settings;
     private tracker;
     private mediaSettings;
     private desktopFirst;
-    private breakpoints;
+    private readonly breakpoints;
     private rules;
     private readonly padding;
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);
