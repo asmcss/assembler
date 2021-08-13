@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {style, trim} from "./helpers";
+import {style} from "./helpers";
 import {Root} from "./Root";
 import type {UserSettings} from "./helpers";
 
-type UserFunction = {name: string, args: string[]};
 type UserFunctionCallbackResult = {[key: string]: string}|string;
 type UserFunctionCallback =
     (() => UserFunctionCallbackResult) |
@@ -27,7 +26,7 @@ type UserFunctionCallback =
 const mixinRepository: Map<string, UserFunctionCallback> = new Map<string, UserFunctionCallback>();
 const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
 
-const defaultMixinHandler = (name: string, ...args: string[]): string => {
+const defaultMixinHandler = (name: string, args: string[]): string => {
     return Root.getPropertyValue(name + '--mixin')
         .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
@@ -60,44 +59,14 @@ mixinRepository.set('container', function (settings: UserSettings): string {
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 
-export function parseApplyAttribute(settings: UserSettings, value: string|null): string|null {
-    if (value == null || value === '') {
-        return null;
+export function resolveMixin(settings: UserSettings, name: string, args: string[]): string {
+    if (mixinRepository.has(name)) {
+        return style(mixinRepository.get(name)(settings, ...args));
     }
 
-    const collection = [];
-
-    for (const {name, args} of extractFunctions(value)) {
-        if (mixinRepository.has(name)) {
-            collection.push(style(mixinRepository.get(name)(settings, ...args)));
-        } else {
-            collection.push(style(defaultMixinHandler(name, ...args)));
-        }
-    }
-
-    return collection.join(';');
+    return style(defaultMixinHandler(name, args));
 }
 
 export function registerMixin(name: string, callback: UserFunctionCallback): void {
     mixinRepository.set(name, callback);
-}
-
-// do not match comma inside parenthesis
-// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
-const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
-function* extractFunctions(value: string): Iterable<UserFunction> {
-    for (let userFunction of value.split(';')) {
-        userFunction = userFunction.trim();
-        if (userFunction === '') {
-            continue;
-        }
-        const pos = userFunction.indexOf(':');
-        if (pos === -1) {
-            yield {name: userFunction, args: []};
-        } else {
-            const name = userFunction.substr(0, pos);
-            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
-            yield {name, args};
-        }
-    }
 }
