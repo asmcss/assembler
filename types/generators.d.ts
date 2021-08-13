@@ -1,4 +1,4 @@
-import { UserSettings } from "./helpers";
+import type { UserSettings } from "./helpers";
 declare type GeneratedStyles = {
     content: string;
     tracker: Set<string>;

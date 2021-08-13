@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {UserSettings} from "./helpers";
+import type {UserSettings} from "./helpers";
 
 const ELEVATION_UMBRA = [
     "0px 0px 0px 0px", "0px 2px 1px -1px", "0px 3px 1px -2px", "0px 3px 3px -2px", "0px 2px 4px -1px",

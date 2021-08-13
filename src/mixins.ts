@@ -14,54 +14,46 @@
  * limitations under the License.
  */
 
-import {style, UserSettings} from "./helpers";
+import {style, trim} from "./helpers";
 import {Root} from "./Root";
+import type {UserSettings} from "./helpers";
 
 type UserFunction = {name: string, args: string[]};
-type UserFunctionCallback = (settings: UserSettings, ...args: string[]) => {[key: string]: string}|string;
+type UserFunctionCallbackResult = {[key: string]: string}|string;
+type UserFunctionCallback =
+    (() => UserFunctionCallbackResult) |
+    ((settings: UserSettings) => UserFunctionCallbackResult) |
+    ((settings: UserSettings, ...args: string[]) => UserFunctionCallbackResult);
 const mixinRepository: Map<string, UserFunctionCallback> = new Map<string, UserFunctionCallback>();
-const MIXIN_ARGS_REGEX = /\$\{([0-9]+)(?:=([^}]+))?}/g;
+const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
 
 const defaultMixinHandler = (name: string, ...args: string[]): string => {
     return Root.getPropertyValue(name + '--mixin')
-        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => {
-            return args[parseInt(arg)] || fallback || '';
-        });
+        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
 
-mixinRepository.set('mixin', function (settings: UserSettings, ...names: string[]): string {
-    return names
-        .map(name => Root.getPropertyValue(name + '--mixin'))
-        .filter(v => v !== '')
-        .join(';');
+mixinRepository.set('space-x', function (_: UserSettings, space?: string, right?: string): string {
+    return right === 'true' ? `sibling!mr:${space || '0'}` : `sibling!ml:${space || '0'}`;
 });
 
-mixinRepository.set('space-x', function (settings: UserSettings, ...args: string[]): string {
-    const space = args[0] || '0';
-    if (args[1] === 'true') return `sibling!mr:${space}`;
-    return `sibling!ml:${space}`;
+mixinRepository.set('space-y', function (_: UserSettings, space?: string, bottom?: string): string {
+    return bottom === 'true' ? `sibling!mb:${space || '0'}` : `sibling!mt:${space || '0'}`;
 });
 
-mixinRepository.set('space-y', function (settings: UserSettings, ...args: string[]): string {
-    const space = args[0] || '0';
-    if (args[1] === 'true') return `sibling!mb:${space}`;
-    return `sibling!mt:${space}`;
-});
-
-mixinRepository.set('grid', function (settings: UserSettings, ...args: string[]): string {
+mixinRepository.set('grid', function (): string {
     return 'grid; l1!wb:break-all; l2!max-w:100%; child!justify-self:normal; child!align-self:normal';
 });
 
-mixinRepository.set('stack', function (settings: UserSettings, ...args: string[]): string {
+mixinRepository.set('stack', function (): string {
     return `grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); 
             grid-template-areas:"stackarea"; l1!grid-area:stackarea; l1!z:0; w:100%; h:100%`;
 });
 
-mixinRepository.set('sr-only', function (settings: UserSettings, ...args: string[]): string {
+mixinRepository.set('sr-only', function (): string {
     return 'absolute; w:1px; h:1px; p:0; m:-1px; bw:0; overflow:hidden; clip:rect(0, 0, 0, 0); left:-9999px';
 });
 
-mixinRepository.set('container', function (settings: UserSettings, ...args: string[]): string {
+mixinRepository.set('container', function (settings: UserSettings): string {
     if (settings.desktopFirst) {
         return `px: 1rem; mx:auto; max-w:@breakpoint-lg; lg|max-w:@breakpoint-md; md|max-w:@breakpoint-sm; sm|max-w:@breakpoint-xs; xs|max-w:100%`;
     }
@@ -72,19 +64,21 @@ export function parseApplyAttribute(settings: UserSettings, value: string|null):
     if (value == null || value === '') {
         return null;
     }
+
     const collection = [];
+
     for (const {name, args} of extractFunctions(value)) {
         if (mixinRepository.has(name)) {
-            const callback = mixinRepository.get(name);
-            collection.push(callback(settings, ...args));
+            collection.push(style(mixinRepository.get(name)(settings, ...args)));
         } else {
-            collection.push(defaultMixinHandler(name, ...args));
+            collection.push(style(defaultMixinHandler(name, ...args)));
         }
     }
-    return style(collection);
+
+    return collection.join(';');
 }
 
-export function registerMixin(name: string, callback: UserFunctionCallback) {
+export function registerMixin(name: string, callback: UserFunctionCallback): void {
     mixinRepository.set(name, callback);
 }
 
@@ -102,7 +96,7 @@ function* extractFunctions(value: string): Iterable<UserFunction> {
             yield {name: userFunction, args: []};
         } else {
             const name = userFunction.substr(0, pos);
-            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(v => v.trim());
+            const args = userFunction.substr(pos + 1).split(COMMA_DELIMITED).map(trim);
             yield {name, args};
         }
     }

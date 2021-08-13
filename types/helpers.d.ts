@@ -27,5 +27,8 @@ export declare const PROPERTY_REGEX: RegExp;
 export declare function getUserSettings(dataset: {
     [key: string]: string;
 }): UserSettings;
-export declare function style(...styles: (StyleType | StyleType[])[]): string;
+export declare function style(item: StyleType | StyleType[]): string;
+export declare function trim(value: string): string;
+export declare function nonEmptyString(value: string): boolean;
+export declare function uniqueItems(value: any, index: number, self: any[]): boolean;
 export {};

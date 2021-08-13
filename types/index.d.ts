@@ -1,6 +1,5 @@
-import { style } from "./helpers";
 export { registerMixin } from "./mixins";
-export { style };
+export { style } from "./helpers";
 declare global {
     interface Document {
         adoptedStyleSheets: CSSStyleSheet[];

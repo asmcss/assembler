@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {ALIASES, PROPERTY_LIST, STATE_LIST} from "./list";
-
 export type UserSettings = {
     enabled: boolean,
     generate: boolean,
@@ -104,44 +102,47 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     };
 }
 
-export function style(...styles: (StyleType|StyleType[])[]): string {
-    let str = [];
-
-
-    for (const item of styles) {
-        if (typeof item === 'string') {
-            str.push(item.trim());
-        } else if (Array.isArray(item)) {
-            str.push(style(...item));
-        } else {
-            for (const key in item) {
-                const itemValue = item[key];
-                if (itemValue === undefined) {
-                    continue;
-                }
-                const property = key.replace(regex, '$1-$2').toLowerCase();
-                if (itemValue === null) {
-                    str.push(property);
-                } else {
-                    str.push(property + ':' + itemValue);
-                }
-            }
-        }
+export function style(item: StyleType|StyleType[]): string {
+    if (typeof item === 'string') {
+        return item.trim();
     }
 
-    return str.join('; ');
+    if (Array.isArray(item)) {
+        return item.map(style).join(';');
+    }
+
+    const list = [];
+
+    for (const key in item) {
+        const value = item[key];
+        if (value === undefined) {
+            continue;
+        }
+        const property = key.replace(regex, '$1-$2').toLowerCase();
+        list.push(value === null ? property : (property + ':' + value));
+    }
+
+    return list.join(';');
 }
 
 function getStringItemList(value: string, unique: boolean = true): string[] {
     const items = value
         .replace(/[,;]/g, ' ')
         .split(/\s\s*/g)
-        .map(v => v.trim())
-        .filter(v => v !== '');
+        .map(trim)
+        .filter(nonEmptyString);
 
-    if (unique) {
-        return items.filter((value, index, self) => self.indexOf(value) === index);
-    }
+    return unique ? items.filter(uniqueItems) : items;
+}
 
-    return items;
+export function trim(value: string): string {
+    return value.trim();
+}
+
+export function nonEmptyString(value: string): boolean {
+    return value !== '';
+}
+
+export function uniqueItems(value: any, index: number, self: any[]): boolean {
+    return self.indexOf(value) === index;
 }

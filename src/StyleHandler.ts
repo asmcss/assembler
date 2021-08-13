@@ -15,8 +15,9 @@
  */
 
 import {ALIASES, DEFAULT_VALUES, PROPERTY_LIST, PROPERTY_VARIANTS, STATE_LIST, VALUE_WRAPPER} from "./list";
-import {UserSettings, HASH_VAR_PREFIX, PROPERTY_REGEX, HASH_CLASS_PREFIX} from "./helpers";
+import {HASH_VAR_PREFIX, PROPERTY_REGEX, HASH_CLASS_PREFIX} from "./helpers";
 import {Root} from "./Root";
+import type {UserSettings} from "./helpers";
 
 type PropertyInfo = {
     entry: string,
@@ -41,7 +42,7 @@ export default class StyleHandler {
     private tracker: Set<string>;
     private mediaSettings: object;
     private desktopFirst: boolean;
-    private breakpoints: string[];
+    private readonly breakpoints: string[];
     private rules: number[];
     private readonly padding: number;
 
@@ -278,7 +279,7 @@ export default class StyleHandler {
         }
     }
 
-    private generateCSS(info: PropertyInfo) {
+    private generateCSS(info: PropertyInfo): void {
         const {tracker, mediaSettings, desktopFirst, style} = this;
         const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
@@ -340,13 +341,15 @@ export default class StyleHandler {
         if (hasMedia) {
             rule += '}'
         }
+
         const ruleIndex = this.getRuleIndex(rank);
         this.rules.splice(ruleIndex, 0, rank);
+
         try {
             style.insertRule(rule, this.padding + ruleIndex);
         } catch {
-            console.log("Unsupported rule:", rule);
             this.rules.splice(ruleIndex, 1);
+            console.warn("Unsupported rule:", rule);
         }
     }
 
