@@ -17,7 +17,7 @@ Just add a `script` tag before the `head` closing tag, and you are good to go!
     <!-- Other resources here -->
     <!-- ... -->
     <!-- Assembler CSS -->
-    <script src="https://cdn.jsdelivr.net/gh/asmcss/assembler@0.1.0/dist/assembler.min.js"></script>
+    <script src="https://unpkg.com/@asmcss/assembler@0.2.0/dist/assembler.min.js"></script>
 </head>    
 <body>
 <!-- Your code here -->
