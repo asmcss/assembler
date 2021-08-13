@@ -1469,7 +1469,7 @@ function init(options) {
     observeDocument(document, styleHandler);
     return true;
 }
-function handleShadow(shadowRoot) {
+function handleShadowRoot(shadowRoot) {
     if (styleHandler === null) {
         init();
     }
@@ -1488,4 +1488,4 @@ if (typeof window !== 'undefined') {
     init();
 }
 
-export { handleShadow, init, registerMixin, style };
+export { handleShadowRoot, init, registerMixin, style };

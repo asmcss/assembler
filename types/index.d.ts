@@ -15,4 +15,4 @@ declare global {
 export declare function init(options?: {
     [key: string]: string;
 }): boolean;
-export declare function handleShadow(shadowRoot: ShadowRoot): boolean;
+export declare function handleShadowRoot(shadowRoot: ShadowRoot): boolean;

@@ -80,7 +80,7 @@ export function init(options?: {[key: string]: string}): boolean {
     return true;
 }
 
-export function handleShadow(shadowRoot: ShadowRoot): boolean {
+export function handleShadowRoot(shadowRoot: ShadowRoot): boolean {
     if (styleHandler === null) {
         init();
     }
