@@ -1,6 +1,6 @@
 {
   "name": "@asmcss/assembler",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "dist/assembler.cjs.js",
   "module": "dist/assembler.es.js",
   "browser": "dist/assembler.js",

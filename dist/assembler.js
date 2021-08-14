@@ -1057,7 +1057,7 @@
      */
     const VAR_REGEX = /@([a-zA-Z0-9\-_]+)/g;
     const REPLACE_REGEX = /\$(selector|body|class|value|property|state|variants|var)/g;
-    const SPLIT_REGEX = /(?<!\\);/;
+    const SPLIT_REGEX = /;/;
     const MIXIN_PREFIX = '^';
     // do not match comma inside parenthesis
     // 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
