@@ -977,7 +977,9 @@
             if (this.cache.has(property)) {
                 return this.cache.get(property);
             }
-            let value = this.getPropertyValueFormComputedStyles('--' + property).trim();
+            let value = this.getPropertyValueFormComputedStyles('--' + property)
+                .replace("\\\n", "")
+                .trim();
             if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.substring(1, value.length - 1).trim();
             }
