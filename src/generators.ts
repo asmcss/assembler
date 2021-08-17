@@ -53,6 +53,11 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
     const desktopFirst = settings.desktopFirst;
     const states = settings.states;
     const tracker = new Set<string>();
+    const selectorAttribute = settings.selectorAttribute;
+    const selectorPfx = selectorAttribute === 'class'
+        ? '.' + HASH_CLASS_PREFIX + '\\#'
+        : '[' + selectorAttribute + '~="' + HASH_CLASS_PREFIX + '#' ;
+    const selectorSfx = selectorAttribute === 'class' ? '' : '"]';
 
     result.push(generateRootVariables(settings));
 
@@ -90,7 +95,7 @@ export function generateStyles(settings: UserSettings): GeneratedStyles {
                         prefix += `${variants[i]}:var(${property}) !important;`;
                     }
                 }
-                str += `.${HASH_CLASS_PREFIX}\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
+                str += `${selectorPfx + hash + selectorSfx}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
             }
         }
 

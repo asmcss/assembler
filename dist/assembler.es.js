@@ -634,6 +634,7 @@ function getUserSettings(dataset) {
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
     const desktopFirst = dataset.mode === undefined ? false : dataset.mode === 'desktop-first';
+    const selectorAttribute = dataset.selectorAttribute === undefined ? 'class' : dataset.selectorAttribute;
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -684,6 +685,7 @@ function getUserSettings(dataset) {
         breakpoints,
         media: { xs, sm, md, lg, xl },
         xStyleAttribute,
+        selectorAttribute,
     };
 }
 function style(item) {
@@ -764,6 +766,11 @@ function generateStyles(settings) {
     const desktopFirst = settings.desktopFirst;
     const states = settings.states;
     const tracker = new Set();
+    const selectorAttribute = settings.selectorAttribute;
+    const selectorPfx = selectorAttribute === 'class'
+        ? '.' + HASH_CLASS_PREFIX + '\\#'
+        : '[' + selectorAttribute + '~="' + HASH_CLASS_PREFIX + '#';
+    const selectorSfx = selectorAttribute === 'class' ? '' : '"]';
     result.push(generateRootVariables(settings));
     for (let media_index = 0, l = breakpoints.length; media_index < l; media_index++) {
         const bp = breakpoints[media_index];
@@ -794,7 +801,7 @@ function generateStyles(settings) {
                         prefix += `${variants[i]}:var(${property}) !important;`;
                     }
                 }
-                str += `.${HASH_CLASS_PREFIX}\\#${hash}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
+                str += `${selectorPfx + hash + selectorSfx}${state_index > 0 ? ':' + state : ''}{${prefix}${name}:var(${property}) !important}`;
             }
         }
         if (media_index !== 0) {
@@ -1069,6 +1076,7 @@ class StyleHandler {
         this.breakpoints = settings.breakpoints;
         this.rules = [];
         this.padding = style.cssRules.length;
+        this.selectorAttribute = settings.selectorAttribute;
     }
     get userSettings() {
         return this.settings;
@@ -1078,7 +1086,7 @@ class StyleHandler {
             return this.handleStyleRemoved(element, old);
         }
         const newEntries = this.getStyleEntries(content);
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
         const assemblerEntries = [];
         // remove old entries
         for (const { n: name, p: property, e: entry } of old) {
@@ -1102,11 +1110,11 @@ class StyleHandler {
             element.style.setProperty(property, value);
             assemblerEntries.push({ e: entry, n: name, p: property });
         }
-        element.setAttribute('class', classList.join(' '));
+        element.setAttribute(this.selectorAttribute, classList.join(' '));
         return assemblerEntries;
     }
     handleStyleRemoved(element, old) {
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
         for (const { p: property, e: entry } of old) {
             const index = classList.indexOf(entry);
             if (index >= 0) {
@@ -1114,7 +1122,7 @@ class StyleHandler {
             }
             element.style.removeProperty(property);
         }
-        element.setAttribute('class', classList.join(' '));
+        element.setAttribute(this.selectorAttribute, classList.join(' '));
         return [];
     }
     extract(attr, value = null) {
@@ -1234,6 +1242,11 @@ class StyleHandler {
         const { tracker, mediaSettings, desktopFirst, style } = this;
         const { hash, media, state, cssProperty, property, scope, rank } = info;
         const hasMedia = media !== '';
+        const selectorAttribute = this.settings.selectorAttribute;
+        const selectorPfx = selectorAttribute === 'class'
+            ? '.' + HASH_CLASS_PREFIX + '\\#'
+            : '[' + selectorAttribute + '~="' + HASH_CLASS_PREFIX + '#';
+        const selectorSfx = selectorAttribute === 'class' ? '' : '"]';
         tracker.add(hash);
         if (rank < 0) {
             return;
@@ -1261,7 +1274,7 @@ class StyleHandler {
             rule += scopeValue.replace(REPLACE_REGEX, (match, p1) => {
                 switch (p1) {
                     case "selector":
-                        return `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}`;
+                        return `${selectorPfx + hash + selectorSfx}${state ? ':' + state : ''}`;
                     case "body":
                         return prefix + cssProperty + ': var(' + property + ') !important';
                     case "variants":
@@ -1271,7 +1284,7 @@ class StyleHandler {
                     case "value":
                         return `var(${property})`;
                     case "class":
-                        return `.${HASH_CLASS_PREFIX}\\#${hash}`;
+                        return selectorPfx + hash + selectorSfx;
                     case "state":
                         return state ? ':' + state : '';
                     case "var":
@@ -1281,7 +1294,7 @@ class StyleHandler {
             });
         }
         else {
-            rule += `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+            rule += `${selectorPfx + hash + selectorSfx}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
         }
         if (hasMedia) {
             rule += '}';

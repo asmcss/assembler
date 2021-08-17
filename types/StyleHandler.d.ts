@@ -13,6 +13,7 @@ export default class StyleHandler {
     private readonly breakpoints;
     private rules;
     private readonly padding;
+    private readonly selectorAttribute;
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);
     get userSettings(): UserSettings;
     handleStyleChange(element: HTMLElement, content: string | null, old: AssemblerEntry[]): AssemblerEntry[];

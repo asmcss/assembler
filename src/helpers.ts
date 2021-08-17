@@ -26,6 +26,7 @@ export type UserSettings = {
     states: string[],
     scopes: string[],
     xStyleAttribute: string,
+    selectorAttribute: string
 };
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
@@ -39,6 +40,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const generate = dataset.generate === undefined ? false : dataset.generate === 'true';
     const constructable = dataset.constructable === undefined ? true : dataset.constructable === 'true';
     const desktopFirst = dataset.mode === undefined ? false : dataset.mode === 'desktop-first';
+    const selectorAttribute = dataset.selectorAttribute === undefined ? 'class' : dataset.selectorAttribute;
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
@@ -96,6 +98,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         breakpoints,
         media: {xs, sm, md, lg, xl},
         xStyleAttribute,
+        selectorAttribute,
     };
 }
 

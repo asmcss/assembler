@@ -57,6 +57,7 @@ export default class StyleHandler {
     private readonly breakpoints: string[];
     private rules: number[];
     private readonly padding: number;
+    private readonly selectorAttribute: string;
 
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>) {
         this.style = style;
@@ -67,6 +68,7 @@ export default class StyleHandler {
         this.breakpoints = settings.breakpoints;
         this.rules = [];
         this.padding = style.cssRules.length;
+        this.selectorAttribute = settings.selectorAttribute;
     }
 
     get userSettings(): UserSettings {
@@ -80,7 +82,7 @@ export default class StyleHandler {
         }
 
         const newEntries = this.getStyleEntries(content);
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
         const assemblerEntries: AssemblerEntry[] = [];
 
         // remove old entries
@@ -107,14 +109,14 @@ export default class StyleHandler {
             assemblerEntries.push({e:entry, n: name, p: property});
         }
 
-        element.setAttribute('class', classList.join(' '));
+        element.setAttribute(this.selectorAttribute, classList.join(' '));
 
         return assemblerEntries;
     }
 
     handleStyleRemoved(element: HTMLElement, old: AssemblerEntry[]): AssemblerEntry[] {
 
-        const classList = element.hasAttribute('class') ? element.getAttribute('class').split(' ') : [];
+        const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
 
         for (const {p:property, e:entry} of old) {
             const index = classList.indexOf(entry);
@@ -124,7 +126,7 @@ export default class StyleHandler {
             element.style.removeProperty(property);
         }
 
-        element.setAttribute('class', classList.join(' '));
+        element.setAttribute(this.selectorAttribute, classList.join(' '));
 
         return [];
     }
@@ -270,6 +272,11 @@ export default class StyleHandler {
         const {tracker, mediaSettings, desktopFirst, style} = this;
         const {hash, media, state, cssProperty, property, scope, rank} = info;
         const hasMedia = media !== '';
+        const selectorAttribute = this.settings.selectorAttribute;
+        const selectorPfx = selectorAttribute === 'class'
+                                    ? '.' + HASH_CLASS_PREFIX + '\\#'
+                                    : '[' + selectorAttribute + '~="' + HASH_CLASS_PREFIX + '#' ;
+        const selectorSfx = selectorAttribute === 'class' ? '' : '"]';
 
         tracker.add(hash);
 
@@ -303,7 +310,7 @@ export default class StyleHandler {
             rule += scopeValue.replace(REPLACE_REGEX, (match, p1) => {
                 switch (p1) {
                     case "selector":
-                        return `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}`;
+                        return `${selectorPfx + hash + selectorSfx}${state ? ':' + state : ''}`;
                     case "body":
                         return prefix + cssProperty + ': var(' + property + ') !important';
                     case "variants":
@@ -313,7 +320,7 @@ export default class StyleHandler {
                     case "value":
                         return `var(${property})`;
                     case "class":
-                        return `.${HASH_CLASS_PREFIX}\\#${hash}`;
+                        return selectorPfx + hash + selectorSfx;
                     case "state":
                         return state ? ':' + state : '';
                     case "var":
@@ -322,7 +329,7 @@ export default class StyleHandler {
                 return p1;
             });
         } else {
-            rule += `.${HASH_CLASS_PREFIX}\\#${hash}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
+            rule += `${selectorPfx + hash + selectorSfx}${state ? ':' + state : ''}{${prefix}${cssProperty}: var(${property}) !important}`;
         }
 
         if (hasMedia) {
