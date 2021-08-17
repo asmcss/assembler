@@ -914,6 +914,7 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    const ESCAPE_REGEX = /\\\n/g;
     class RootClass {
         constructor() {
             this.styles = null;
@@ -978,7 +979,7 @@
                 return this.cache.get(property);
             }
             let value = this.getPropertyValueFormComputedStyles('--' + property)
-                .replace("\\\n", "")
+                .replace(ESCAPE_REGEX, "")
                 .trim();
             if (value.startsWith('"') && value.endsWith('"')) {
                 value = value.substring(1, value.length - 1).trim();

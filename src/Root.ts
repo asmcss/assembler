@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+const ESCAPE_REGEX = /\\\n/g;
+
 class RootClass {
     private styles: CSSStyleDeclaration[] = null;
     private cache: Map<string, string> = new Map<string, string>();
@@ -92,7 +94,7 @@ class RootClass {
         }
 
         let value = this.getPropertyValueFormComputedStyles('--' + property)
-                        .replace("\\\n", "")
+                        .replace(ESCAPE_REGEX, "")
                         .trim();
 
         if (value.startsWith('"') && value.endsWith('"')) {

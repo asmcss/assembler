@@ -17,7 +17,7 @@ Just add a `script` tag before the `head` closing tag, and you are good to go!
     <!-- Other resources here -->
     <!-- ... -->
     <!-- Assembler CSS -->
-    <script src="https://unpkg.com/@asmcss/assembler@0.3.2/dist/assembler.min.js"></script>
+    <script src="https://unpkg.com/@asmcss/assembler/dist/assembler.min.js"></script>
 </head>    
 <body>
 <!-- Your code here -->
@@ -50,7 +50,7 @@ The full documentation for Assembler CSS can be found [here][documentation].
 You could also install Assembler CSS as an npm package by issuing the following command:
 
 ```shell
-npm install --save @asmcss/assembler
+npm install @asmcss/assembler
 ```
 
 Or, if you are a Yarn user
