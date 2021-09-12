@@ -1,4 +1,9 @@
-# Assembler CSS
+<hr>
+<div align=center><h1>Assembler CSS</h1></div>
+<div align=center><a href="https://asmcss.com/"><img width=600 src="https://d33wubrfki0l68.cloudfront.net/ad1ed8ef193a228e69394c846992f7a612cc0210/abc1a/assets/img/hero.png" alt="Call to action image"/></a></div>
+<div align=center><i><a href="https://asmcss.com/docs/1.x/">Docs</a> — <a href="https://twitter.com/asmcss">Twitter</a> — <a href="https://asmcss.com/docs/1.x/#usage">Installation</a></i></div>
+<div align=center><i><h4>Just-in-time CSS, unlimited possibilities</h4></i></div>
+<hr>
 
 Assembler CSS is a highly performant utility-first framework that allows you to quickly prototype and build modern 
 websites and UI components without the need to install and maintain complex software.
@@ -9,20 +14,7 @@ Incorporating Assembler CSS within your project is a trivial task.
 Just add a `script` tag before the `head` closing tag, and you are good to go!
 
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>My Page</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Other resources here -->
-    <!-- ... -->
-    <!-- Assembler CSS -->
-    <script src="https://unpkg.com/@asmcss/assembler/dist/assembler.min.js"></script>
-</head>    
-<body>
-<!-- Your code here -->
-</body>
-</html>
+<script src="https://unpkg.com/@asmcss/assembler"></script>
 ```
 
 Now you are ready to try out Assembler CSS and write your first UI component.
