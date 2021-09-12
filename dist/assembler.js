@@ -120,6 +120,7 @@
         "justify-self",
         "left",
         "letter-spacing",
+        "line-break",
         "line-clamp",
         "line-height",
         "list-style-position",
