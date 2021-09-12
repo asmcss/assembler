@@ -178,6 +178,7 @@ export const PROPERTY_LIST = [
     "white-space",
     "width",
     "word-break",
+    "writing-mode",
     "z-index",
 ];
 export const PROPERTY_VARIANTS = {
