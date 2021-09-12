@@ -4,7 +4,9 @@ export declare const PROPERTY_VARIANTS: {
     appearance: string[];
     "background-clip": string[];
     "backdrop-filter": string[];
+    "box-orient": string[];
     "column-gap": string[];
+    "line-clamp": string[];
     "user-select": string[];
     "text-fill-color": string[];
 };

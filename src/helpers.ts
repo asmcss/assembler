@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {PROPERTY_LIST, PROPERTY_VARIANTS} from "./list";
+
 export type UserSettings = {
     enabled: boolean,
     generate: boolean,
@@ -26,7 +28,8 @@ export type UserSettings = {
     states: string[],
     scopes: string[],
     xStyleAttribute: string,
-    selectorAttribute: string
+    selectorAttribute: string,
+    registeredProperties: {name: string, aliases: string[]}[],
 };
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
@@ -44,6 +47,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
     const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
+    const registeredProperties = dataset.registerProperties === undefined ? [] : getRegisteredProperties(dataset.registerProperties);
     const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
         "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
         "landscape", "portrait", "motion-reduce", "motion-safe"];
@@ -52,6 +56,16 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         const scope = dataScopes[i];
         if (scopes.indexOf(scope) < 0) {
             scopes.push(scope);
+        }
+    }
+
+    for (let i = 0, l = registeredProperties.length; i < l; i++) {
+        const prop = registeredProperties[i];
+        if (PROPERTY_LIST.indexOf(prop.name) === -1) {
+            PROPERTY_LIST.push(prop.name);
+            if (prop.aliases.length > 0) {
+                PROPERTY_VARIANTS[prop.name] = prop.aliases;
+            }
         }
     }
 
@@ -99,6 +113,7 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         media: {xs, sm, md, lg, xl},
         xStyleAttribute,
         selectorAttribute,
+        registeredProperties
     };
 }
 
@@ -133,6 +148,23 @@ function getStringItemList(value: string, unique: boolean = true): string[] {
         .filter(nonEmptyString);
 
     return unique ? items.filter(uniqueItems) : items;
+}
+
+function getRegisteredProperties(value: string): {name: string, aliases:string[]}[] {
+    return  value
+        .split(';')
+        .map(v => v.trim())
+        .filter(v => v !== '')
+        .map(v => {
+            const index = v.indexOf(':');
+            if (index < 0) {
+                return {name: v, aliases: []};
+            }
+            return {
+                name: v.substr(0, index),
+                aliases: v.substr(index + 1).split(',').map(v => v.trim()).filter(v => v !== '')
+            }
+        });
 }
 
 export function trim(value: string): string {

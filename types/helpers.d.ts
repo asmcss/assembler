@@ -17,6 +17,10 @@ export declare type UserSettings = {
     scopes: string[];
     xStyleAttribute: string;
     selectorAttribute: string;
+    registeredProperties: {
+        name: string;
+        aliases: string[];
+    }[];
 };
 declare type StyleType = string | {
     [key: string]: string;
