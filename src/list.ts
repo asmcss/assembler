@@ -117,6 +117,7 @@ export const PROPERTY_LIST = [
     "left",
     "letter-spacing",
     "line-clamp",
+    "line-break",
     "line-height",
     "list-style-position",
     "list-style-type",
