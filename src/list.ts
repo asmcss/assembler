@@ -68,6 +68,7 @@ export const PROPERTY_LIST = [
     "border-top-right-radius",
     "border-width",
     "bottom",
+    "box-orient",
     "box-shadow",
     "box-sizing",
     "clear",
@@ -115,6 +116,7 @@ export const PROPERTY_LIST = [
     "justify-self",
     "left",
     "letter-spacing",
+    "line-clamp",
     "line-height",
     "list-style-position",
     "list-style-type",
@@ -182,7 +184,9 @@ export const PROPERTY_VARIANTS = {
     "appearance": ["-webkit-appearance", "-moz-appearance"],
     "background-clip": ["-webkit-background-clip", "-moz-background-clip"],
     "backdrop-filter": ["-webkit-backdrop-filter"],
+    "box-orient": ["-webkit-box-orient"],
     "column-gap": ["-moz-column-gap"],
+    "line-clamp": ["-webkit-line-clamp"],
     "user-select": ["-webkit-user-select", "-moz-user-select"],
     "text-fill-color": ["-webkit-text-fill-color", "-moz-text-fill-color"]
 };

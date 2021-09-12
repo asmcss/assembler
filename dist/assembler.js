@@ -72,6 +72,7 @@
         "border-top-right-radius",
         "border-width",
         "bottom",
+        "box-orient",
         "box-shadow",
         "box-sizing",
         "clear",
@@ -119,6 +120,7 @@
         "justify-self",
         "left",
         "letter-spacing",
+        "line-clamp",
         "line-height",
         "list-style-position",
         "list-style-type",
@@ -186,7 +188,9 @@
         "appearance": ["-webkit-appearance", "-moz-appearance"],
         "background-clip": ["-webkit-background-clip", "-moz-background-clip"],
         "backdrop-filter": ["-webkit-backdrop-filter"],
+        "box-orient": ["-webkit-box-orient"],
         "column-gap": ["-moz-column-gap"],
+        "line-clamp": ["-webkit-line-clamp"],
         "user-select": ["-webkit-user-select", "-moz-user-select"],
         "text-fill-color": ["-webkit-text-fill-color", "-moz-text-fill-color"]
     };
@@ -644,6 +648,7 @@
         const cache = dataset.cache === undefined ? null : dataset.cache;
         const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
         const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
+        const registeredProperties = dataset.registerProperties === undefined ? [] : getRegisteredProperties(dataset.registerProperties);
         const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
             "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
             "landscape", "portrait", "motion-reduce", "motion-safe"];
@@ -651,6 +656,15 @@
             const scope = dataScopes[i];
             if (scopes.indexOf(scope) < 0) {
                 scopes.push(scope);
+            }
+        }
+        for (let i = 0, l = registeredProperties.length; i < l; i++) {
+            const prop = registeredProperties[i];
+            if (PROPERTY_LIST.indexOf(prop.name) === -1) {
+                PROPERTY_LIST.push(prop.name);
+                if (prop.aliases.length > 0) {
+                    PROPERTY_VARIANTS[prop.name] = prop.aliases;
+                }
             }
         }
         // Consider all bp
@@ -692,6 +706,7 @@
             media: { xs, sm, md, lg, xl },
             xStyleAttribute,
             selectorAttribute,
+            registeredProperties
         };
     }
     function style(item) {
@@ -719,6 +734,22 @@
             .map(trim)
             .filter(nonEmptyString);
         return unique ? items.filter(uniqueItems) : items;
+    }
+    function getRegisteredProperties(value) {
+        return value
+            .split(';')
+            .map(v => v.trim())
+            .filter(v => v !== '')
+            .map(v => {
+            const index = v.indexOf(':');
+            if (index < 0) {
+                return { name: v, aliases: [] };
+            }
+            return {
+                name: v.substr(0, index),
+                aliases: v.substr(index + 1).split(',').map(v => v.trim()).filter(v => v !== '')
+            };
+        });
     }
     function trim(value) {
         return value.trim();
