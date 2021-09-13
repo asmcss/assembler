@@ -1,6 +1,13 @@
 {
   "name": "@asmcss/assembler",
   "version": "0.5.1",
+  "keywords": [
+    "asmcss",
+    "css",
+    "front-end",
+    "framework",
+    "web"
+  ],
   "main": "dist/assembler.cjs.js",
   "module": "dist/assembler.es.js",
   "browser": "dist/assembler.js",
