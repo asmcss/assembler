@@ -27,7 +27,7 @@ const mixinRepository: Map<string, UserFunctionCallback> = new Map<string, UserF
 const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
 
 const defaultMixinHandler = (name: string, args: string[]): string => {
-    return Root.getPropertyValue(name + '--mixin')
+    return Root.getPropertyValue('--' + name + '--mixin')
         .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
 

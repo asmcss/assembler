@@ -15,6 +15,7 @@
  */
 
 import {PROPERTY_LIST, PROPERTY_VARIANTS} from "./list";
+import {Root} from "./Root";
 
 export type UserSettings = {
     enabled: boolean,
@@ -46,18 +47,9 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
     const selectorAttribute = dataset.selectorAttribute === undefined ? 'class' : dataset.selectorAttribute;
     const cache = dataset.cache === undefined ? null : dataset.cache;
     const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
-    const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
-    const registeredProperties = dataset.registerProperties === undefined ? [] : getRegisteredProperties(dataset.registerProperties);
-    const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
-        "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
-        "landscape", "portrait", "motion-reduce", "motion-safe"];
 
-    for (let i = 0, l = dataScopes.length; i < l; i++) {
-        const scope = dataScopes[i];
-        if (scopes.indexOf(scope) < 0) {
-            scopes.push(scope);
-        }
-    }
+    const registeredProperties = Root.getRegisteredProperties();
+    const scopes = Root.getRegisteredScopes();
 
     for (let i = 0, l = registeredProperties.length; i < l; i++) {
         const prop = registeredProperties[i];
