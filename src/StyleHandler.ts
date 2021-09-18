@@ -303,7 +303,7 @@ export default class StyleHandler {
         }
 
         if (scope) {
-            const scopeValue = Root.getPropertyValue(scope + '--scope')
+            const scopeValue = Root.getPropertyValue('--' + scope + '--scope');
             if (scopeValue === '') {
                 return;
             }

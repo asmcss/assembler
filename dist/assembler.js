@@ -636,6 +636,128 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    const ESCAPE_REGEX = /\\\n/g;
+    const PROPERTY_REGEX$1 = /^--([a-zA-Z0-9-_]+)--(scope|mixin|register)$/;
+    class RootClass {
+        constructor() {
+            this.cache = new Map();
+            this.scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
+                "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
+                "landscape", "portrait", "motion-reduce", "motion-safe"
+            ];
+            this.registeredProperties = [];
+            const { cache } = this;
+            const tc = '-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important;';
+            cache.set("--text-clip--scope", `$selector {${tc}}`);
+            cache.set("--l1--scope", "$selector > * {$body}");
+            cache.set("--l2--scope", "$selector > * > * {$body}");
+            cache.set("--sibling--scope", "$selector > * + * {$body}");
+            cache.set("--child--scope", "$selector > $class {$body}");
+            cache.set("--selection--scope", "$selector::selection {$body}");
+            cache.set("--placeholder--scope", "$selector::placeholder {$body}");
+            cache.set("--marker--scope", "$selector::marker {$body}");
+            cache.set("--marker-l1--scope", "$selector > *::marker {$body}");
+            cache.set("--before--scope", "$selector::before {$body}");
+            cache.set("--after--scope", "$selector::after {$body}");
+            cache.set("--even--scope", "$selector:nth-child(even) {$body}");
+            cache.set("--odd--scope", "$selector:nth-child(odd) {$body}");
+            cache.set("--first--scope", "$selector:first-child {$body}");
+            cache.set("--last--scope", "$selector:last-child {$body}");
+            cache.set("--first-letter--scope", "$selector::first-letter {$body}");
+            cache.set("--first-line--scope", "$selector::first-line {$body}");
+            cache.set("--dark--scope", "@media(prefers-color-scheme: dark) {$selector {$body}}");
+            cache.set("--light--scope", "@media(prefers-color-scheme: light) {$selector {$body}}");
+            cache.set("--landscape--scope", "@media(orientation: landscape) {$selector {$body}}");
+            cache.set("--portrait--scope", "@media(orientation: portrait) {$selector {$body}}");
+            cache.set("--motion-reduce--scope", "@media(prefers-reduced-motion: reduce) {$selector {$body}}");
+            cache.set("--motion-safe--scope", "@media(prefers-reduced-motion: no-preference) {$selector {$body}}");
+            this.initialize();
+        }
+        initialize() {
+            const { cache, scopes, registeredProperties } = this;
+            for (const style of this.getComputedStyles()) {
+                for (const property of style) {
+                    const match = PROPERTY_REGEX$1.exec(property);
+                    if (match == null) {
+                        continue;
+                    }
+                    const name = match[1];
+                    const value = this.getValue(style, property);
+                    cache.set(property, value);
+                    switch (match[2]) {
+                        case "scope":
+                            if (scopes.indexOf(name) === -1) {
+                                scopes.push(name);
+                            }
+                            break;
+                        case "register":
+                            if (value === 'true' || value === '') {
+                                registeredProperties.push({ name, aliases: [] });
+                            }
+                            else {
+                                const aliases = value.split(',').map(v => v.trim()).filter(v => v !== '');
+                                registeredProperties.push({ name, aliases });
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+        getComputedStyles() {
+            const styles = [];
+            for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
+                const styleSheet = document.styleSheets[si];
+                if (styleSheet.href !== null && styleSheet.href.indexOf(window.location.origin) !== 0) {
+                    continue;
+                }
+                if (styleSheet.href === null && styleSheet.ownerNode !== null
+                    && styleSheet.ownerNode instanceof Element && styleSheet.ownerNode.id === 'opis-assembler-css') {
+                    continue;
+                }
+                const rule = styleSheet.cssRules[0];
+                if (rule.type === CSSRule.STYLE_RULE && rule.selectorText === ':root') {
+                    styles.push(rule.style);
+                }
+            }
+            return styles;
+        }
+        getValue(style, property) {
+            let value = style.getPropertyValue(property).replace(ESCAPE_REGEX, "").trim();
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.substring(1, value.length - 1).trim();
+            }
+            return value;
+        }
+        getRegisteredScopes() {
+            return this.scopes;
+        }
+        getRegisteredProperties() {
+            return this.registeredProperties;
+        }
+        getPropertyValue(property) {
+            if (this.cache.has(property)) {
+                return this.cache.get(property);
+            }
+            return '';
+        }
+    }
+    const Root = new RootClass();
+
+    /*
+     * Copyright 2021 Zindex Software
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *    http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
     const HASH_VAR_PREFIX = '--asm-';
     const HASH_CLASS_PREFIX = 'asm';
@@ -648,17 +770,8 @@
         const selectorAttribute = dataset.selectorAttribute === undefined ? 'class' : dataset.selectorAttribute;
         const cache = dataset.cache === undefined ? null : dataset.cache;
         const cacheKey = dataset.cacheKey === undefined ? "assembler-css-cache" : dataset.cacheKey;
-        const dataScopes = dataset.scopes === undefined ? [] : getStringItemList(dataset.scopes);
-        const registeredProperties = dataset.registerProperties === undefined ? [] : getRegisteredProperties(dataset.registerProperties);
-        const scopes = ["", "text-clip", "selection", "placeholder", "before", "after", "first-letter", "first-line",
-            "l1", "l2", "marker-l1", "marker", "sibling", "child", "even", "odd", "first", "last", "dark", "light",
-            "landscape", "portrait", "motion-reduce", "motion-safe"];
-        for (let i = 0, l = dataScopes.length; i < l; i++) {
-            const scope = dataScopes[i];
-            if (scopes.indexOf(scope) < 0) {
-                scopes.push(scope);
-            }
-        }
+        const registeredProperties = Root.getRegisteredProperties();
+        const scopes = Root.getRegisteredScopes();
         for (let i = 0, l = registeredProperties.length; i < l; i++) {
             const prop = registeredProperties[i];
             if (PROPERTY_LIST.indexOf(prop.name) === -1) {
@@ -735,22 +848,6 @@
             .map(trim)
             .filter(nonEmptyString);
         return unique ? items.filter(uniqueItems) : items;
-    }
-    function getRegisteredProperties(value) {
-        return value
-            .split(';')
-            .map(v => v.trim())
-            .filter(v => v !== '')
-            .map(v => {
-            const index = v.indexOf(':');
-            if (index < 0) {
-                return { name: v, aliases: [] };
-            }
-            return {
-                name: v.substr(0, index),
-                aliases: v.substr(index + 1).split(',').map(v => v.trim()).filter(v => v !== '')
-            };
-        });
     }
     function trim(value) {
         return value.trim();
@@ -953,101 +1050,10 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    const ESCAPE_REGEX = /\\\n/g;
-    class RootClass {
-        constructor() {
-            this.styles = null;
-            this.cache = new Map();
-            const { cache } = this;
-            const tc = '-webkit-background-clip: text !important;-moz-background-clip:text !important;background-clip:text !important;';
-            cache.set("text-clip--scope", `$selector {${tc}}`);
-            cache.set("l1--scope", "$selector > * {$body}");
-            cache.set("l2--scope", "$selector > * > * {$body}");
-            cache.set("sibling--scope", "$selector > * + * {$body}");
-            cache.set("child--scope", "$selector > $class {$body}");
-            cache.set("selection--scope", "$selector::selection {$body}");
-            cache.set("placeholder--scope", "$selector::placeholder {$body}");
-            cache.set("marker--scope", "$selector::marker {$body}");
-            cache.set("marker-l1--scope", "$selector > *::marker {$body}");
-            cache.set("before--scope", "$selector::before {$body}");
-            cache.set("after--scope", "$selector::after {$body}");
-            cache.set("even--scope", "$selector:nth-child(even) {$body}");
-            cache.set("odd--scope", "$selector:nth-child(odd) {$body}");
-            cache.set("first--scope", "$selector:first-child {$body}");
-            cache.set("last--scope", "$selector:last-child {$body}");
-            cache.set("first-letter--scope", "$selector::first-letter {$body}");
-            cache.set("first-line--scope", "$selector::first-line {$body}");
-            cache.set("dark--scope", "@media(prefers-color-scheme: dark) {$selector {$body}}");
-            cache.set("light--scope", "@media(prefers-color-scheme: light) {$selector {$body}}");
-            cache.set("landscape--scope", "@media(orientation: landscape) {$selector {$body}}");
-            cache.set("portrait--scope", "@media(orientation: portrait) {$selector {$body}}");
-            cache.set("motion-reduce--scope", "@media(prefers-reduced-motion: reduce) {$selector {$body}}");
-            cache.set("motion-safe--scope", "@media(prefers-reduced-motion: no-preference) {$selector {$body}}");
-        }
-        getComputedStyles() {
-            if (this.styles === null) {
-                this.styles = [];
-                for (let si = 0, sl = document.styleSheets.length; si < sl; si++) {
-                    const styleSheet = document.styleSheets[si];
-                    if (styleSheet.href !== null && styleSheet.href.indexOf(window.location.origin) !== 0) {
-                        continue;
-                    }
-                    if (styleSheet.href === null && styleSheet.ownerNode !== null
-                        && styleSheet.ownerNode instanceof Element && styleSheet.ownerNode.id === 'opis-assembler-css') {
-                        continue;
-                    }
-                    const rule = styleSheet.cssRules[0];
-                    if (rule.type === CSSRule.STYLE_RULE && rule.selectorText === ':root') {
-                        this.styles.unshift(rule.style);
-                    }
-                }
-            }
-            return this.styles;
-        }
-        getPropertyValueFormComputedStyles(property) {
-            for (const style of this.getComputedStyles()) {
-                const value = style.getPropertyValue(property);
-                if (value !== '') {
-                    return value;
-                }
-            }
-            return '';
-        }
-        getPropertyValue(property) {
-            if (this.cache.has(property)) {
-                return this.cache.get(property);
-            }
-            let value = this.getPropertyValueFormComputedStyles('--' + property)
-                .replace(ESCAPE_REGEX, "")
-                .trim();
-            if (value.startsWith('"') && value.endsWith('"')) {
-                value = value.substring(1, value.length - 1).trim();
-            }
-            this.cache.set(property, value);
-            return value;
-        }
-    }
-    const Root = new RootClass();
-
-    /*
-     * Copyright 2021 Zindex Software
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *    http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
     const mixinRepository = new Map();
     const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
     const defaultMixinHandler = (name, args) => {
-        return Root.getPropertyValue(name + '--mixin')
+        return Root.getPropertyValue('--' + name + '--mixin')
             .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
     };
     mixinRepository.set('space-x', function (_, space, right) {
@@ -1305,7 +1311,7 @@
                 }
             }
             if (scope) {
-                const scopeValue = Root.getPropertyValue(scope + '--scope');
+                const scopeValue = Root.getPropertyValue('--' + scope + '--scope');
                 if (scopeValue === '') {
                     return;
                 }
