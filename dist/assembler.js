@@ -1004,7 +1004,7 @@
         _elementObserver.observe(element, {
             attributes: true,
             attributeOldValue: true,
-            childList: true,
+            childList: false,
             attributeFilter: [handler.userSettings.xStyleAttribute],
         });
     }

@@ -53,7 +53,7 @@ function observeElement(element: Element, handler: StyleHandler): void {
     _elementObserver.observe(element, {
         attributes: true,
         attributeOldValue: true,
-        childList: true,
+        childList: false,
         attributeFilter: [handler.userSettings.xStyleAttribute],
     });
 }

@@ -998,7 +998,7 @@ function observeElement(element, handler) {
     _elementObserver.observe(element, {
         attributes: true,
         attributeOldValue: true,
-        childList: true,
+        childList: false,
         attributeFilter: [handler.userSettings.xStyleAttribute],
     });
 }
