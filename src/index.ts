@@ -120,7 +120,3 @@ export function cssStyleSheet(): CSSStyleSheet {
     return styleHandler.style;
 }
 
-if (typeof window !== 'undefined') {
-    init();
-}
-

@@ -1445,6 +1445,7 @@
         }
         return styleHandler.style;
     }
+
     if (typeof window !== 'undefined') {
         init();
     }

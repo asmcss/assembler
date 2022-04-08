@@ -1443,9 +1443,6 @@ function cssStyleSheet() {
     }
     return styleHandler.style;
 }
-if (typeof window !== 'undefined') {
-    init();
-}
 
 exports.cssStyleSheet = cssStyleSheet;
 exports.handleShadowRoot = handleShadowRoot;

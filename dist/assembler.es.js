@@ -1439,8 +1439,5 @@ function cssStyleSheet() {
     }
     return styleHandler.style;
 }
-if (typeof window !== 'undefined') {
-    init();
-}
 
 export { cssStyleSheet, handleShadowRoot, init, registerMixin, style };

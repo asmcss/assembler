@@ -5,6 +5,7 @@ import pkg from './package.json';
 
 const NAME = 'AssemblerCSS';
 const MAIN = 'src/index.ts';
+const AUTOLOAD = 'src/autoload.ts';
 const GLOBALS = {};
 const EXTERNAL = Object.keys(GLOBALS);
 
@@ -17,7 +18,7 @@ const typescript = ts({
 
 const CONFIG = [
     {
-        input: MAIN,
+        input: AUTOLOAD,
         output: {
             name: NAME,
             file: pkg.browser,
@@ -32,7 +33,7 @@ const CONFIG = [
 if (production) {
     CONFIG.push(...[
         {
-            input: MAIN,
+            input: AUTOLOAD,
             output: {
                 name: NAME,
                 file: pkg.browser.replace('.js', '.min.js'),
