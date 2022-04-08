@@ -1379,16 +1379,21 @@ class StyleHandler {
  */
 let styleHandler = null;
 let supportsConstructable = true;
+let supportsAdoptingStyleSheets = true;
 let settings = null;
 const observedShadowRoots = new WeakMap();
 function init(options) {
+    supportsAdoptingStyleSheets = window.ShadowRoot &&
+        (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
+        'adoptedStyleSheets' in Document.prototype &&
+        'replace' in CSSStyleSheet.prototype;
     settings = getUserSettings(options || document.currentScript.dataset);
     if (!settings.enabled) {
         return false;
     }
     let tracker;
     let stylesheet;
-    if (settings.constructable && document.adoptedStyleSheets && Object.isFrozen(document.adoptedStyleSheets)) {
+    if (supportsAdoptingStyleSheets && settings.constructable) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             const generated = generateStyles(settings);
@@ -1415,25 +1420,34 @@ function init(options) {
     observeDocument(document, styleHandler);
     return true;
 }
-function handleShadowRoot(shadowRoot) {
+function handleShadowRoot(shadowRoot, add = true) {
     if (styleHandler === null) {
         init();
     }
-    if (!supportsConstructable || !shadowRoot.adoptedStyleSheets || !Object.isFrozen(shadowRoot.adoptedStyleSheets)) {
+    if (!supportsAdoptingStyleSheets || !supportsConstructable) {
         return false;
     }
     if (observedShadowRoots.has(shadowRoot)) {
         return true;
     }
     observedShadowRoots.set(shadowRoot, true);
-    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+    if (add) {
+        shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+    }
     observeShadow(shadowRoot, styleHandler);
     return true;
+}
+function cssStyleSheet() {
+    if (styleHandler === null) {
+        init();
+    }
+    return styleHandler.style;
 }
 if (typeof window !== 'undefined') {
     init();
 }
 
+exports.cssStyleSheet = cssStyleSheet;
 exports.handleShadowRoot = handleShadowRoot;
 exports.init = init;
 exports.registerMixin = registerMixin;

@@ -27,6 +27,9 @@ declare global {
     interface Document {
         adoptedStyleSheets: CSSStyleSheet[];
     }
+    interface Window {
+        ShadyCSS?: any;
+    }
     interface CSSStyleSheet {
         replace(css: string);
         replaceSync(css: string);
@@ -36,12 +39,18 @@ declare global {
     }
 }
 
+
 let styleHandler: StyleHandler = null;
 let supportsConstructable = true;
+let supportsAdoptingStyleSheets = true;
 let settings = null;
 const observedShadowRoots = new WeakMap<ShadowRoot, boolean>();
 
 export function init(options?: {[key: string]: string}): boolean {
+    supportsAdoptingStyleSheets = window.ShadowRoot &&
+        (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
+        'adoptedStyleSheets' in Document.prototype &&
+        'replace' in CSSStyleSheet.prototype;
     settings = getUserSettings(options || document.currentScript.dataset);
 
     if (!settings.enabled) {
@@ -51,7 +60,7 @@ export function init(options?: {[key: string]: string}): boolean {
     let tracker: Set<string>;
     let stylesheet: CSSStyleSheet;
 
-    if (settings.constructable && document.adoptedStyleSheets && Object.isFrozen(document.adoptedStyleSheets)) {
+    if (supportsAdoptingStyleSheets && settings.constructable) {
         stylesheet = new CSSStyleSheet();
         if (settings.generate) {
             const generated = generateStyles(settings);
@@ -80,12 +89,12 @@ export function init(options?: {[key: string]: string}): boolean {
     return true;
 }
 
-export function handleShadowRoot(shadowRoot: ShadowRoot): boolean {
+export function handleShadowRoot(shadowRoot: ShadowRoot, add: boolean = true): boolean {
     if (styleHandler === null) {
         init();
     }
 
-    if (!supportsConstructable || !shadowRoot.adoptedStyleSheets || !Object.isFrozen(shadowRoot.adoptedStyleSheets)) {
+    if (!supportsAdoptingStyleSheets || !supportsConstructable) {
         return false;
     }
 
@@ -95,11 +104,20 @@ export function handleShadowRoot(shadowRoot: ShadowRoot): boolean {
 
     observedShadowRoots.set(shadowRoot, true);
 
-    shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+    if (add) {
+        shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, styleHandler.style];
+    }
 
     observeShadow(shadowRoot, styleHandler);
 
     return true;
+}
+
+export function cssStyleSheet(): CSSStyleSheet {
+    if (styleHandler === null) {
+        init();
+    }
+    return styleHandler.style;
 }
 
 if (typeof window !== 'undefined') {
