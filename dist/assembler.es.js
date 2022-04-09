@@ -971,6 +971,16 @@ let _documentObserver = null;
 let _elementObserver = null;
 let _shadowRootObserver = null;
 const observedElements = new WeakMap();
+function observeTree(element, handler) {
+    for (let e = element; e != null; e = e.nextElementSibling) {
+        if (!observedElements.has(e)) {
+            observe(e, handler);
+        }
+        else {
+            observeTree(e.firstElementChild, handler);
+        }
+    }
+}
 function observeDocument(document, handler) {
     if (_documentObserver === null) {
         _documentObserver = new MutationObserver(function (mutations) {
@@ -1414,6 +1424,11 @@ function init(options) {
     }
     styleHandler = new StyleHandler(settings, stylesheet, tracker);
     observeDocument(document, styleHandler);
+    if (window) {
+        window.addEventListener('DOMContentLoaded', function () {
+            observeTree(document.body, styleHandler);
+        });
+    }
     return true;
 }
 function handleShadowRoot(shadowRoot, add = true) {

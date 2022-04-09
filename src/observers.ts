@@ -21,6 +21,16 @@ let _elementObserver:MutationObserver = null;
 let _shadowRootObserver:MutationObserver = null;
 const observedElements = new WeakMap<HTMLElement, any[]>();
 
+export function observeTree(element: HTMLElement, handler: StyleHandler): void {
+    for (let e = element; e != null; e = e.nextElementSibling as HTMLElement) {
+        if (!observedElements.has(e)) {
+            observe(e, handler);
+        } else {
+            observeTree(e.firstElementChild as HTMLElement, handler);
+        }
+    }
+}
+
 export function observeDocument(document: Document, handler: StyleHandler): void {
     if (_documentObserver === null) {
         _documentObserver = new MutationObserver(function (mutations: MutationRecord[]): void {

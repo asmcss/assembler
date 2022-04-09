@@ -15,7 +15,7 @@
  */
 
 import {generateStyles} from "./generators";
-import {observeDocument, observeShadow} from "./observers";
+import {observeDocument, observeShadow, observeTree} from "./observers";
 import {getUserSettings} from "./helpers";
 import {generateRootVariables} from "./variables";
 import StyleHandler from "./StyleHandler";
@@ -85,6 +85,12 @@ export function init(options?: {[key: string]: string}): boolean {
     styleHandler = new StyleHandler(settings, stylesheet, tracker);
 
     observeDocument(document, styleHandler);
+
+    if (window) {
+        window.addEventListener('DOMContentLoaded', function () {
+            observeTree(document.body, styleHandler);
+        });
+    }
 
     return true;
 }
