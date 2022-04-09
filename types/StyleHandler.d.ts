@@ -14,8 +14,10 @@ export default class StyleHandler {
     private rules;
     private readonly padding;
     private readonly selectorAttribute;
+    private _currentElement;
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>);
     get userSettings(): UserSettings;
+    get currentElement(): HTMLElement | null;
     handleStyleChange(element: HTMLElement, content: string | null, old: AssemblerEntry[]): AssemblerEntry[];
     handleStyleRemoved(element: HTMLElement, old: AssemblerEntry[]): AssemblerEntry[];
     private extract;

@@ -22,6 +22,10 @@ export declare type UserSettings = {
         aliases: string[];
     }[];
 };
+export interface MixinContext {
+    readonly userSettings: UserSettings;
+    readonly currentElement: HTMLElement | null;
+}
 declare type StyleType = string | {
     [key: string]: string;
 };

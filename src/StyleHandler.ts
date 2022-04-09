@@ -58,6 +58,7 @@ export default class StyleHandler {
     private rules: number[];
     private readonly padding: number;
     private readonly selectorAttribute: string;
+    private _currentElement: HTMLElement|null = null;
 
     constructor(settings: UserSettings, style: CSSStyleSheet, tracker: Set<string>) {
         this.style = style;
@@ -75,7 +76,12 @@ export default class StyleHandler {
         return this.settings;
     }
 
+    get currentElement(): HTMLElement|null {
+        return this._currentElement;
+    }
+
     handleStyleChange(element: HTMLElement, content: string|null, old: AssemblerEntry[]): AssemblerEntry[] {
+        this._currentElement = element;
 
         if (content === null) {
             return this.handleStyleRemoved(element, old);
@@ -110,12 +116,12 @@ export default class StyleHandler {
         }
 
         element.setAttribute(this.selectorAttribute, classList.join(' '));
-
+        this._currentElement = null;
         return assemblerEntries;
     }
 
     handleStyleRemoved(element: HTMLElement, old: AssemblerEntry[]): AssemblerEntry[] {
-
+        this._currentElement = null;
         const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
 
         for (const {p:property, e:entry} of old) {
@@ -256,7 +262,7 @@ export default class StyleHandler {
                 }
 
                 stack.push(mixin);
-                entries.push(...this.getResolvedProperties(resolveMixin(this.settings, mixin, args), stack))
+                entries.push(...this.getResolvedProperties(resolveMixin(this, mixin, args), stack))
                 stack.pop();
 
                 continue;

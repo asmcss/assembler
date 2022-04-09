@@ -32,6 +32,12 @@ export type UserSettings = {
     selectorAttribute: string,
     registeredProperties: {name: string, aliases: string[]}[],
 };
+
+export interface MixinContext {
+    readonly userSettings: UserSettings;
+    readonly currentElement: HTMLElement|null;
+}
+
 type StyleType = string|{[key: string]: string};
 const regex = /([a-z0-9]|(?=[A-Z]))([A-Z])/g;
 

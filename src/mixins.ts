@@ -16,7 +16,7 @@
 
 import {style} from "./helpers";
 import {Root} from "./Root";
-import type {UserSettings} from "./helpers";
+import type {UserSettings, MixinContext} from "./helpers";
 
 type UserFunctionCallbackResult = {[key: string]: string}|string;
 type UserFunctionCallback =
@@ -26,7 +26,20 @@ type UserFunctionCallback =
 const mixinRepository: Map<string, UserFunctionCallback> = new Map<string, UserFunctionCallback>();
 const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
 
-const defaultMixinHandler = (name: string, args: string[]): string => {
+const defaultMixinHandler = (context: MixinContext, name: string, args: string[]): string => {
+    if (name.startsWith('.')) {
+        if (context.currentElement !== null) {
+            name = name.substring(1);
+            const attr = 'data-mixin-' + name;
+            for (let p = context.currentElement.parentElement; p != null; p = p.parentElement) {
+                if (p.hasAttribute(attr)) {
+                    return p.getAttribute(attr)
+                        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
+                }
+            }
+        }
+        return '';
+    }
     return Root.getPropertyValue('--' + name + '--mixin')
         .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
@@ -59,12 +72,12 @@ mixinRepository.set('container', function (settings: UserSettings): string {
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
 
-export function resolveMixin(settings: UserSettings, name: string, args: string[]): string {
+export function resolveMixin(context: MixinContext, name: string, args: string[]): string {
     if (mixinRepository.has(name)) {
-        return style(mixinRepository.get(name)(settings, ...args));
+        return style(mixinRepository.get(name)(context.userSettings, ...args));
     }
 
-    return style(defaultMixinHandler(name, args));
+    return style(defaultMixinHandler(context, name, args));
 }
 
 export function registerMixin(name: string, callback: UserFunctionCallback): void {

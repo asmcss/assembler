@@ -1056,7 +1056,20 @@ function observe(element, handler) {
  */
 const mixinRepository = new Map();
 const MIXIN_ARGS_REGEX = /\${([0-9]+)(?:=([^}]+))?}/g;
-const defaultMixinHandler = (name, args) => {
+const defaultMixinHandler = (context, name, args) => {
+    if (name.startsWith('.')) {
+        if (context.currentElement !== null) {
+            name = name.substring(1);
+            const attr = 'data-mixin-' + name;
+            for (let p = context.currentElement.parentElement; p != null; p = p.parentElement) {
+                if (p.hasAttribute(attr)) {
+                    return p.getAttribute(attr)
+                        .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
+                }
+            }
+        }
+        return '';
+    }
     return Root.getPropertyValue('--' + name + '--mixin')
         .replace(MIXIN_ARGS_REGEX, (match, arg, fallback) => args[parseInt(arg)] || fallback || '');
 };
@@ -1082,11 +1095,11 @@ mixinRepository.set('container', function (settings) {
     }
     return `px: 1rem; mx:auto; max-w:100%; sm|max-w:@breakpoint-sm; md|max-w:@breakpoint-md; lg|max-w:@breakpoint-lg; xl|max-w:@breakpoint-xl`;
 });
-function resolveMixin(settings, name, args) {
+function resolveMixin(context, name, args) {
     if (mixinRepository.has(name)) {
-        return style(mixinRepository.get(name)(settings, ...args));
+        return style(mixinRepository.get(name)(context.userSettings, ...args));
     }
-    return style(defaultMixinHandler(name, args));
+    return style(defaultMixinHandler(context, name, args));
 }
 function registerMixin(name, callback) {
     mixinRepository.set(name, callback);
@@ -1116,6 +1129,7 @@ const MIXIN_PREFIX = '^';
 const COMMA_DELIMITED = /\s*,\s*(?![^(]*\))/gm;
 class StyleHandler {
     constructor(settings, style, tracker) {
+        this._currentElement = null;
         this.style = style;
         this.settings = settings;
         this.tracker = tracker;
@@ -1129,7 +1143,11 @@ class StyleHandler {
     get userSettings() {
         return this.settings;
     }
+    get currentElement() {
+        return this._currentElement;
+    }
     handleStyleChange(element, content, old) {
+        this._currentElement = element;
         if (content === null) {
             return this.handleStyleRemoved(element, old);
         }
@@ -1159,9 +1177,11 @@ class StyleHandler {
             assemblerEntries.push({ e: entry, n: name, p: property });
         }
         element.setAttribute(this.selectorAttribute, classList.join(' '));
+        this._currentElement = null;
         return assemblerEntries;
     }
     handleStyleRemoved(element, old) {
+        this._currentElement = null;
         const classList = element.hasAttribute(this.selectorAttribute) ? element.getAttribute(this.selectorAttribute).split(' ') : [];
         for (const { p: property, e: entry } of old) {
             const index = classList.indexOf(entry);
@@ -1278,7 +1298,7 @@ class StyleHandler {
                     throw new Error('Recursive mixin detected: ' + stack.join('->'));
                 }
                 stack.push(mixin);
-                entries.push(...this.getResolvedProperties(resolveMixin(this.settings, mixin, args), stack));
+                entries.push(...this.getResolvedProperties(resolveMixin(this, mixin, args), stack));
                 stack.pop();
                 continue;
             }
