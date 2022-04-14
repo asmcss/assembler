@@ -186,6 +186,7 @@ export const PROPERTY_VARIANTS = {
     "background-clip": ["-webkit-background-clip", "-moz-background-clip"],
     "backdrop-filter": ["-webkit-backdrop-filter"],
     "box-orient": ["-webkit-box-orient"],
+    "clip-path": ["-webkit-clip-path"],
     "column-gap": ["-moz-column-gap"],
     "line-clamp": ["-webkit-line-clamp"],
     "user-select": ["-webkit-user-select", "-moz-user-select"],

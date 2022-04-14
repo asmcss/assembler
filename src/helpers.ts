@@ -61,9 +61,9 @@ export function getUserSettings(dataset: {[key: string]: string}): UserSettings 
         const prop = registeredProperties[i];
         if (PROPERTY_LIST.indexOf(prop.name) === -1) {
             PROPERTY_LIST.push(prop.name);
-            if (prop.aliases.length > 0) {
-                PROPERTY_VARIANTS[prop.name] = prop.aliases;
-            }
+        }
+        if (prop.aliases.length > 0) {
+            PROPERTY_VARIANTS[prop.name] = prop.aliases;
         }
     }
 
