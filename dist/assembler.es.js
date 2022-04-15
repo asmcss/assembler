@@ -415,15 +415,16 @@ const orderCallback = v => {
 const waveClipIds = new Set();
 const generateWave = (value, original, media, state, handler) => {
     const args = value.split(args_delimiter).map(v => v.trim()).map(v => parseInt(v));
-    let [amplitude, frequency, precision] = args;
+    let [amplitude, frequency, segments] = args;
     amplitude = amplitude !== null && amplitude !== void 0 ? amplitude : 50;
     frequency = frequency !== null && frequency !== void 0 ? frequency : 2;
-    precision = precision !== null && precision !== void 0 ? precision : 50;
-    const id = amplitude + '-' + frequency + '-' + precision;
+    segments = segments !== null && segments !== void 0 ? segments : 50;
+    const id = amplitude + '-' + frequency + '-' + segments;
     if (waveClipIds.has(id)) {
         return '@wave-clip-' + id;
     }
     waveClipIds.add(id);
+    const precision = segments * frequency;
     const units = Math.PI * 2 * frequency;
     const factor = precision / 100;
     amplitude /= 2;
