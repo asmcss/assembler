@@ -1,3 +1,4 @@
+import type StyleHandler from "./StyleHandler";
 export declare const PROPERTY_LIST: string[];
 export declare const PROPERTY_VARIANTS: {
     animation: string[];
@@ -129,6 +130,7 @@ export declare const ALIASES: {
     capitalize: string;
     "normal-case": string;
     variant: string;
+    "wave-clip": string;
 };
 export declare const DEFAULT_VALUES: {
     border: string[];
@@ -160,6 +162,7 @@ export declare const DEFAULT_VALUES: {
     "normal-case": string;
     radius: string;
     shadow: string;
+    "wave-clip": string;
 };
 export declare const VALUE_WRAPPER: {
     img: (v: any) => string;
@@ -228,4 +231,5 @@ export declare const VALUE_WRAPPER: {
     "max-width": (v: any) => any;
     "min-height": (v: any) => any;
     "max-height": (v: any) => any;
+    "wave-clip": (value: string, original: string, media: string, state: string, handler: StyleHandler) => string;
 };

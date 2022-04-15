@@ -28,6 +28,9 @@
     const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
     const radius_regex = /^(xs|sm|md|lg|xl|pill)$/;
     const order_regex = /^(first|last|none)$/;
+    // do not match comma inside parenthesis
+    // 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+    const args_delimiter = /\s*,\s*(?![^(]*\))/gm;
     const PROPERTY_LIST = [
         "align-content",
         "align-items",
@@ -349,6 +352,7 @@
         "capitalize": "text-transform",
         "normal-case": "text-transform",
         "variant": "font-variant-numeric",
+        "wave-clip": "clip-path",
     };
     const DEFAULT_VALUES = {
         "border": ["1px solid transparent"],
@@ -379,7 +383,8 @@
         "capitalize": "capitalize",
         "normal-case": "none",
         "radius": "sm",
-        "shadow": "1"
+        "shadow": "1",
+        "wave-clip": "50, 2, 50"
     };
     const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
     const positive_unit = v => positive_number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
@@ -412,6 +417,30 @@
         if (v === "last")
             return "9999";
         return "0";
+    };
+    const waveClipIds = new Set();
+    const generateWave = (value, original, media, state, handler) => {
+        const args = value.split(args_delimiter).map(v => v.trim()).map(v => parseInt(v));
+        let [amplitude, frequency, precision] = args;
+        amplitude = amplitude !== null && amplitude !== void 0 ? amplitude : 50;
+        frequency = frequency !== null && frequency !== void 0 ? frequency : 2;
+        precision = precision !== null && precision !== void 0 ? precision : 50;
+        const id = amplitude + '-' + frequency + '-' + precision;
+        if (waveClipIds.has(id)) {
+            return '@wave-clip-' + id;
+        }
+        waveClipIds.add(id);
+        const units = Math.PI * 2 * frequency;
+        const factor = precision / 100;
+        amplitude /= 2;
+        let polygon = 'polygon(100% 0%, 0% 0%';
+        for (let i = 0; i <= precision; i++) {
+            const val = Math.abs((amplitude * Math.cos((i / precision) * units) - amplitude)).toFixed(2);
+            polygon += ', ' + (i / factor) + '% calc(100% - ' + val + 'px)';
+        }
+        polygon += ')';
+        handler.style.cssRules[0].style.setProperty('--wave-clip-' + id, polygon);
+        return '@wave-clip-' + id;
     };
     const VALUE_WRAPPER = {
         "img": v => `url(${v})`,
@@ -479,7 +508,8 @@
         "min-width": positive_unit,
         "max-width": positive_unit,
         "min-height": positive_unit,
-        "max-height": positive_unit
+        "max-height": positive_unit,
+        "wave-clip": generateWave,
     };
 
     /*
@@ -1228,7 +1258,7 @@
                 value = DEFAULT_VALUES[original] || '';
             }
             if (VALUE_WRAPPER.hasOwnProperty(original)) {
-                value = VALUE_WRAPPER[original](value, original, media, state);
+                value = VALUE_WRAPPER[original](value, original, media, state, this);
             }
             if (!Array.isArray(value)) {
                 value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));

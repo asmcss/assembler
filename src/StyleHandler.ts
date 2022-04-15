@@ -172,7 +172,7 @@ export default class StyleHandler {
             value = DEFAULT_VALUES[original] || '';
         }
         if (VALUE_WRAPPER.hasOwnProperty(original)) {
-            value = VALUE_WRAPPER[original](value, original, media, state);
+            value = VALUE_WRAPPER[original](value, original, media, state, this);
         }
         if (!Array.isArray(value)) {
             value = Array(properties.length).fill(value.replace(VAR_REGEX, "var(--$1)"));

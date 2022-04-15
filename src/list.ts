@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type StyleHandler from "./StyleHandler";
+
 const positive_number_regex = /^[0-9]+(\.5)?$/;
 const number_regex = /^-?[0-9]+(\.5)?$/;
 const font_size_regex = /^(xs|sm|base|lg|([2-9])?xl)$/;
@@ -23,6 +25,10 @@ const shadow_regex = /^[1-6]$/;
 const letter_spacing_regex = /^(tighter|tight|normal|wide|wider|widest)$/;
 const radius_regex = /^(xs|sm|md|lg|xl|pill)$/;
 const order_regex = /^(first|last|none)$/;
+
+// do not match comma inside parenthesis
+// 2px, linear-gradient(blue, red), inline => [2px, linear-gradient(blue, red), inline]
+const args_delimiter = /\s*,\s*(?![^(]*\))/gm;
 
 export const PROPERTY_LIST = [
     "align-content",
@@ -353,6 +359,7 @@ export const ALIASES = {
     "capitalize": "text-transform",
     "normal-case": "text-transform",
     "variant": "font-variant-numeric",
+    "wave-clip": "clip-path",
 };
 export const DEFAULT_VALUES = {
     "border": ["1px solid transparent"],
@@ -383,7 +390,8 @@ export const DEFAULT_VALUES = {
     "capitalize": "capitalize",
     "normal-case": "none",
     "radius": "sm",
-    "shadow": "1"
+    "shadow": "1",
+    "wave-clip": "50, 2, 50"
 }
 
 const unit = v => number_regex.test(v) ? `calc(${v} * @unit-size)` : v;
@@ -413,6 +421,35 @@ const orderCallback = v => {
     if (v === "first") return "-9999";
     if (v === "last") return "9999";
     return "0";
+}
+
+const waveClipIds = new Set<string>();
+const generateWave = (value: string, original: string, media: string, state: string, handler: StyleHandler) => {
+    const args = value.split(args_delimiter).map(v => v.trim()).map(v => parseInt(v));
+    let [amplitude, frequency, precision] = args;
+
+    amplitude = amplitude ?? 50;
+    frequency = frequency ?? 2;
+    precision = precision ?? 50;
+
+    const id = amplitude + '-' +  frequency + '-' + precision;
+    if (waveClipIds.has(id)) {
+        return '@wave-clip-' + id;
+    }
+
+    waveClipIds.add(id);
+    const units = Math.PI * 2 * frequency;
+    const factor = precision / 100;
+    amplitude /= 2;
+
+    let polygon = 'polygon(100% 0%, 0% 0%';
+    for (let i = 0; i <= precision; i++) {
+        const val = Math.abs((amplitude * Math.cos((i / precision) * units) - amplitude)).toFixed(2);
+        polygon += ', ' + (i / factor) + '% calc(100% - ' + val + 'px)';
+    }
+    polygon += ')';
+    (handler.style.cssRules[0] as CSSStyleRule).style.setProperty('--wave-clip-' + id, polygon);
+    return '@wave-clip-' + id;
 }
 
 export const VALUE_WRAPPER = {
@@ -481,5 +518,6 @@ export const VALUE_WRAPPER = {
     "min-width": positive_unit,
     "max-width": positive_unit,
     "min-height": positive_unit,
-    "max-height": positive_unit
+    "max-height": positive_unit,
+    "wave-clip": generateWave,
 };
